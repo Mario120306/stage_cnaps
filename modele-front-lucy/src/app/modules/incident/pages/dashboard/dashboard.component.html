@@ -1,0 +1,99 @@
+<div class="incident-dashboard">
+  <header class="dashboard-header">
+    <h1>Dashboard de Gestion des Incidents</h1>
+    <div class="time-range-selector">
+      <button *ngFor="let range of timeRanges" 
+              [class.active]="timeRange === range.value"
+              (click)="changeTimeRange(range.value)">
+        {{ range.label }}
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="loading">Chargement des données...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    <div class="summary-cards">
+      <div class="card">
+        <h3>Incidents Totaux</h3>
+        <p class="value">{{ stats?.totalIncidents || 0 }}</p>
+      </div>
+      <div class="card">
+        <h3>Temps Moyen de Résolution</h3>
+        <p class="value">{{ stats?.averageResolutionTime || 0 }} mins</p>
+      </div>
+      <div class="card">
+        <h3>Disponibilité</h3>
+        <p class="value">{{ availability?.availabilityPercentage || 0 }}%</p>
+      </div>
+      <div class="card">
+        <h3>Temps d'Indisponibilité</h3>
+        <p class="value">{{ availability?.totalDowntimeMinutes || 0 }} mins</p>
+      </div>
+    </div>
+
+    <div class="charts-section">
+      <div class="chart-container">
+        <h3>Incidents par Sévérité</h3>
+        <div class="severity-chart">
+          <div *ngFor="let severity of severityLevels" class="severity-bar">
+            <div class="bar-label">{{ severity }}</div>
+            <div class="bar" [style.width.%]="getSeverityWidth(severity)">
+              <span class="bar-count">{{ getSeverityCount(severity) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h3>Tendance du Temps de Résolution</h3>
+        <div class="resolution-chart">
+          <div *ngFor="let trend of stats?.resolutionTrend || []" class="trend-item">
+            <div class="trend-date">{{ trend.date }}</div>
+            <div class="trend-bar-container">
+              <div class="trend-bar" [style.height.%]="getTrendHeight(trend.avgResolution)">
+                <span class="trend-value">{{ trend.avgResolution }}m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="incident-list">
+      <h3>Incidents Récents</h3>
+      <div class="table-responsive"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Titre</th>
+              <th>Sévérité</th>
+              <th>Heure de Début</th>
+              <th>Heure de Fin</th>
+              <th>Temps de Résolution</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let incident of incidents.slice(0, 10)">
+              <td>{{ incident.id }}</td>
+              <td>{{ incident.title }}</td>
+              <td [class]="'severity-' + incident.severity.toLowerCase()">
+                {{ incident.severity }}
+              </td>
+              <td>{{ incident.startTime | date:'medium' }}</td>
+              <td>{{ incident.endTime ? (incident.endTime | date:'medium') : '-' }}</td>
+              <td>
+                {{ incident.endTime ? (getResolutionTime(incident) + 'm') : 'En cours' }}
+              </td>
+              <td [class]="'status-' + incident.status.toLowerCase()">
+                {{ incident.status }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+</div>

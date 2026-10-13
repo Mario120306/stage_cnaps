@@ -1,0 +1,152 @@
+<div class="main-content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <fieldset>
+                        <legend>
+                            <i class="fa fa-file-invoice pr-2"></i>  LISTING DES SOP
+                        </legend>
+                        <fieldset>
+                            <legend>
+                                <i class="fa fa-search pr-2"></i>  RECHERCHE AVANCE
+                            </legend>
+                            <div class="form-row align-items-end">
+                                <div class="form-group col-md-2">
+                                    <label class="text-info">Titre SOP</label>
+                                    <input 
+                                        type="text"
+                                        class="form-control"
+                                          [(ngModel)]="filterTitre"
+                                        />  
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="text-info">Direction</label>
+                                    <select name="direction" id="direction" class="form-control" [(ngModel)]="filterDirection">
+                                        <option value="#">---</option>
+                                        <option *ngFor="let d of directions" [value]="d.codeDirection">
+                                            {{d.libelleDirection}}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="text-info">Service</label>
+                                    <select name="service" id="service" class="form-control" [(ngModel)]="filterService">
+                                        <option value="#">---</option>
+                                        <option *ngFor="let s of services" [value]="s.codeService">
+                                            {{s.libelleService}}
+                                        </option>
+                                    </select>
+                                </div>                                
+                                <div class="form-group col-md-2">
+                                    <label class="text-info">Auteur (matricule)</label>
+                                    <input 
+                                        type="text"
+                                        class="form-control text-uppercase"
+                                        [(ngModel)]="filterAuteur"
+                                        />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="text-info">Date debut (creation)</label>
+                                    <input 
+                                        type="date"
+                                        class="form-control text-uppercase"
+                                        [(ngModel)]="filterDateFrom"
+                                        />
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label class="text-info">Date fin (creation)</label>
+                                    <input 
+                                        type="date"
+                                        class="form-control text-uppercase"
+                                        [(ngModel)]="filterDateTo"
+                                        />
+                                </div>                                
+                                <div class="form-group col-12 d-flex justify-content-end align-items-end flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            class="btn btn-cnaps-link mr-2"
+                                            (click)="search()">
+                                            <i class="fa fa-search"></i> Rechercher
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-cnaps-other"
+                                            (click)="resetFilters()"
+                                        >
+                                            <i class="fa fa-filter"></i> Reinitialiser
+                                        </button>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="mt-2">
+                            <table class="table table-borderless border" style="font-size: 11px">
+                                <thead>
+                                <tr>
+                                    <th class="text-left pl-3">TITRE SOP</th>
+                                    <th class="text-left">DATE  DE CREATION</th>
+                                    <th class="text-left">DATE  DERNIERES  MODIFICATION</th>
+                                    <th class="text-left">SERVICE</th>
+                                    <th class="text-left">DIRECTION  RATACHE</th>
+                                    <th class="text-right"></th>
+                                </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                <ng-container>
+                                    <ng-container>
+                                        <tr *ngIf="sops.length===0">
+                                                <td colspan="5" class="text-center" style="font-size: 13px;">Aucun SOP trouvé</td>
+                                        </tr>
+                                        <tr *ngFor="let sop of sops">
+                                            <td class="text-left pl-3" style="font-size:15px;font-weight: 700;color: #0f2d67;">{{sop.titre}}</td>
+                                            <td class="text-left py-3" style="color: rgb(154, 154, 154);">{{sop.dateCreation | date:'dd/MM/yyyy'}}</td>
+                                            <td class="text-left py-3" style="color: rgb(154, 154, 154);">{{sop.dateModification ? (sop.dateModification | date:'dd/MM/yyyy') : '—'}}</td>
+                                            <td class="text-left pr-3" style="color: rgb(154, 154, 154);">{{sop.libelleService}}</td>
+                                            <td class="text-left pr-3" style="color: rgb(154, 154, 154);">{{sop.libelleDirection}}</td>
+                                            <td class="text-right">
+                                            <button
+                                                type="button"
+                                                rel="tooltip"
+                                                class="btn btn-cnaps-box-shadow px-3"
+                                                routerLink="/system-sop/vue-sop"
+                                                [queryParams]="{ idSop: sop.idSop }"
+                                            >
+                                                <i class="fa fa-eye pr-2"></i>Voir Détail
+                                            </button>
+                                            </td>
+                                        </tr>                         
+                                    </ng-container>
+                                </ng-container>
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm pagination-action" [class.pagination-action-disabled]="page===0" (click)="prev()" [disabled]="page===0">
+                                    <i class="fa fa-arrow-left" style="margin-right: 8px;"></i>
+                                    <span>Précédent</span>
+                                </button>
+                                <nav aria-label="¨Pagination SOP">
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item" *ngFor="let pageNumber of pageNumbers" [class.active]="pageNumber===page">
+                                            <button type="button" class="page-link" (click)="goToPage(pageNumber)" [attr.aria-current]="pageNumber===page ? 'page' : null">
+                                                {{pageNumber + 1}}
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                <button type="button" class="btn btn-sm pagination-action" [class.pagination-action-disabled]="page+1>=totalPages" (click)="next()" [disabled]="page+1>=totalPages">
+                                    <span style="margin-right: 8px;">Suivant</span>
+                                    <i class="fa fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge border text-dark bg-light px-3 py-2" style="font-size: 14px; font-weight: 600;">
+                                    TOTAL SOP : {{totalElements}}
+                                </span>
+                            </div>
+                        </fieldset>
+                    </fieldset>
+                </div>   
+            </div>
+        </div>
+    </div>
+</div>

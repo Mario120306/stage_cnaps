@@ -1,0 +1,60 @@
+#deco :hover {
+    cursor: pointer;
+}
+
+.toggled:hover {
+    transform: scale(1.3);
+    transition: transform .5s ease;
+}
+
+
+.dispNone {
+    display: none !important;
+}
+
+.userLi:hover,
+.NomPrenom:hover,
+.decoM:hover,
+.nomUser:hover {
+    transform: scale(1.02) !important;
+    transition: transform .5s ease !important;
+    cursor: pointer;
+}
+
+.menuOption:hover,
+.imageProfil:hover,
+.siteP:hover {
+    transform: scale(1.04) !important;
+    transition: transform .5s ease !important;
+}
+
+.siteP {
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-link:not(i),
+.dropdown-item {
+    font-weight: bolder;
+    font-size: .8em !important;
+}
+
+.nav-link i {
+    font-size: 1.8em;
+}
+
+.nav-link {
+    cursor: pointer;
+}
+
+.badge {
+    position: absolute !important;
+    font-size: 9.5px;
+    text-align: center;
+    top: 50% !important;
+    border-radius: 60px;
+    left: 10% !important;
+    background-color: #df1010;
+}

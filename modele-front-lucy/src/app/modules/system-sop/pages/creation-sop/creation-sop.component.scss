@@ -1,0 +1,615 @@
+/* ============================================================
+   TABLEAUX
+   ============================================================ */
+.table th,
+.table td {
+  border-bottom: 1px solid #dee2e6;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.table th {
+  background-color: #e9effc;
+  color: #0f2d67;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+legend {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   BOUTONS GÉNÉRIQUES
+   ============================================================ */
+.btn-fa-close {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1;
+  outline: none;
+}
+
+.btn-fa-eye {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #5b3ec8;
+  font-size: 0.8rem;
+  line-height: 1;
+  outline: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.cnaps-btn-valider {
+  background-color: #030a16;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.3px;
+  padding: 10px 26px;
+  border-radius: 5px;
+  border: none;
+}
+
+.cnaps-btn-ajouter {
+  background-color: #5b3ec8;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(91, 62, 200, 0.25);
+  outline: none;
+}
+
+/* ============================================================
+   AUTOCOMPLETE AGENTS
+   ============================================================ */
+.agent-autocomplete {
+  position: relative;
+}
+
+.agent-suggestions {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.agent-suggestions button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: rgb(154, 154, 154);
+  text-align: left;
+}
+
+.agent-suggestions button:hover,
+.agent-suggestions button:focus {
+  background: #e9effc;
+  outline: none;
+}
+
+.agent-suggestions small {
+  color: #6c757d;
+}
+
+.destinataire-input {
+  color: rgb(154, 154, 154);
+}
+
+/* ============================================================
+   FIELDSET + FORMULAIRES
+   ============================================================ */
+fieldset {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100%;
+}
+
+textarea.form-control {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  color: #495057;
+  background-color: #fff;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.form-group input[type="file"].form-control {
+  opacity: 1;
+  position: static;
+  width: 100%;
+  height: calc(2em + 0.8rem + 2px);
+  z-index: auto;
+  box-sizing: border-box;
+  padding: 0.5rem 0.7rem;
+}
+
+/* ============================================================
+   STEPPER
+   ============================================================ */
+.stepper {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 20px 0;
+  gap: 8px;
+}
+
+.stepper li {
+  padding: 6px 14px;
+  border-radius: 0.25rem;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.stepper li.active {
+  background: #5b3ec8;
+  color: #fff;
+  font-weight: 600;
+}
+
+.stepper li.done {
+  background: #d6cdf5;
+  color: #5b3ec8;
+}
+
+/* ============================================================
+   NIVEAU DE DÉCALAGE (radios)
+   ============================================================ */
+.niveau-decalage {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.niveau-decalage .form-check {
+  background: #f3efff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.niveau-decalage .form-check-input {
+  position: static;
+  opacity: 1;
+  appearance: auto;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: #5b3ec8;
+}
+
+.niveau-decalage .form-check-label {
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* ============================================================
+   ÉTAPES DU SOP (conteneur principal)
+   ============================================================ */
+.etape,
+.etape .row,
+.etape fieldset,
+.etape .form-row > [class*="col-"] {
+  min-width: 0;
+}
+
+.etape table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.etape th,
+.etape td {
+  overflow-wrap: anywhere;
+}
+
+.etape input[type="file"] {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ============================================================
+   BOUTONS SOP (ANNULER / CREER)
+   ============================================================ */
+.sop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.sop-btn-cancel,
+.sop-btn-create {
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 10px 22px;
+  border-radius: 5px;
+  border: none;
+}
+
+.sop-btn-cancel {
+  color: #fff;
+  background-color: #dc3545;
+}
+
+.sop-btn-create {
+  color: #fff;
+  background-color: #5b3ec8;
+}
+
+.confirmation-modal-backdrop,
+.sop-loading-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.confirmation-modal-backdrop {
+  z-index: 1060;
+}
+
+.confirmation-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 1.75rem;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.confirmation-modal-icon {
+  margin-bottom: 0.75rem;
+  color: #5b3ec8;
+  font-size: 2rem;
+}
+
+.confirmation-modal h2 {
+  margin-bottom: 0.5rem;
+  color: #212529;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.confirmation-modal p {
+  margin-bottom: 1.25rem;
+  color: #6c757d;
+}
+
+.confirmation-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.confirmation-modal-actions .btn {
+  min-width: 110px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.confirmation-cancel {
+  background: #dc3545;
+}
+
+.confirmation-confirm {
+  background: #198754;
+}
+
+.confirmation-modal-actions .btn:hover {
+  color: #fff;
+  filter: brightness(0.93);
+}
+
+.sop-loading-backdrop {
+  z-index: 1070;
+}
+
+.sop-loading-card {
+  width: 100%;
+  max-width: 300px;
+  padding: 1.75rem;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.sop-loading-icon {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: #5b3ec8;
+  font-size: 2.5rem;
+  animation: sop-hourglass-turn 1.4s ease-in-out infinite;
+}
+
+.sop-loading-card p {
+  margin-bottom: 0.25rem;
+  color: #212529;
+  font-weight: 700;
+}
+
+.sop-loading-card span {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+@keyframes sop-hourglass-turn {
+  0%, 35% { transform: rotate(0deg); }
+  65%, 100% { transform: rotate(180deg); }
+}
+
+/* ============================================================
+  MODAL : DÉTAILS DU FLOWCHART (Bootstrap 4)
+  ============================================================ */
+.detail-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(0, 0, 0, 0.45);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.detail-modal {
+  width: 700px;
+  height: 500px;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+  margin: 1rem auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  background: #fff;
+}
+
+/* HEADER */
+.detail-modal .modal-header {
+  flex: 0 0 auto;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.detail-modal .modal-title {
+  margin: 0;
+  color: #5b3ec8;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.detail-modal .close {
+  outline: none;
+  color: #5b3ec8;
+  opacity: 0.8;
+  text-shadow: none;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.detail-modal .close:hover {
+  color: #5b3ec8;
+  opacity: 1;
+}
+
+/* BODY scrollable */
+.detail-modal .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+/* FOOTER */
+.detail-modal .modal-footer {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid #e5e5e5;
+  background: #fff;
+}
+
+/* ============================================================
+   CONTENU DU MODAL
+   ============================================================ */
+
+
+.detail-modal .detail-modal-label {
+  margin-bottom: 0.25rem;
+  color: #5b3ec8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.detail-modal-text {
+  white-space: pre-wrap;
+}
+
+/* Étapes hiérarchiques */
+.detail-modal-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.detail-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.detail-step-item.niveau-1 {
+  padding-left: 0.75rem;
+  margin-left: 0;
+}
+
+.detail-step-item.niveau-2 {
+  padding-left: 1.5rem;
+  margin-left: 1rem;
+  font-size: 0.95rem;
+}
+
+.detail-step-item.niveau-3 {
+  padding-left: 2.25rem;
+  margin-left: 2rem;
+  font-size: 0.9rem;
+}
+
+.detail-step-item.niveau-4 {
+  padding-left: 3rem;
+  margin-left: 3rem;
+  font-size: 0.85rem;
+}
+
+.detail-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-step-number {
+  font-weight: 700;
+  color: #5b3ec8;
+  flex: 0 0 auto;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.detail-step-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  color: #495057;
+}
+
+.detail-step-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.detail-step-item .btn-fa-close {
+  color: #dc3545;
+  padding: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.detail-step-item .btn-fa-close:hover {
+  color: #c82333;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1199.98px) {
+  .etape .ml-2,
+  .etape .ml-3,
+  .etape .ml-4,
+  .etape .ml-5 {
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .detail-modal {
+    width: calc(100vw - 1rem);
+    height: calc(100vh - 1rem);
+    max-width: none;
+    max-height: none;
+    margin: 0.5rem auto;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .sop-navigation {
+    flex-wrap: wrap;
+    justify-content: center !important;
+    gap: 0.75rem;
+  }
+
+  .sop-navigation > span {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+
+  .sop-navigation > button {
+    flex: 1 1 calc(50% - 0.375rem);
+    min-width: 0;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+
+  .sop-actions > button {
+    flex: 1 1 100%;
+  }
+
+  .detail-modal .modal-header,
+  .detail-modal .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .detail-modal .modal-body {
+    padding: 1rem;
+  }
+}

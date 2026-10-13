@@ -1,0 +1,34 @@
+<div class="incident-list-container">
+  <h2>Liste des incidents</h2>
+  
+  <div *ngIf="isLoading" class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i> Chargement...
+  </div>
+
+  <table *ngIf="!isLoading" class="incident-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Demandeur</th>
+        <th>Description</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let incident of incidents" (click)="viewDetail(incident.id)">
+        <td>{{ incident.id }}</td>
+        <td>{{ incident.demandeur.nom }}</td>
+        <td class="description-cell">{{ truncateText(incident.description, 50) }}</td>
+        <td>{{ incident.type.libelle }}</td>
+        <td>{{ formatDate(incident.dateCreation) }}</td>
+        <td>
+          <span [class]="'status-badge ' + getStatusClass(incident.statut.libelle)">
+            {{ incident.statut.libelle }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

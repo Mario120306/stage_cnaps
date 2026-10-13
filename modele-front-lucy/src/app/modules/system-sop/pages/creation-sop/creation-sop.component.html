@@ -1,0 +1,829 @@
+<div class="main-content">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <fieldset (document:keydown)="fermerAvecEchap($event)">
+            <legend>
+              <i class="fa fa-file-signature pr-2"></i>
+              {{ isModification ? 'MODIFICATION DU SOP' : 'CREATION NOUVEAU SOP' }}
+            </legend>
+
+            <!-- STEPPER -->
+            <ul class="stepper">
+              <li *ngFor="let p of pages"
+                  [class.active]="p.id === pageActuelle"
+                  [class.done]="p.id < pageActuelle"
+                  (click)="allerA(p.id)">
+                {{ p.id }}. {{ p.titre }}
+              </li>
+            </ul>
+
+            <!-- PAGE 1 : ENTETE + DESTINATAIRES -->
+            <div *ngIf="pageActuelle === 1" class="etape">
+              <div class="row mb-3">
+                <!-- ENTETE -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>ENTETE</legend>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-3">
+                        <label class="text-info">Titre du document*</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          placeholder="titre obligatoire"
+                          name="titreDocument"
+                          [(ngModel)]="titreDocument"
+                          [readonly]="enteteValidee"
+                        />
+                      </div>
+                      <div class="form-group col-md-2">
+                        <label class="text-info">Numéro de version*</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          name="numeroVersion"
+                          min="1"
+                          [(ngModel)]="numeroVersion"
+                          [readonly]="enteteValidee"
+                        />
+                      </div>
+                      <div class="form-group col-md-3">
+                        <label class="text-info">Service*</label>
+                        <select
+                          class="form-control"
+                          name="codeServiceSelectionne"
+                          [(ngModel)]="codeServiceSelectionne"
+                          [disabled]="enteteValidee"
+                        >
+                          <option value="">-- Sélectionner --</option>
+                          <option *ngFor="let service of services" [value]="service.codeService">
+                            {{ service.libelleService }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="form-group col-md-4">
+                        <label class="text-info">Choisir email des agents à afficher</label>
+                        <div class="agent-autocomplete">
+                          <input
+                            type="search"
+                            class="form-control"
+                            name="rechercheEmail"
+                            placeholder="Rechercher par nom ou adresse mail"
+                            autocomplete="off"
+                            [(ngModel)]="rechercheEmail"
+                            [readonly]="enteteValidee"
+                          />
+                          <ul class="agent-suggestions" *ngIf="agentsSuggerees.length">
+                            <li *ngFor="let agent of agentsSuggerees">
+                              <button type="button" (click)="ajouterAgent(agent)">
+                                {{ agent.mail }} <small>({{ agent.nom }} {{ agent.prenoms }})</small>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-row align-items-center flex-grow-1">
+                      <div class="col-md-8">
+                        <table class="table table-borderless border" style="font-size: 12px;">
+                          <thead>
+                            <tr>
+                              <th>Nom</th>
+                              <th>Email de l'agent</th>
+                              <th></th>
+                            </tr>                      
+                          </thead> 
+                          <tbody class="text-center">
+                            <tr *ngFor="let agent of agentsSelectionnes">
+                              <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{ agent.nom }} {{ agent.prenoms }}</td>
+                              <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{ agent.mail }}</td>
+                              <td>
+                                <button type="button" class="btn-fa-close" (click)="retirerAgent(agent)" [disabled]="enteteValidee" aria-label="Retirer cet agent">
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="agentsSelectionnes.length === 0">
+                              <td colspan="3" class="text-muted">Aucun agent sélectionné</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-md-4 d-flex align-items-center">
+                        <button
+                          type="button"
+                          class="btn cnaps-btn-valider ml-5"
+                          (click)="validerEntete()"
+                          [disabled]="enteteValidee"
+                        >{{ enteteValidee ? 'VALIDÉ' : 'VALIDER' }}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <!-- LISTE DES DESTINATAIRES -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>LISTE DES DESTINATAIRES</legend>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-5">
+                        <label class="text-info">Saisir le matricule de l'agent destinataire</label>
+                        <div class="agent-autocomplete">
+                          <input
+                            type="search"
+                            class="form-control destinataire-input"
+                            name="matriculeDestinataire"
+                            placeholder="Saisir le matricule"
+                            autocomplete="off"
+                            [(ngModel)]="matriculeDestinataire"
+                            (ngModelChange)="modifierMatriculeDestinataire($event)"
+                            [readonly]="destinatairesValides"
+                          />
+                          <ul class="agent-suggestions" *ngIf="destinatairesSuggerees.length">
+                            <li *ngFor="let agent of destinatairesSuggerees">
+                              <button type="button" (click)="selectionnerDestinataire(agent)">
+                                {{ agent.matricule }} — {{ agent.mail }}
+                                <small>({{ agent.nom }} {{ agent.prenoms }})</small>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="form-group col-md-4">
+                        <label class="text-info">Action par selection</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="actionDestinataire"
+                          [(ngModel)]="actionDestinataire"
+                          [readonly]="destinatairesValides"
+                          placeholder="Choisir ou saisir une action"
+                        />
+                      </div>
+                      <div class="form-group col-md-2 ml-2">
+                        <label class="text-info">&nbsp;</label>
+                        <button type="button" class="cnaps-btn-ajouter" (click)="ajouterDestinataire()" [disabled]="destinatairesValides">
+                          <i class="fa fa-plus-circle pr-1"></i>AJOUTER
+                        </button>
+                      </div>
+                    </div>
+                    <div class="form-row align-items-center flex-grow-1">
+                      <div class="col-md-9">
+                        <table class="table table-borderless border" style="font-size: 12px;">
+                          <thead>
+                            <tr>
+                              <th>Email de l'agent</th>
+                              <th>Action par selection</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody class="text-center">
+                            <tr *ngFor="let destinataire of destinataires">
+                              <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{ destinataire.agent.mail }}</td>
+                              <td class="text-left" style="font-size: 13px;">{{ destinataire.action }}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  class="btn-fa-close"
+                                  (click)="retirerDestinataire(destinataire.agent)"
+                                  [disabled]="destinatairesValides"
+                                  aria-label="Retirer ce destinataire"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="destinataires.length === 0">
+                              <td colspan="3" class="text-muted">Aucun destinataire ajouté</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-md-2 d-flex align-items-center">
+                        <button
+                          type="button"
+                          class="btn cnaps-btn-valider ml-3"
+                          (click)="validerDestinataires()"
+                          [disabled]="destinatairesValides"
+                        >{{ destinatairesValides ? 'VALIDÉ' : 'VALIDER' }}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE 2 : EQUIPE + GLOSSAIRE -->
+            <div *ngIf="pageActuelle === 2" class="etape">
+              <div class="row mb-3">
+                <!-- EQUIPE DE PROJETS -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>EQUIPE DE PROJETS</legend>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-8">
+                        <label class="text-info">Saisir le marticule de l'agent du SOP</label>
+                          <div class="agent-autocomplete">
+                            <input 
+                              type="search"
+                              class="form-control"
+                              name="rechercheEquipe"
+                              placeholder="Saisir le matricule"
+                              autocomplete="off"
+                              [(ngModel)]="rechercheEquipe"
+                              [readOnly]="equipeProjetValides"
+                              />
+                              <ul class="agent-suggestions" *ngIf="equipeSuggeree.length">
+                                <li *ngFor="let agent of equipeSuggeree">
+                                  <button type="button" (click)="ajouterMembreEquipe(agent)">
+                                    {{agent.matricule}} - {{agent.nom}} - {{agent.prenoms}}
+                                    <small>({{agent.mail}})</small>
+                                  </button>
+                                </li>
+                              </ul>
+                          </div>
+                      </div>
+                    </div>
+                    <div class="form-row align-items-center flex-grow-1">
+                      <div class="col-md-8">
+                        <table class="table table-borderless border" style="font-size: 12px;">
+                          <thead>
+                            <tr>
+                              <th>Nom</th>
+                              <th>Email de l'agent</th>
+                              <th></th>
+                            </tr>                      
+                          </thead>                                                  
+                          <tbody class="text-center">
+                            <tr *ngFor="let agent of equipeProjet">
+                              <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{agent.nom}} {{agent.prenoms}}</td>
+                              <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{agent.mail}}</td>
+                              <td>
+                                <button type="button" class="btn-fa-close" (click)="retirerMembreEquipe(agent)" arial-label="Retirer cette agent"><i class="fa fa-times"></i></button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="equipeProjet.length===0">
+                                <td colspan="3" class="text-muted">Acun agent sélectionné</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-md-4 d-flex align-items-center">
+                        <button  
+                          type="button"
+                          class="btn cnaps-btn-valider ml-5"
+                          (click)="validerEquipes()"
+                          [disabled]="equipeProjetValides"
+                          >{{ equipeProjetValides ? 'VALIDE': 'VALIDER'}}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <!-- GLOSSAIRE -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>GLOSSAIRE</legend>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-5">
+                        <label class="text-info">Acronyme*</label>
+                        <input 
+                            type="text" 
+                            class="form-control"
+                            name="acronymeGlossaire"
+                            [(ngModel)]="acronymeClossaire"
+                            [disabled]="glossaireValides"
+                            />
+                      </div>
+                      <div class="form-group col-md-4">
+                        <label class="text-info">Termes*</label>
+                        <input 
+                            type="text" 
+                            class="form-control"
+                            name="termesGlossaire"
+                            [(ngModel)]="termesGlossaire"
+                            [disabled]="glossaireValides"
+                          />
+                      </div>
+                      <div class="form-group col-md-2 ml-2">
+                        <label class="text-info">&nbsp;</label>
+                        <button 
+                            type="button" 
+                            class="cnaps-btn-ajouter"
+                            (click)="ajouterTermeGlossaire()"
+                            [disabled]="glossaireValides"
+                        >    
+                          <i class="fa fa-plus-circle pr-1"></i>AJOUTER
+                        </button>
+                      </div>
+                    </div>
+                    <div class="form-row align-items-center flex-grow-1">
+                      <div class="col-md-9">
+                        <table class="table table-borderless border" style="font-size: 12px;">
+                          <thead>
+                            <tr>
+                              <th>Acronyme</th>
+                              <th>Termes</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody class="text-center">
+                            <tr *ngFor="let terme of glossaire">
+                              <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{terme.acronyme}}</td>
+                              <td class="text-left" style="font-size: 13px;">{{terme.termes}}</td>
+                              <td>
+                                <button 
+                                    type="button" 
+                                    class="btn-fa-close"
+                                    (click)="retirerTermeGlossaire(terme)"
+                                    aria-label="Retirer ce terme du glossaire"
+                                    ><i class="fa fa-times"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="glossaire.length===0">
+                              <td colspan="3" class="text-muted">Acun agent inserer</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-md-2 d-flex align-items-center">
+                        <button 
+                            type="button" 
+                            class="btn cnaps-btn-valider ml-3"
+                            (click)="validerGlossaires()"
+                            [disabled]="glossaireValides"
+                        >{{glossaireValides ? 'VALIDE':'VALIDER'}}</button>    
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE 3 :FLOWCHART  + DETAIL -->
+            <div *ngIf="pageActuelle === 3" class="etape">
+              <div class="row mb-3">
+                <!-- FLOWCHART -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>FLOWCHART</legend>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-6">
+                        <label class="text-info">Saisir le titre du document *</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="titreFlowchart"
+                          [(ngModel)]="titreFlowchart"
+                          [disabled]="flowchartsValides"
+                        />
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label class="text-info">Saisir les informations nécessaires</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="informationFlowchart"
+                          maxlength="200"
+                          [(ngModel)]="informationFlowchart"
+                          [disabled]="flowchartsValides"
+                        />
+                      </div>
+                    </div>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-9">
+                        <label class="text-info">Ajouter une pièce jointe correspondant au Titre *</label>
+                        <input
+                          #fichierFlowchartInput
+                          type="file"
+                          class="form-control"
+                          [disabled]="flowchartsValides"
+                          (change)="selectionnerFichierFlowchart($event)"
+                        />
+                      </div>
+                      <div class="form-group col-md-2 ml-3">
+                        <label class="text-info">&nbsp;</label>
+                        <button
+                          type="button"
+                          class="cnaps-btn-ajouter"
+                          (click)="ajouterFlowchart(fichierFlowchartInput)"
+                          [disabled]="flowchartsValides"
+                        >
+                          <i class="fa fa-plus-circle pr-1"></i>AJOUTER
+                        </button>
+                      </div>
+                    </div>
+                    <div class="form-row align-items-center flex-grow-1">
+                      <div class="col-md-9">
+                        <table class="table table-borderless border" style="font-size: 12px;">
+                          <thead>
+                            <tr>
+                              <th>Titre du flowchart</th>
+                              <th>Information</th>
+                              <th>Pièce jointe</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody class="text-center">
+                            <tr *ngFor="let flowchart of flowcharts">
+                              <td class="text-left" style="font-size: 13px;">{{ flowchart.titre }}</td>
+                              <td class="text-left" style="font-size: 13px;">{{ flowchart.information || '—' }}</td>
+                              <td class="text-left" style="font-size: 13px;">{{ flowchart.fichier.name }}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  class="btn-fa-close"
+                                  (click)="retirerFlowchart(flowchart.id)"
+                                  [disabled]="flowchartsValides"
+                                  aria-label="Retirer ce flowchart"
+                                >
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="flowcharts.length === 0">
+                              <td colspan="4" class="text-muted">Aucun flowchart ajouté</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-md-2 d-flex align-items-center">
+                        <button
+                          type="button"
+                          class="btn cnaps-btn-valider ml-4"
+                          (click)="validerFlowcharts()"
+                          [disabled]="flowchartsValides"
+                        >{{ flowchartsValides ? 'VALIDÉ' : 'VALIDER' }}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <!-- DETAILS ETAPES -->
+                <div class="col-12 col-xl-6 d-flex">
+                <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>DETAILS ETAPES DU FLOWCHART</legend>
+                    <div class="form-row align-items-center">
+                        <div class="form-group col-md-9">
+                            <label class="text-info">Sélectionner le flowchart</label>
+                            <select
+                              class="form-control"
+                              name="flowchartDetail"
+                              [(ngModel)]="flowchartDetailId"
+                              [disabled]="detailsFlowchartValides || flowcharts.length === 0"
+                            >
+                                <option [ngValue]="null">-- Sélectionner --</option>
+                                <option *ngFor="let flowchart of flowcharts" [ngValue]="flowchart.id">
+                                  {{ flowchart.information ? '  ' + flowchart.information : '' }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row align-items-center">
+                        <!-- Saisir les informations -->
+                        <div class="form-group col-md-5">
+                            <label class="text-info">Saisir les informations nécessaires*</label>
+                            <textarea
+                              class="form-control"
+                              name="informationsDetailFlowchart"
+                              [(ngModel)]="informationsDetailFlowchart"
+                              [disabled]="detailsFlowchartValides"
+                              style="min-height: 200px;"
+                              placeholder="Saisir le texte ou effectuer un 'Copier-coller'..."
+                            ></textarea>
+                        </div>
+                        <!-- Niveau de décalage -->
+                        <div class="form-group col-md-4">
+                            <label class="text-info">Niveau de décalage souhaité*</label>
+                            <div class="niveau-decalage">
+                                <div class="form-check" *ngFor="let niveau of niveauxDecalage">
+                                    <input
+                                      class="form-check-input"
+                                      type="radio"
+                                      name="niveauDecalage"
+                                      [id]="'niveau-' + niveau.valeur"
+                                      [value]="niveau.valeur"
+                                      [(ngModel)]="niveauDecalageDetail"
+                                      [disabled]="detailsFlowchartValides"
+                                    >
+                                    <label class="form-check-label" [for]="'niveau-' + niveau.valeur">
+                                      {{ niveau.libelle }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex justify-content-start ml-3">
+                            <button
+                              type="button"
+                              class="cnaps-btn-ajouter"
+                              (click)="ajouterDetailFlowchart()"
+                              [disabled]="detailsFlowchartValides || flowcharts.length === 0"
+                            >
+                            <i class="fa fa-plus-circle pr-1"></i>AJOUTER
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Boutons -->
+                    <div class="form-row align-items-center mt-2">
+                        <div class="col-md-9">
+                            <table class="table table-borderless border" style="font-size: 12px;">
+                                <thead>
+                                    <tr>
+                                        <th>Information du flowchart</th>
+                                        <th>Étapes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    <tr *ngFor="let flowchart of flowcharts">
+                                        <td class="text-left">{{ flowchart.information || 'Aucune information' }}</td>
+                                        <td>{{ detailsPourFlowchart(flowchart.id).length }}</td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn-fa-eye" title="Voir les détails du flowchart" (click)="ouvrirDetailFlowchart(flowchart)">
+                                                Voir détails
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="flowcharts.length === 0">
+                                      <td colspan="3" class="text-muted">Aucun flowchart ajouté</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                      <div class="col-md-2 d-flex align-items-center">
+                        <button
+                          type="button"
+                          class="btn cnaps-btn-valider ml-3"
+                          (click)="validerDetailsFlowchart()"
+                          [disabled]="detailsFlowchartValides"
+                        >{{ detailsFlowchartValides ? 'VALIDÉ' : 'VALIDER' }}</button>
+                      </div>
+                    </div>
+                </fieldset>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE 4 : REFERENCES + ANNEXES -->
+            <div *ngIf="pageActuelle === 4" class="etape">
+              <div class="row mb-3">
+                 <!-- REFERENCES LEGALES -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>REFERENCES LEGALES ET REGLEMENTAIRES</legend>
+                    <div class="form-row align-items-center">
+                      <div class="form-group col-md-8">
+                        <label class="text-info">Saisir les références</label>
+                        <textarea class="form-control"
+                                  name="referencesLegales"
+                                  [(ngModel)]="referencesLegales"
+                                  [disabled]="referencesValidees"
+                                  placeholder="Saisir les informations (Copier-coller si possible)..."
+                                  style="min-height: 300px;"></textarea>
+                      </div>
+                      <div class="col-md-4 d-flex align-items-center">
+                        <button type="button"
+                                class="btn cnaps-btn-valider ml-5"
+                                (click)="validerReferences()"
+                                [disabled]="referencesValidees">{{ referencesValidees ? 'VALIDÉ' : 'VALIDER' }}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+                <!-- ANNEXES -->
+                <div class="col-12 col-xl-6 d-flex">
+                  <fieldset class="w-100 d-flex flex-column">
+                    <legend><i class="fa pr-2"></i>ANNEXES</legend>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-4">
+                        <label class="text-info">Saisir le titre du document</label>
+                        <input type="text"
+                               class="form-control"
+                               name="titreAnnexe"
+                               [(ngModel)]="titreAnnexe"
+                               [disabled]="annexesValidees">
+                      </div>
+                      <div class="form-group col-md-5">
+                        <label class="text-info">Ajouter la pièce jointe correspondant à l'Annexe*</label>
+                        <input type="file"
+                               class="form-control"
+                               #fichierAnnexeInput
+                               [disabled]="annexesValidees"
+                               (change)="selectionnerFichierAnnexe($event)">
+                      </div>
+                      <div class="form-group col-md-2 ml-2">
+                        <label class="text-info">&nbsp;</label>
+                        <button type="button"
+                                class="cnaps-btn-ajouter"
+                                (click)="ajouterAnnexe(fichierAnnexeInput)"
+                                [disabled]="annexesValidees">
+                          <i class="fa fa-plus-circle pr-1"></i>AJOUTER
+                        </button>
+                      </div>
+                    </div>
+                    <div class="form-row align-items-center flex-grow-1">
+                      <div class="col-md-9">
+                        <table class="table table-borderless border" style="font-size: 12px;">
+                          <thead>
+                            <tr>
+                              <th>Titre du document</th>
+                              <th>Pièce jointe</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody class="text-center">
+                            <tr *ngFor="let annexe of annexes">
+                              <td class="text-left" style="font-size: 13px;">{{ annexe.titre }}</td>
+                              <td class="text-left" style="font-size: 13px;">{{ annexe.fichier.name }}</td>
+                              <td>
+                                <button type="button"
+                                        class="btn-fa-close"
+                                        (click)="retirerAnnexe(annexe.id)"
+                                        [disabled]="annexesValidees"
+                                        aria-label="Retirer cette annexe">
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="annexes.length === 0">
+                              <td colspan="3" class="text-muted">Aucune annexe ajoutée</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-md-2 d-flex align-items-center">
+                        <button type="button"
+                                class="btn cnaps-btn-valider ml-3"
+                                (click)="validerAnnexes()"
+                                [disabled]="annexesValidees">{{ annexesValidees ? 'VALIDÉ' : 'VALIDER' }}</button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOUTONS DE NAVIGATION -->
+            <div class="sop-navigation d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+              <button type="button"
+                      class="btn cnaps-btn-valider"
+                      [disabled]="pageActuelle === 1"
+                      (click)="precedent()">
+                <i class="fa fa-arrow-left pr-1"></i> PRECEDENT
+              </button>
+
+              <span class="text-muted" style="font-size: 0.85rem;">
+                Page <strong>{{ pageActuelle }}</strong> / {{ pages.length }}
+              </span>
+
+              <button type="button"
+                      class="btn cnaps-btn-valider"
+                      [disabled]="pageActuelle === pages.length"
+                      (click)="suivant()">
+                SUIVANT <i class="fa fa-arrow-right pl-1"></i>
+              </button>
+            </div>
+
+            <div *ngIf="pageActuelle === pages.length" class="sop-actions">
+              <button type="button" class="btn sop-btn-cancel" (click)="annulerCreation()">
+                <i class="fa fa-times pr-1"></i> ANNULER
+              </button>
+              <button type="button"
+                      class="btn sop-btn-create"
+                      (click)="ouvrirConfirmationCreation()"
+                      [disabled]="soumissionEnCours || soumissionTerminee">
+                <i class="fa fa-check pr-1"></i>
+                {{ soumissionEnCours ? 'ENREGISTREMENT...' : (soumissionTerminee ? 'SOP ENREGISTRÉ' : 'CREER LE SOP') }}
+              </button>
+            </div>
+
+          </fieldset>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="confirmationCreationOuverte"
+     class="confirmation-modal-backdrop"
+     (click)="annulerConfirmationCreation()">
+  <section class="confirmation-modal"
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="confirmation-sop-title"
+           (click)="$event.stopPropagation()">
+    <h2 id="confirmation-sop-title">Confirmer la création</h2>
+    <p>Voulez-vous confirmer la création de ce SOP&nbsp;?</p>
+    <div class="confirmation-modal-actions">
+      <button type="button"
+              class="btn confirmation-cancel"
+              (click)="annulerConfirmationCreation()">
+        Annuler
+      </button>
+      <button type="button"
+              class="btn confirmation-confirm"
+              (click)="confirmerCreation()">
+        Confirmer
+      </button>
+    </div>
+  </section>
+</div>
+
+<div *ngIf="soumissionEnCours"
+     class="sop-loading-backdrop"
+     role="status"
+     aria-live="polite"
+     aria-label="Création du SOP en cours">
+  <div class="sop-loading-card">
+    <i class="fa fa-hourglass-half sop-loading-icon" aria-hidden="true"></i>
+    <p>Création du SOP en cours...</p>
+    <span>Veuillez patienter.</span>
+  </div>
+</div>
+
+<div *ngIf="detailFlowchartOuvert && detailFlowchartSelectionne" 
+     class="detail-modal-backdrop" 
+     (click)="fermerDetailFlowchart()">
+  
+  <section class="modal-dialog modal-dialog-centered modal-dialog-scrollable detail-modal" 
+           role="dialog" 
+           aria-modal="true" 
+           aria-labelledby="detail-modal-title" 
+           (click)="$event.stopPropagation()">
+    
+    <div class="modal-content">
+      
+      <!-- HEADER -->
+      <div class="modal-header">
+        <h5 id="detail-modal-title" class="modal-title">
+          <i class="fa pr-2"></i>Détails du flowchart
+        </h5>
+        <button type="button" 
+                class="close" 
+                aria-label="Fermer" 
+                title="Fermer" 
+                (click)="fermerDetailFlowchart()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- BODY (scrollable) -->
+      <div class="modal-body">
+        <p class="detail-modal-label">Titre du flowchart</p>
+        <p><strong>{{ detailFlowchartSelectionne.titre }}</strong></p>
+
+        <p class="detail-modal-label">Information du flowchart</p>
+        <p>{{ detailFlowchartSelectionne.information || 'Aucune information' }}</p>
+
+        <p class="detail-modal-label">Étapes du flowchart</p>
+        <div class="detail-modal-steps">
+          <div *ngIf="detailFlowchartSelectionne.titre.trim()"
+               class="detail-step-item niveau-0">
+            <div class="detail-step-header">
+              <span class="detail-step-number">{{ numeroFlowchart(detailFlowchartSelectionne.id) }}</span>
+              <span class="detail-step-text">
+                <strong>{{ detailFlowchartSelectionne.titre }}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div *ngFor="let detail of detailsNumerotes(detailFlowchartSelectionne.id)"
+               class="detail-step-item"
+               [class.niveau-1]="detail.niveau === 1"
+               [class.niveau-2]="detail.niveau === 2"
+               [class.niveau-3]="detail.niveau === 3"
+               [class.niveau-4]="detail.niveau === 4"
+               [style.margin-left.rem]="detail.indentation">
+            <div class="detail-step-header">
+              <span class="detail-step-number">{{ detail.numero }}</span>
+              <span class="detail-step-text">{{ detail.informations }}</span>
+            </div>
+            <div *ngIf="!detailsFlowchartValides" class="detail-step-actions">
+              <button type="button"
+                      class="btn-fa-close"
+                      (click)="retirerDetailFlowchart(detail.id)"
+                      aria-label="Retirer cette étape">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="detailsPourFlowchart(detailFlowchartSelectionne.id).length === 0"
+               class="text-muted text-center">
+            Aucune étape ajoutée pour ce flowchart.
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button type="button" class="btn cnaps-btn-valider" (click)="fermerDetailFlowchart()">
+          FERMER
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

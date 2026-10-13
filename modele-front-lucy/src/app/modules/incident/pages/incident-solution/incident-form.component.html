@@ -1,0 +1,202 @@
+<div class="incident-form-container">
+  <h2><i class="now-ui-icons files_paper"></i> Nouvel Incident</h2>
+  <div class="header">
+    <h2><i class="now-ui-icons files_paper"></i> Détails de l'incident</h2>
+    <button class="btn btn-primary" (click)="goBack()">
+      <i class="now-ui-icons arrows-1_minimal-left"></i> Retour
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fa fa-spinner fa-spin"></i> Chargement en cours...
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+    <span *ngIf="!isLoading">Redirection en cours...</span>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="incident-details">
+    <div class="details-card">
+    <div class="section">
+      <h3><i class="now-ui-icons business_badge"></i> Informations générales</h3>
+      <div class="detail-row">
+        <span class="label">Référence :</span>
+        <span class="value">{{ incident.id }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="value badge" [ngClass]="getStatusClass(incident.statut?.libelle || 'Inconnu')">
+            {{ incident.statut?.libelle || 'Non spécifié' }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Date de création :</span>
+        <span class="value">{{ incident.dateCreation | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Date de constatation :</span>
+        <span class="value">{{ incident.dateConstatation | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3><i class="now-ui-icons users_single-02"></i> Demandeur</h3>
+      <div class="detail-row">
+        <span class="label">Nom :</span>
+        <span class="value">{{ incident.demandeur?.nom || 'Non spécifié' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Matricule :</span>
+        <span class="value">{{ incident.demandeur?.matricule || 'Non spécifié' }}</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3><i class="now-ui-icons ui-2_settings-90"></i> Classification</h3>
+      <div class="detail-row">
+        <span class="label">Catégorie :</span>
+        <span class="value">{{ incident.type?.categorie?.libelle || 'Non spécifié' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Type :</span>
+        <span class="value">{{ incident.type?.libelle || 'Non spécifié' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Origine :</span>
+        <span class="value">{{ incident.origineIncident?.libelle || 'Non spécifié' }}</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3><i class="now-ui-icons text_align-left"></i> Description</h3>
+      <div class="description-box">
+        {{ incident.description || 'Aucune description disponible' }}
+      </div>
+    </div>
+
+    <div class="actions" *ngIf="canEdit">
+      <button class="btn btn-warning" (click)="editIncident()">
+        <i class="now-ui-icons ui-2_settings-90"></i> Modifier
+      </button>
+      <button class="btn btn-danger" (click)="deleteIncident()">
+        <i class="now-ui-icons ui-1_simple-remove"></i> Supprimer
+      </button>
+    </div>
+  </div>
+  </div>
+  <form #incidentForm="ngForm" (ngSubmit)="onSubmit()">
+    <!-- Section Informations de base -->
+    
+    <div class="form-section">
+      <h3><i class="now-ui-icons ui-1_settings-gear-63"></i> Informations de base</h3>
+      <fieldset>
+      <legend id="legend">
+        <i class="fa fa-save pr-2"></i> Votre identité
+      </legend>
+      <div class="form-row">
+        <div class="form-group">
+          <label><i class="now-ui-icons users_single-02"></i> Matricule du résolvant</label>
+          <input class="form-control" type="text" name="matriculeConcerne">
+        </div>
+        <div class="form-group">
+          <label><i class="now-ui-icons users_single-02"></i> Nom</label>
+          <input class="form-control" type="text" name="nomConcerne">
+        </div>
+        <div class="form-group">
+          <label><i class="now-ui-icons users_single-02"></i> Prenom</label>
+          <input class="form-control" type="text" name="prenomConcerne">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="now-ui-icons files_paper"></i> Description du solution</label>
+        <textarea class="form-control" [(ngModel)]="incident.description" name="description" 
+                  rows="4" maxlength="2000" required></textarea>
+      </div>
+      </fieldset>
+    </div>
+
+    <!-- Section Impact -->
+    <div class="form-section">
+      <h3><i class="now-ui-icons business_chart-bar-32"></i> Impact</h3>
+      <fieldset>
+        <legend id="legend">
+            <i class="fa fa-save pr-2"></i> Impact de l'incident
+        </legend>
+        
+        <div class="form-row">
+            <div class="form-group">
+            <label><i class="now-ui-icons design-2_ruler-pencil"></i> Cause</label>
+            <input type="text" class="form-control" [(ngModel)]="incident.cause" name="cause" maxlength="255">
+            </div>
+
+            <div class="form-group">
+            <label><i class="now-ui-icons tech_laptop"></i> Actif Impacté</label>
+            <input type="text" class="form-control" [(ngModel)]="incident.actifImpact" name="actifImpact" maxlength="255">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+            <label><i class="now-ui-icons ui-1_alert"></i> Niveau d'Impact</label>
+            <select class="form-control" [(ngModel)]="incident.niveauImpact" name="niveauImpact">
+                <option *ngFor="let impact of niveauxImpact" [ngValue]="impact">
+                {{impact.niveau}}
+                </option>
+            </select>
+            </div>
+
+            <div class="form-group">
+            <label><i class="now-ui-icons ui-2_settings-90"></i> Plan d'Action</label>
+            <select class="form-control" [(ngModel)]="incident.planAction" name="planAction">
+                <option *ngFor="let plan of plansAction" [ngValue]="plan">
+                {{plan.libelle}}
+                </option>
+            </select>
+            </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Section Pièces Jointes -->
+    <div class="form-section">
+    <h3><i class="now-ui-icons files_box"></i> Pièces Jointes</h3>
+    <fieldset>
+        <legend id="legend">
+            <i class="fa fa-save pr-2"></i>rapport complet du plan d'action
+        </legend>
+        <div class="form-group">
+            <label><i class="now-ui-icons arrows-1_cloud-upload-94"></i> Fichiers</label>
+            <input type="file" class="form-control" 
+                (change)="onFileChange($event)" 
+                multiple
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            
+            <!-- Zone d'affichage des fichiers -->
+            <div class="file-preview-container" *ngIf="uploadedFiles.length > 0">
+            <div class="file-preview" *ngFor="let file of uploadedFiles; let i = index">
+                <div class="file-info">
+                <i class="now-ui-icons files_single-copy-04"></i>
+                <span class="file-name">{{ file.name }}</span>
+                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                </div>
+                <button class="btn-icon danger" (click)="removeFile(i)">
+                <i class="now-ui-icons ui-1_simple-remove"></i>
+                </button>
+            </div>
+            </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Boutons de soumission -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        <i class="now-ui-icons ui-1_simple-remove"></i> Annuler
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="!incidentForm.valid">
+        <i class="now-ui-icons ui-1_check"></i> Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
