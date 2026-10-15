@@ -49,7 +49,6 @@ legend {
   outline: none;
   transition: color 0.15s ease, transform 0.15s ease;
 }
-
 .cnaps-btn-valider {
   background-color: #030a16;
   color: #fff;
@@ -203,9 +202,6 @@ textarea.form-control {
 }
 
 .niveau-decalage .form-check-input {
-  position: static;
-  opacity: 1;
-  appearance: auto;
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
@@ -273,115 +269,100 @@ textarea.form-control {
   background-color: #5b3ec8;
 }
 
-.confirmation-modal-backdrop,
+/* ============================================================
+   LOADER SOP — PAGE ASSOMBRIE + HORLOGE BLANCHE
+   ============================================================ */
 .sop-loading-backdrop {
   position: fixed;
   inset: 0;
+  z-index: 1070;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.5);
-}
-
-.confirmation-modal-backdrop {
-  z-index: 1060;
-}
-
-.confirmation-modal {
-  width: 100%;
-  max-width: 420px;
-  padding: 1.75rem;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
-  text-align: center;
-}
-
-.confirmation-modal-icon {
-  margin-bottom: 0.75rem;
-  color: #5b3ec8;
-  font-size: 2rem;
-}
-
-.confirmation-modal h2 {
-  margin-bottom: 0.5rem;
-  color: #212529;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.confirmation-modal p {
-  margin-bottom: 1.25rem;
-  color: #6c757d;
-}
-
-.confirmation-modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.confirmation-modal-actions .btn {
-  min-width: 110px;
-  color: #fff;
-  font-weight: 600;
-}
-
-.confirmation-cancel {
-  background: #dc3545;
-}
-
-.confirmation-confirm {
-  background: #198754;
-}
-
-.confirmation-modal-actions .btn:hover {
-  color: #fff;
-  filter: brightness(0.93);
-}
-
-.sop-loading-backdrop {
-  z-index: 1070;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(2px);
 }
 
 .sop-loading-card {
   width: 100%;
   max-width: 300px;
-  padding: 1.75rem;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  padding: 1rem;
   text-align: center;
-}
-
-.sop-loading-icon {
-  display: inline-block;
-  margin-bottom: 0.75rem;
-  color: #5b3ec8;
-  font-size: 2.5rem;
-  animation: sop-hourglass-turn 1.4s ease-in-out infinite;
 }
 
 .sop-loading-card p {
   margin-bottom: 0.25rem;
-  color: #212529;
+  color: #fff;
   font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .sop-loading-card span {
-  color: #6c757d;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 0.85rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
-@keyframes sop-hourglass-turn {
-  0%, 35% { transform: rotate(0deg); }
-  65%, 100% { transform: rotate(180deg); }
+/* Horloge animée - blanche, sans fond, épaisse */
+.sop-clock {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.sop-clock-hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: 50% 100%;
+  background: #fff;
+  border-radius: 3px;
+}
+
+.hour-hand {
+  width: 5px;
+  height: 15px;
+  margin-left: -2.5px;
+  animation: sop-clock-hour 8s linear infinite;
+}
+
+.minute-hand {
+  width: 4px;
+  height: 22px;
+  margin-left: -2px;
+  animation: sop-clock-minute 2s linear infinite;
+}
+
+.sop-clock-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+@keyframes sop-clock-minute {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes sop-clock-hour {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* ============================================================
-  MODAL : DÉTAILS DU FLOWCHART (Bootstrap 4)
-  ============================================================ */
+   MODAL : DÉTAILS DU FLOWCHART (Bootstrap 4)
+   ============================================================ */
 .detail-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -463,18 +444,12 @@ textarea.form-control {
 /* ============================================================
    CONTENU DU MODAL
    ============================================================ */
-
-
 .detail-modal .detail-modal-label {
   margin-bottom: 0.25rem;
   color: #5b3ec8;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-}
-
-.detail-modal-text {
-  white-space: pre-wrap;
 }
 
 /* Étapes hiérarchiques */
@@ -494,11 +469,6 @@ textarea.form-control {
   transition: background 0.2s, border-color 0.2s;
 }
 
-.detail-step-item.niveau-1 {
-  padding-left: 0.75rem;
-  margin-left: 0;
-}
-
 .detail-step-item.niveau-2 {
   padding-left: 1.5rem;
   margin-left: 1rem;
@@ -515,6 +485,12 @@ textarea.form-control {
   padding-left: 3rem;
   margin-left: 3rem;
   font-size: 0.85rem;
+}
+
+.detail-step-item.niveau-5 {
+  padding-left: 3.75rem;
+  margin-left: 4rem;
+  font-size: 0.8rem;
 }
 
 .detail-step-header {

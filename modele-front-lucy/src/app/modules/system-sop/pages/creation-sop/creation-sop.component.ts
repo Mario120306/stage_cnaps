@@ -32,7 +32,6 @@ export class CreationSopComponent implements OnInit {
     numeroVersion: number | null = 1;
     soumissionEnCours = false;
     soumissionTerminee = false;
-    confirmationCreationOuverte = false;
     rechercheEmail = "";
     rechercheEquipe="";
     acronymeClossaire="";
@@ -251,13 +250,14 @@ export class CreationSopComponent implements OnInit {
             'image/gif',
             'image/webp',
             'image/svg+xml',
-            'image/bmp'
+            'image/bmp',
+            'application/pdf'
         ];
         const tailleMax = 5 * 1024 * 1024; // 5 Mo
 
         if (!typesAcceptes.includes(fichier.type)) {
             this.toastr.warning(
-                `Le fichier "${fichier.name}" n'est pas une image valide (formats acceptés : PNG, JPG, GIF, WEBP, SVG, BMP).`,
+                `Le fichier "${fichier.name}" n'est pas une image valide (formats acceptés : PNG, JPG, GIF, WEBP, SVG, BMP,PDF).`,
                 'Fichier invalide'
             );
             return false;
@@ -297,9 +297,9 @@ export class CreationSopComponent implements OnInit {
         }
 
         const titre = this.titreFlowchart.trim();
-        if (!this.fichierFlowchart) {
+        if (!this.fichierFlowchart || !this.informationFlowchart) {
             this.toastr.warning(
-                "Saisissez le titre et choisissez une pièce jointe.",
+                "Saisissez l'information et choisissez une pièce jointe.",
                 "Information manquante"
             );
             return;
@@ -565,27 +565,6 @@ export class CreationSopComponent implements OnInit {
         this.pageActuelle = 1;
     }
 
-    ouvrirConfirmationCreation(): void {
-        if (!this.soumissionEnCours && !this.soumissionTerminee) {
-            this.confirmationCreationOuverte = true;
-        }
-    }
-
-    annulerConfirmationCreation(): void {
-        if (!this.soumissionEnCours) {
-            this.confirmationCreationOuverte = false;
-        }
-    }
-
-    async confirmerCreation(): Promise<void> {
-        if (!this.confirmationCreationOuverte || this.soumissionEnCours) {
-            return;
-        }
-
-        this.confirmationCreationOuverte = false;
-        await this.creerSop();
-    }
-
     async creerSop(): Promise<void> {
         if (this.soumissionEnCours || this.soumissionTerminee) {
             return;
@@ -614,12 +593,12 @@ export class CreationSopComponent implements OnInit {
         }
 
         // Matricule : celui de l'utilisateur connecté (token)
-        const matricule = this.accountService.getMatricule();
+        /*const matricule = this.accountService.getMatricule();
         if (typeof matricule !== "string" || !matricule.trim()) {
             this.toastr.error("Impossible d'identifier l'utilisateur connecté.", "Création du SOP");
             return;
-        }
-
+        }*/
+        const matricule="000001";
         this.soumissionEnCours = true;
         try {
             const piecesJointes: SopPieceJointeCreation[] = await Promise.all<SopPieceJointeCreation>([
@@ -649,6 +628,7 @@ export class CreationSopComponent implements OnInit {
                     matricule: agent.matricule,
                     email: agent.mail,
                     ordre: index + 1
+                    
                 })),
                 destinataires: this.destinataires.map(({ agent, action }, index) => ({
                     matricule: agent.matricule,
@@ -660,7 +640,7 @@ export class CreationSopComponent implements OnInit {
                 equipeProjet: this.equipeProjet.map((agent, index) => ({
                     matricule: agent.matricule,
                     nom: `${agent.nom} ${agent.prenoms}`.trim(),
-                    fonction: agent.libelleFontion || agent.codeFonction || "",
+                    fonction: agent.libelleFonction || "",
                     telephone: agent.telGsm || "",
                     email: agent.mail || "",
                     ordre: index + 1
@@ -739,35 +719,60 @@ export class CreationSopComponent implements OnInit {
         return this.detailsFlowchart.filter(detail => detail.flowchartId === flowchartId);
     }
 
-    // Rang du flowchart dans la liste (1 pour le premier, 2 pour le deuxième, ...)
+    // Chaque titre ouvre une nouvelle séquence de premier niveau.
     numeroFlowchart(flowchartId: number): number {
-        return this.flowcharts.findIndex(flowchart => flowchart.id === flowchartId) + 1;
+        const index = this.flowcharts.findIndex(flowchart => flowchart.id === flowchartId);
+        if (index < 0) {
+            return 0;
+        }
+
+        return this.flowcharts
+            .slice(0, index + 1)
+            .filter(flowchart => flowchart.titre.trim())
+            .length;
     }
 
     detailsNumerotes(flowchartId: number): DetailFlowchartAffiche[] {
-        const compteurs = [0, 0, 0, 0, 0];
-        const rang = this.numeroFlowchart(flowchartId);
-        const titrePresent = Boolean(
-            this.flowcharts.find(flowchart => flowchart.id === flowchartId)?.titre.trim()
-        );
+        const indexFlowchart = this.flowcharts.findIndex(flowchart => flowchart.id === flowchartId);
+        if (indexFlowchart < 0) {
+            return [];
+        }
 
-        return this.detailsPourFlowchart(flowchartId).map(detail => {
-            const niveau = detail.niveau;
-            const profondeur = niveau - 1;
-            for (let index = profondeur + 1; index < compteurs.length; index++) {
-                compteurs[index] = 0;
+        let numeroTitre = 0;
+        const compteurs = [0, 0, 0, 0];
+        const numerosParDetail = new Map<number, string>();
+
+        this.flowcharts.slice(0, indexFlowchart + 1).forEach(flowchart => {
+            if (flowchart.titre.trim()) {
+                numeroTitre++;
+                compteurs.fill(0);
+            } else if (numeroTitre === 0) {
+                numeroTitre = 1;
             }
-            compteurs[profondeur]++;
 
-            return {
-                ...detail,
-                numero: [
-                    ...(titrePresent ? [rang] : []),
-                    ...compteurs.slice(0, profondeur + 1)
-                ].join("."),
-                indentation: Math.max(0, niveau - (titrePresent ? 0 : 1))
-            };
+            this.detailsPourFlowchart(flowchart.id).forEach(detail => {
+                const profondeur = detail.niveau - 1;
+                for (let index = 0; index < profondeur; index++) {
+                    if (compteurs[index] === 0) {
+                        compteurs[index] = 1;
+                    }
+                }
+                compteurs[profondeur]++;
+                for (let index = profondeur + 1; index < compteurs.length; index++) {
+                    compteurs[index] = 0;
+                }
+
+                numerosParDetail.set(
+                    detail.id,
+                    [numeroTitre, ...compteurs.slice(0, profondeur + 1)].join(".")
+                );
+            });
         });
+
+        return this.detailsPourFlowchart(flowchartId).map(detail => ({
+            ...detail,
+            numero: numerosParDetail.get(detail.id) || ""
+        }));
     }
 
     fermerDetailFlowchart(): void {
@@ -779,8 +784,6 @@ export class CreationSopComponent implements OnInit {
         if (event.key === 'Escape') {
             if (this.detailFlowchartOuvert) {
                 this.fermerDetailFlowchart();
-            } else if (this.confirmationCreationOuverte && !this.soumissionEnCours) {
-                this.annulerConfirmationCreation();
             }
         }
     }

@@ -120,9 +120,9 @@
                                 </tbody>
                             </table>
                             <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                                <button type="button" class="btn btn-sm pagination-action" [class.pagination-action-disabled]="page===0" (click)="prev()" [disabled]="page===0">
+                                <button type="button" class="btn cnaps-btn-valider" [class.pagination-action-disabled]="page===0" (click)="prev()" [disabled]="page===0">
                                     <i class="fa fa-arrow-left" style="margin-right: 8px;"></i>
-                                    <span>Précédent</span>
+                                    <span>PRECEDENT</span>
                                 </button>
                                 <nav aria-label="¨Pagination SOP">
                                     <ul class="pagination pagination-sm mb-0">
@@ -133,8 +133,8 @@
                                         </li>
                                     </ul>
                                 </nav>
-                                <button type="button" class="btn btn-sm pagination-action" [class.pagination-action-disabled]="page+1>=totalPages" (click)="next()" [disabled]="page+1>=totalPages">
-                                    <span style="margin-right: 8px;">Suivant</span>
+                                <button type="button" class="btn cnaps-btn-valider" [class.pagination-action-disabled]="page+1>=totalPages" (click)="next()" [disabled]="page+1>=totalPages">
+                                    <span style="margin-right: 8px;">SUIVANT</span>
                                     <i class="fa fa-arrow-right"></i>
                                 </button>
                             </div>

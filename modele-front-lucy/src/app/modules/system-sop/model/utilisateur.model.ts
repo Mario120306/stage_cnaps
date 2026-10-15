@@ -12,7 +12,7 @@ export class Utilisateur extends Mere{
     public libelleDirection:string;
     public libelleService:string;
     public codeFonction:string;
-    public libelleFontion:string;
+    public libelleFonction:string;
     public mail: string;
     public telGsm:string;
 
@@ -27,7 +27,7 @@ export class Utilisateur extends Mere{
         libelleDirection:string,
         libelleService:string,
         codeFonction:string,
-        libelleFontion:string,
+        libelleFonction:string,
         mail: string,
         telGsm:string,
     ){
@@ -42,7 +42,7 @@ export class Utilisateur extends Mere{
         this.libelleDirection=libelleDirection;
         this.libelleService=libelleService;
         this.codeFonction=codeFonction;
-        this.libelleFontion=libelleFontion;
+        this.libelleFonction=libelleFonction;
         this.mail=mail;
         this.telGsm=telGsm;
     }

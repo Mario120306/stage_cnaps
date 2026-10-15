@@ -36,6 +36,10 @@ public class ExportRepository {
         String sql = "UPDATE SOP_EXPORT SET id_sop=?,id_version=?,libelle_export=?,nb_pages=?,date_export=?,nom_fichier_pdf=?,genere_par=? WHERE id_export=?";
         return jdbc.update(sql, e.getIdSop(), e.getIdVersion(), e.getLibelleExport(), e.getNbPages(), e.getDateExport(), e.getNomFichierPdf(), e.getGenerePar(), e.getIdExport());
     }
+    public Optional<Export> findLatestBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY date_export DESC", MAPPER, idSop).stream().findFirst();
+    }
+
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_EXPORT WHERE id_export=?", id);
     }

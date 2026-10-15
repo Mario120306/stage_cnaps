@@ -2,21 +2,28 @@ package com.example.sys_sop.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ContentDisposition;
 import org.springframework.web.bind.annotation.*;
 import com.example.sys_sop.dto.ExportDto;
 import com.example.sys_sop.modele.Export;
+import com.example.sys_sop.modele.PieceJointe;
 import com.example.sys_sop.service.ExportService;
+import com.example.sys_sop.service.PieceJointeService;
 
 @RestController
 @RequestMapping("/api/exports")
 public class ExportController {
 
     private final ExportService service;
+    private final PieceJointeService pieceJointeService;
 
-    public ExportController(ExportService service) { 
+    public ExportController(ExportService service, PieceJointeService pieceJointeService) { 
         this.service = service; 
+        this.pieceJointeService = pieceJointeService;
     }
     @GetMapping 
     public List<ExportDto> getAll() { 
@@ -45,6 +52,28 @@ public class ExportController {
         return service.deleteById(id) ? ResponseEntity
                     .noContent().build() : ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/last/{idSop}/download")
+    public ResponseEntity<byte[]> downloadLastExportPdf(@PathVariable String idSop) {
+        // Find latest export for given SOP
+        Export latest = service.findLatestBySop(idSop);
+        if (latest == null || latest.getNomFichierPdf() == null || latest.getNomFichierPdf().trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun export PDF enregistré pour ce SOP");
+        }
+        // Find piece jointe that contains the PDF bytes
+        PieceJointe pj = pieceJointeService.findBySopAndNomFichier(idSop, latest.getNomFichierPdf());
+        if (pj == null || pj.getContenu() == null) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Contenu PDF introuvable pour le fichier : " + latest.getNomFichierPdf());
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.attachment().filename(latest.getNomFichierPdf()).build());
+        headers.setContentLength(pj.getContenu().length);
+
+        return new ResponseEntity<>(pj.getContenu(), headers, HttpStatus.OK);
+    }
+
     private Export toEntity(ExportDto d) { 
         return new Export(d.getIdExport(), d.getIdSop(), d.getIdVersion(), 
                         d.getLibelleExport(), d.getNbPages(), d.getDateExport(), d.getNomFichierPdf(), d.getGenerePar()); 

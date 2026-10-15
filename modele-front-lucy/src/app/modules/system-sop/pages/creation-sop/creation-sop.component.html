@@ -27,7 +27,7 @@
                   <fieldset class="w-100 d-flex flex-column">
                     <legend><i class="fa pr-2"></i>ENTETE</legend>
                     <div class="form-row align-items-end">
-                      <div class="form-group col-md-3">
+                      <div class="form-group col-md-4">
                         <label class="text-info">Titre du document*</label>
                         <input
                           type="text"
@@ -38,7 +38,7 @@
                           [readonly]="enteteValidee"
                         />
                       </div>
-                      <div class="form-group col-md-2">
+                      <div class="form-group col-md-4">
                         <label class="text-info">Numéro de version*</label>
                         <input
                           type="number"
@@ -49,7 +49,7 @@
                           [readonly]="enteteValidee"
                         />
                       </div>
-                      <div class="form-group col-md-3">
+                      <div class="form-group col-md-4">
                         <label class="text-info">Service*</label>
                         <select
                           class="form-control"
@@ -63,7 +63,9 @@
                           </option>
                         </select>
                       </div>
-                      <div class="form-group col-md-4">
+                    </div>
+                    <div class="form-row align-items-end">
+                      <div class="form-group col-md-8">
                         <label class="text-info">Choisir email des agents à afficher</label>
                         <div class="agent-autocomplete">
                           <input
@@ -655,7 +657,7 @@
                         </table>
                       </div>
                       <div class="col-md-2 d-flex align-items-center">
-                        <button type="button"
+                         <button type="button"
                                 class="btn cnaps-btn-valider ml-3"
                                 (click)="validerAnnexes()"
                                 [disabled]="annexesValidees">{{ annexesValidees ? 'VALIDÉ' : 'VALIDER' }}</button>
@@ -693,7 +695,7 @@
               </button>
               <button type="button"
                       class="btn sop-btn-create"
-                      (click)="ouvrirConfirmationCreation()"
+                      (click)="creerSop()"
                       [disabled]="soumissionEnCours || soumissionTerminee">
                 <i class="fa fa-check pr-1"></i>
                 {{ soumissionEnCours ? 'ENREGISTREMENT...' : (soumissionTerminee ? 'SOP ENREGISTRÉ' : 'CREER LE SOP') }}
@@ -707,38 +709,20 @@
   </div>
 </div>
 
-<div *ngIf="confirmationCreationOuverte"
-     class="confirmation-modal-backdrop"
-     (click)="annulerConfirmationCreation()">
-  <section class="confirmation-modal"
-           role="dialog"
-           aria-modal="true"
-           aria-labelledby="confirmation-sop-title"
-           (click)="$event.stopPropagation()">
-    <h2 id="confirmation-sop-title">Confirmer la création</h2>
-    <p>Voulez-vous confirmer la création de ce SOP&nbsp;?</p>
-    <div class="confirmation-modal-actions">
-      <button type="button"
-              class="btn confirmation-cancel"
-              (click)="annulerConfirmationCreation()">
-        Annuler
-      </button>
-      <button type="button"
-              class="btn confirmation-confirm"
-              (click)="confirmerCreation()">
-        Confirmer
-      </button>
-    </div>
-  </section>
-</div>
-
 <div *ngIf="soumissionEnCours"
      class="sop-loading-backdrop"
      role="status"
      aria-live="polite"
      aria-label="Création du SOP en cours">
   <div class="sop-loading-card">
-    <i class="fa fa-hourglass-half sop-loading-icon" aria-hidden="true"></i>
+
+    <!-- Horloge animée (blanche, sans fond) -->
+    <div class="sop-clock" aria-hidden="true">
+      <span class="sop-clock-hand hour-hand"></span>
+      <span class="sop-clock-hand minute-hand"></span>
+      <span class="sop-clock-center"></span>
+    </div>
+
     <p>Création du SOP en cours...</p>
     <span>Veuillez patienter.</span>
   </div>
@@ -772,11 +756,14 @@
 
       <!-- BODY (scrollable) -->
       <div class="modal-body">
-        <p class="detail-modal-label">Titre du flowchart</p>
-        <p><strong>{{ detailFlowchartSelectionne.titre }}</strong></p>
-
-        <p class="detail-modal-label">Information du flowchart</p>
-        <p>{{ detailFlowchartSelectionne.information || 'Aucune information' }}</p>
+        <ng-container *ngIf="detailFlowchartSelectionne.titre.trim()">
+          <p class="detail-modal-label">Titre du flowchart</p>
+          <p><strong>{{ detailFlowchartSelectionne.titre }}</strong></p>
+        </ng-container>
+        <ng-container *ngIf="detailFlowchartSelectionne.information.trim()">
+          <p class="detail-modal-label">Information du flowchart</p>
+          <p>{{ detailFlowchartSelectionne.information }}</p>
+        </ng-container>
 
         <p class="detail-modal-label">Étapes du flowchart</p>
         <div class="detail-modal-steps">
@@ -792,11 +779,10 @@
 
           <div *ngFor="let detail of detailsNumerotes(detailFlowchartSelectionne.id)"
                class="detail-step-item"
-               [class.niveau-1]="detail.niveau === 1"
-               [class.niveau-2]="detail.niveau === 2"
-               [class.niveau-3]="detail.niveau === 3"
-               [class.niveau-4]="detail.niveau === 4"
-               [style.margin-left.rem]="detail.indentation">
+               [class.niveau-2]="detail.niveau === 1"
+               [class.niveau-3]="detail.niveau === 2"
+               [class.niveau-4]="detail.niveau === 3"
+               [class.niveau-5]="detail.niveau === 4">
             <div class="detail-step-header">
               <span class="detail-step-number">{{ detail.numero }}</span>
               <span class="detail-step-text">{{ detail.informations }}</span>

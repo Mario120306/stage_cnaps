@@ -30,4 +30,10 @@ public class ExportService {
     public boolean deleteById(String id) { 
         return repository.deleteById(id) > 0; 
     }
+
+    public Export findLatestBySop(String idSop) {
+        return repository.findLatestBySop(idSop)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Export introuvable pour SOP : " + idSop));
+    }
 }

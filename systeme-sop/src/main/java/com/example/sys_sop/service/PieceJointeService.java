@@ -30,4 +30,9 @@ public class PieceJointeService {
     public boolean deleteById(String id) { 
         return repository.deleteById(id) > 0; 
     }
+
+    public PieceJointe findBySopAndNomFichier(String idSop, String nomFichier) {
+        return repository.findBySopAndNomFichier(idSop, nomFichier)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pièce jointe introuvable pour SOP/fichier : " + idSop + " / " + nomFichier));
+    }
 }

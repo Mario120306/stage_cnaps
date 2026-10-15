@@ -14,5 +14,4 @@ export class DetailFlowchart {
 
 export interface DetailFlowchartAffiche extends DetailFlowchart {
     numero: string;
-    indentation: number;
 }

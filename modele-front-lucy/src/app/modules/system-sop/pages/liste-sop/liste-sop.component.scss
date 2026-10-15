@@ -1,4 +1,6 @@
-/* Bordures horizontales uniquement */
+/* ============================================================
+   TABLEAUX — bordures horizontales uniquement
+   ============================================================ */
 .table th,
 .table td {
     border-bottom: 1px solid #dee2e6;
@@ -6,30 +8,30 @@
     border-left: none;
     border-right: none;
 }
-.table th{
+
+.table th {
     background-color: #103373;
     color: #e9effc;
-    font-size:12px;
-    font-weight:600;
-}
-.table td{
-    font-size: 14px;
-}
-legend{
     font-size: 12px;
     font-weight: 600;
 }
-.pagination-action {
-    color: #fff;
-    background-color: #030a16;
-    border: 1px solid #030a16;
+
+.table td {
+    font-size: 14px;
 }
 
-.pagination-action:hover:not(:disabled) {
-    color: #fff;
-    background-color: #030a16;
-    border-color: #030a16;
+/* ============================================================
+   LEGEND
+   ============================================================ */
+legend {
+    font-size: 12px;
+    font-weight: 600;
 }
+
+/* ============================================================
+   PAGINATION — boutons précédent / suivant
+   ============================================================ */
+
 
 .pagination-action:disabled,
 .pagination-action-disabled {
@@ -40,8 +42,19 @@ legend{
     opacity: 1;
 }
 
+.cnaps-btn-valider {
+  background-color: #030a16;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.3px;
+  padding: 10px 26px;
+  border-radius: 5px;
+  border: none;
+}
+/* ============================================================
+   PAGINATION — numéros de page
+   ============================================================ */
 .pagination .page-link {
     cursor: pointer;
 }
-
-/* Bordure extérieure du tableau */

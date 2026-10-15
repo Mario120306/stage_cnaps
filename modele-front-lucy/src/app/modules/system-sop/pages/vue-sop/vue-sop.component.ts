@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ToastrService } from "ngx-toastr";
+import { environment } from 'src/environments/environment';
 
 interface FlowchartStep {
     titre: string;
@@ -85,7 +86,40 @@ export class VueSopComponent implements OnInit{
         }
     }
 
-    telechargerPdf(): void {
-        window.print();
+    async telechargerPdf(): Promise<void> {
+        if (!this.idSop) {
+            this.toastr.error('Aucun SOP sélectionné pour le téléchargement.', 'Téléchargement PDF');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${environment.apiUrl}/exports/last/${this.idSop}/download`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/pdf'
+                }
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || 'Aucun PDF exporté pour ce SOP.');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const fileName = `SOP_${this.idSop}.pdf`;
+
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            this.toastr.success('Téléchargement du PDF terminé.', 'PDF');
+        } catch (error: any) {
+            console.error('Erreur téléchargement PDF', error);
+            this.toastr.error(error?.message || 'Le PDF n’a pas pu être téléchargé.', 'Téléchargement PDF');
+        }
     }
 }    

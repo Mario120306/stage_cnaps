@@ -64,6 +64,10 @@ public class PieceJointeRepository {
             ps.setString(9, e.getIdPieceJointe());
         });
     }
+    public Optional<PieceJointe> findBySopAndNomFichier(String idSop, String nomFichier) {
+        return jdbc.query(SELECT + "WHERE id_sop=? AND nom_fichier=? ORDER BY date_insert DESC", MAPPER, idSop, nomFichier).stream().findFirst();
+    }
+
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_PIECE_JOINTE WHERE id_piece_jointe=?", id); 
     }
