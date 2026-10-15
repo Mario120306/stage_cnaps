@@ -32,12 +32,22 @@ public class ExportRepository {
         String sql = "INSERT INTO SOP_EXPORT (id_export,id_sop,id_version,libelle_export,nb_pages,date_export,nom_fichier_pdf,genere_par) VALUES (?,?,?,COALESCE(?,'Draft version'),?,COALESCE(?,SYSDATE),?,?)";
         return jdbc.update(sql, e.getIdExport(), e.getIdSop(), e.getIdVersion(), e.getLibelleExport(), e.getNbPages(), e.getDateExport(), e.getNomFichierPdf(), e.getGenerePar());
     }
+    public int create(Export e, byte[] contenuPdf) {
+        String sql = "INSERT INTO SOP_EXPORT (id_export,id_sop,id_version,libelle_export,nb_pages,date_export,nom_fichier_pdf,genere_par,contenu_pdf) "
+                + "VALUES (?,?,?,COALESCE(?,'Draft version'),?,COALESCE(CAST(? AS DATE),SYSDATE),?,?,?)";
+        return jdbc.update(sql, e.getIdExport(), e.getIdSop(), e.getIdVersion(), e.getLibelleExport(),
+                e.getNbPages(), e.getDateExport(), e.getNomFichierPdf(), e.getGenerePar(), contenuPdf);
+    }
     public int update(Export e) {
         String sql = "UPDATE SOP_EXPORT SET id_sop=?,id_version=?,libelle_export=?,nb_pages=?,date_export=?,nom_fichier_pdf=?,genere_par=? WHERE id_export=?";
         return jdbc.update(sql, e.getIdSop(), e.getIdVersion(), e.getLibelleExport(), e.getNbPages(), e.getDateExport(), e.getNomFichierPdf(), e.getGenerePar(), e.getIdExport());
     }
     public Optional<Export> findLatestBySop(String idSop) {
         return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY date_export DESC", MAPPER, idSop).stream().findFirst();
+    }
+    public Optional<byte[]> findPdfById(String idExport) {
+        return jdbc.query("SELECT contenu_pdf FROM SOP_EXPORT WHERE id_export=?",
+                (rs, n) -> rs.getBytes("CONTENU_PDF"), idExport).stream().findFirst();
     }
 
     public int deleteById(String id) { 
