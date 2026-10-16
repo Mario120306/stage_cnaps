@@ -181,7 +181,7 @@ public class SopService {
         }
 
         byte[] pdf = pdfExportService.generate(sop);
-        String nomFichierPdf = numeroSop + sop.getTitre() + "CNaPS" + "_v" + sop.getVersionCourante() + ".pdf";
+        String nomFichierPdf = numeroSop +"_"+ sop.getTitre()+"_"+ "CNaPS" + "_v" + sop.getVersionCourante() + ".pdf";
         exportRepository.create(new Export(newId(), numeroSop, idVersion, "Draft version", 1, null,
                 nomFichierPdf, request.getAuteurMatricule()), pdf);
 
