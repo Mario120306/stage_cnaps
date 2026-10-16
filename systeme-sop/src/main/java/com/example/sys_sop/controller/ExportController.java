@@ -61,6 +61,7 @@ public class ExportController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition.attachment().filename(latest.getNomFichierPdf()).build());
+        headers.set("X-Pdf-Filename", latest.getNomFichierPdf());
         headers.setContentLength(pdf.length);
 
         return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
