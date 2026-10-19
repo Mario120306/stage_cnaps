@@ -36,4 +36,11 @@ public class ExportService {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Export introuvable pour SOP : " + idSop));
     }
+
+    public byte[] findPdf(String idExport) {
+        return repository.findPdfById(idExport)
+                .filter(pdf -> pdf.length > 0)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Contenu PDF introuvable pour l'export : " + idExport));
+    }
 }

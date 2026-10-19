@@ -108,10 +108,19 @@ export class VueSopComponent implements OnInit{
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            const fileName = `SOP_${this.idSop}.pdf`;
+            const backendFileName = response.headers.get('X-Pdf-Filename');
+            const disposition = response.headers.get('Content-Disposition');
+            const fileNameMatch = disposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+            const fileName = fileNameMatch
+                ? decodeURIComponent(fileNameMatch[1])
+                : null;
+            const finalFileName = backendFileName || fileName;
+            if (!finalFileName) {
+                throw new Error('Nom du fichier PDF indisponible dans la réponse backend.');
+            }
 
             link.href = url;
-            link.download = fileName;
+            link.download = finalFileName;
             document.body.appendChild(link);
             link.click();
             link.remove();

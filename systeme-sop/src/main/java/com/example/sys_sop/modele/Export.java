@@ -6,6 +6,7 @@ public class Export {
     private String idExport, idSop, idVersion, libelleExport, nomFichierPdf, generePar;
     private Integer nbPages;
     private LocalDateTime dateExport;
+    private byte[] contenuPdf;
 
     public Export() {}
     public Export(String idExport, String idSop, String idVersion, String libelleExport, Integer nbPages,
@@ -29,4 +30,6 @@ public class Export {
     public void setNomFichierPdf(String v) { nomFichierPdf = v; }
     public String getGenerePar() { return generePar; } 
     public void setGenerePar(String v) { generePar = v; }
+    public byte[] getContenuPdf() { return contenuPdf; }
+    public void setContenuPdf(byte[] v) { contenuPdf = v; }
 }
