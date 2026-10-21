@@ -9,5 +9,12 @@ export class UtilisateurService {
      getAll():Promise<Utilisateur[]>{
         return this.api.getAll<Utilisateur>();
      }
-}
 
+     searchByMail(mail: string): Promise<Utilisateur[]> {
+        return this.api.getAll<Utilisateur>({ mail });
+     }
+
+     searchByMatricule(matricule: string): Promise<Utilisateur[]> {
+        return this.api.getAll<Utilisateur>({ matricule });
+     }
+}

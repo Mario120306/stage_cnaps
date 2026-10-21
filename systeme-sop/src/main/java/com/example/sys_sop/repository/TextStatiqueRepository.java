@@ -28,7 +28,7 @@ public class TextStatiqueRepository {
         return jdbcTemplate.query(SELECT_COLUMNS,ROW_MAPPER);
     }
     public Optional<TextStatique>findById(String code_text){
-        return  jdbcTemplate.query(SELECT_COLUMNS + "WHERE code_text = ?",ROW_MAPPER,code_text)
+        return  jdbcTemplate.query(SELECT_COLUMNS + " WHERE code_text = ?",ROW_MAPPER,code_text)
                 .stream()        
                 .findFirst();
     }    

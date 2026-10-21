@@ -200,3 +200,8 @@ CREATE TABLE SOP_EXPORT(
     CONSTRAINT fk_export_version FOREIGN KEY (id_version) 
         REFERENCES SOP_VERSION(id_version)
 );
+
+CREATE SEQUENCE seq_sop
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE;

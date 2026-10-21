@@ -1,5 +1,45 @@
 import { Injectable } from "@angular/core";
+import { environment } from "src/environments/environment";
 import { Sop } from "../model/sop.model";
+
+export interface SopFlowchart {
+    idFlowchart: string;
+    idSop: string;
+    titre: string | null;
+    information: string | null;
+    ordre: number | null;
+    idPieceJointe: string | null;
+}
+
+export interface SopFlowchartEtape {
+    idEtape: string;
+    idFlowchart: string;
+    information: string | null;
+    niveau: number | null;
+    modeNumerotation: string | null;
+    ordre: number | null;
+}
+
+export interface SopDetails {
+    sop: Sop;
+    contacts: Array<{ matricule: string | null; email: string | null; ordre: number | null }>;
+    destinataires: Array<{ nom: string | null; organisation: string | null; action: string | null; matricule: string | null; ordre: number | null }>;
+    equipeProjet: Array<{ nom: string | null; fonction: string | null; telephone: string | null; email: string | null; ordre: number | null }>;
+    glossaire: Array<{ acronyme: string | null; terme: string | null; ordre: number | null }>;
+    references: Array<{ contenu: string | null; ordre: number | null }>;
+    versions: Array<{ numeroVersion: string; dateEntree: string | null; libelleModification: string | null }>;
+    flowcharts: SopFlowchart[];
+    flowchartEtapes: SopFlowchartEtape[];
+    piecesJointes: Array<{
+        idPieceJointe: string;
+        idSop: string;
+        nomFichier: string;
+        typeMime: string | null;
+        contenu: string | null;
+        usage: string | null;
+    }>;
+    annexes: Array<{ titre: string | null; idPieceJointe: string | null; ordre: number | null }>;
+}
 
 export type SopPieceJointeCreation = {
     idPieceJointe: string;
@@ -69,5 +109,42 @@ export class SopService {
 
     update(id: string, sop: Partial<Sop>): Promise<Sop> {
         return this.api.update<Sop>(id, sop);
+    }
+
+    async getDetails(idSop: string): Promise<SopDetails> {
+        const resources = [
+            "contacts", "destinataires", "equipes-projet", "glossaires", "references",
+            "versions", "flowcharts", "flowchart-etapes", "pieces-jointes", "annexes"
+        ] as const;
+        const responses = await Promise.all(resources.map(resource =>
+            fetch(`${this.apiBaseUrl}/${resource}`, { headers: { Accept: "application/json" } })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Impossible de charger ${resource} (${response.status}).`);
+                    }
+                    return response.json();
+                })
+        ));
+        const [contacts, destinataires, equipeProjet, glossaire, references, versions,
+            flowcharts, flowchartEtapes, piecesJointes, annexes] = responses;
+        const belongsToSop = (item: { idSop?: string }) => item.idSop === idSop;
+
+        return {
+            sop: await this.getById(idSop),
+            contacts: contacts.filter(belongsToSop),
+            destinataires: destinataires.filter(belongsToSop),
+            equipeProjet: equipeProjet.filter(belongsToSop),
+            glossaire: glossaire.filter(belongsToSop),
+            references: references.filter(belongsToSop),
+            versions: versions.filter(belongsToSop),
+            flowcharts: flowcharts.filter(belongsToSop),
+            flowchartEtapes,
+            piecesJointes: piecesJointes.filter(belongsToSop),
+            annexes: annexes.filter(belongsToSop)
+        };
+    }
+
+    private get apiBaseUrl(): string {
+        return environment.apiUrl;
     }
 }

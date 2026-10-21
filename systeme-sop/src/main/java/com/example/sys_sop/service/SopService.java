@@ -113,7 +113,7 @@ public class SopService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le matricule du créateur est obligatoire.");
         }
 
-        long numero = repository.countSops() + 1;
+        long numero = repository.nextSopNumber();
         String numeroSop = String.format(java.util.Locale.ROOT, "SOP%03d", numero);
         Sop sop = new Sop(numeroSop, numeroSop, request.getTitre(), "1",
                 request.getCodeService(), request.getAuteurMatricule(), 0,

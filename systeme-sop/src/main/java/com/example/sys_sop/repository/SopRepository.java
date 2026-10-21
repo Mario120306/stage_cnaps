@@ -132,6 +132,10 @@ public class SopRepository {
         return jdbc.queryForObject("SELECT COUNT(*) FROM SOP", Long.class);
     }
 
+    public long nextSopNumber() {
+        return jdbc.queryForObject("SELECT seq_sop.NEXTVAL FROM DUAL", Long.class);
+    }
+
     public int create(Sop e) {
         String sql = "INSERT INTO SOP (id_sop, numero_sop, titre, version_courante, code_service, "
                 + "auteur_matricule, section_validee, code_statut, supprime, date_suppression, "
