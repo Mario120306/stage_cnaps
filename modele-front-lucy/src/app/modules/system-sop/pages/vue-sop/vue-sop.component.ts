@@ -9,11 +9,16 @@ import { SopService } from "../../services/sop.service";
 interface FlowchartStep {
     idFlowchart: string;
     titre: string;
+    numero: number;
     pieceJointe: string;
     informations: string;
     niveau: string;
-    etapes: SopFlowchartEtape[];
+    etapes: NumberedFlowchartEtape[];
     idPieceJointe: string | null;
+}
+
+interface NumberedFlowchartEtape extends SopFlowchartEtape {
+    numero: string;
 }
 
 @Component({
@@ -47,23 +52,51 @@ export class VueSopComponent implements OnInit {
         try {
             this.details = await this.sopService.getDetails(this.idSop);
             this.sop = this.details.sop;
+            let numeroTitre = 0;
+            const compteurs = [0, 0, 0, 0];
             this.flowchartEtapes = this.details.flowcharts
                 .slice()
                 .sort((a, b) => (a.ordre || 0) - (b.ordre || 0))
                 .map(flowchart => {
+                    const titre = flowchart.titre || "";
+                    if (titre.trim()) {
+                        numeroTitre++;
+                        compteurs.fill(0);
+                    } else if (numeroTitre === 0) {
+                        numeroTitre = 1;
+                    }
+
                     const etapes = this.details!.flowchartEtapes
                         .filter(etape => etape.idFlowchart === flowchart.idFlowchart)
                         .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+                    const etapesNumerotees = etapes.map(etape => {
+                        const profondeur = Math.max(0, Math.min(compteurs.length - 1, (etape.niveau || 1) - 1));
+                        for (let index = 0; index < profondeur; index++) {
+                            if (compteurs[index] === 0) {
+                                compteurs[index] = 1;
+                            }
+                        }
+                        compteurs[profondeur]++;
+                        for (let index = profondeur + 1; index < compteurs.length; index++) {
+                            compteurs[index] = 0;
+                        }
+
+                        return {
+                            ...etape,
+                            numero: [numeroTitre, ...compteurs.slice(0, profondeur + 1)].join(".")
+                        };
+                    });
                     const pieceJointe = this.details!.piecesJointes.find(
                         piece => piece.idPieceJointe === flowchart.idPieceJointe
                     );
                     return {
                         idFlowchart: flowchart.idFlowchart,
-                        titre: flowchart.titre || "",
+                        titre,
+                        numero: numeroTitre,
                         pieceJointe: pieceJointe?.nomFichier || "Aucune pièce jointe",
                         informations: flowchart.information || "",
-                        niveau: etapes.map(etape => `Niveau ${etape.niveau ?? "-"}`).join(", "),
-                        etapes,
+                        niveau: etapesNumerotees.map(etape => `Niveau ${etape.niveau ?? "-"}`).join(", "),
+                        etapes: etapesNumerotees,
                         idPieceJointe: flowchart.idPieceJointe
                     };
                 });

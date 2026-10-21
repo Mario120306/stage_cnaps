@@ -419,16 +419,22 @@ public class PdfExportService {
 
     private void drawEtapes(PageContext ctx, Sop sop) throws IOException {
         int flowchartNumber = 0;
+        int[] counters = new int[8];
         for (Flowchart flowchart : flowcharts(sop)) {
-            flowchartNumber++;
             String titre = value(flowchart.getTitre(), "");
+            if (notBlank(titre)) {
+                flowchartNumber++;
+                Arrays.fill(counters, 0);
+            } else if (flowchartNumber == 0) {
+                flowchartNumber = 1;
+            }
+
             ctx.checkPageBreak(LINE_HEIGHT * 4);
             drawSubheading(ctx, titre);
             if (notBlank(flowchart.getInformation())) {
                 drawBodyText(ctx, flowchart.getInformation());
             }
 
-            int[] counters = new int[8];
             for (FlowchartEtape step : etapes(flowchart.getIdFlowchart())) {
                 int level = Math.max(1, Math.min(8, value(step.getNiveau(), 1)));
                 int index = level - 1;

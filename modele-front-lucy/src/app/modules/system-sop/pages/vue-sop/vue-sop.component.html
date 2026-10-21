@@ -165,10 +165,18 @@
                         </div>
                         <div *ngIf="!chargement && !sop" class="alert alert-warning">SOP introuvable.</div>
                         <div class="sop-actions">
-                            <button type="button" class="btn sop-btn-create" (click)="modifier()" [disabled]="!sop">MODIFIER</button>
-                            <button type="button" class="btn sop-btn-delete" (click)="supprimer()">SUPPRIMER</button>
-                            <button type="button" class="btn sop-btn-download" (click)="telechargerPdf()" [disabled]="!sop">TÉLÉCHARGER PDF</button>
-                            <button type="button" class="btn sop-btn-cancel" (click)="annuler()">ANNULER</button>
+                            <button type="button" class="btn sop-btn-create" (click)="modifier()" [disabled]="!sop">
+                                <i class="fa fa-edit pr-1" aria-hidden="true"></i> MODIFIER
+                            </button>
+                            <button type="button" class="btn sop-btn-delete" (click)="supprimer()">
+                                <i class="fa fa-trash pr-1" aria-hidden="true"></i> SUPPRIMER
+                            </button>
+                            <button type="button" class="btn sop-btn-download" (click)="telechargerPdf()" [disabled]="!sop">
+                                <i class="fa fa-download pr-1" aria-hidden="true"></i> TÉLÉCHARGER PDF
+                            </button>
+                            <button type="button" class="btn sop-btn-cancel" (click)="annuler()">
+                                <i class="fa fa-times pr-1" aria-hidden="true"></i> ANNULER
+                            </button>
                         </div>
                     </fieldset>
                 </div>
@@ -180,12 +188,10 @@
 <div *ngIf="detailFlowchartSelectionne" class="flowchart-modal-backdrop" (click)="fermerDetailFlowchart()">
     <section class="flowchart-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
         <header class="flowchart-modal-header">
-            <h2>Détail du flowchart</h2>
-            <button type="button" class="flowchart-modal-close" (click)="fermerDetailFlowchart()">×</button>
+        
         </header>
         <div class="flowchart-modal-content">
             <aside class="flowchart-preview">
-                <h3>FLOWCHART</h3>
                 <img *ngIf="pieceJointeImage(detailFlowchartSelectionne.idPieceJointe) as image"
                     class="flowchart-image" [src]="image" [alt]="detailFlowchartSelectionne.pieceJointe">
                 <div *ngIf="!pieceJointeImage(detailFlowchartSelectionne.idPieceJointe)" class="text-muted">
@@ -194,12 +200,18 @@
             </aside>
             <div class="flowchart-detail-scroll">
                 <div class="flowchart-detail">
-                    <p class="flowchart-detail-label">Titre du document</p><p>{{ detailFlowchartSelectionne.titre }}</p>
+                    <p class="flowchart-detail-label">Titre du document</p>
+                    <p *ngIf="detailFlowchartSelectionne.titre.trim()">
+                        <strong>{{ detailFlowchartSelectionne.numero }}. {{ detailFlowchartSelectionne.titre }}</strong>
+                    </p>
+                    <p *ngIf="!detailFlowchartSelectionne.titre.trim()">Aucun titre</p>
                     <p class="flowchart-detail-label">Pièce jointe</p><p>{{ detailFlowchartSelectionne.pieceJointe }}</p>
                     <p class="flowchart-detail-label">Informations nécessaires</p><p>{{ detailFlowchartSelectionne.informations || '-' }}</p>
                     <p class="flowchart-detail-label">Étapes</p>
-                    <p *ngFor="let etape of detailFlowchartSelectionne.etapes">
-                        {{ etape.ordre || 0 }}. {{ etape.information || '-' }} (niveau {{ etape.niveau || '-' }})
+                    <p *ngFor="let etape of detailFlowchartSelectionne.etapes"
+                       class="flowchart-step-detail"
+                       [style.margin-left.rem]="((etape.niveau || 1) - 1) * 1.5">
+                        {{ etape.numero }}. {{ etape.information || '-' }} (niveau {{ etape.niveau || '-' }})
                     </p>
                     <p *ngIf="!detailFlowchartSelectionne.etapes.length">Aucune étape</p>
                 </div>
