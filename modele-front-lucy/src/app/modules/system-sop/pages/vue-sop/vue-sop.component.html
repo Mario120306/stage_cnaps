@@ -41,10 +41,16 @@
                                     <fieldset class="w-100">
                                         <legend>CONTACTS À AFFICHER</legend>
                                         <table class="table table-borderless border">
-                                            <thead><tr><th>Email</th><th>Matricule</th></tr></thead>
+                                            <thead>
+                                                <tr>
+                                                    <th>Email</th>
+                                                    <th>Matricule</th>
+                                                </tr>
+                                            </thead>
                                             <tbody>
                                                 <tr *ngFor="let contact of details?.contacts">
-                                                    <td>{{ contact.email || '-' }}</td><td>{{ contact.matricule || '-' }}</td>
+                                                    <td>{{ contact.email || '-' }}</td>
+                                                    <td>{{ contact.matricule || '-' }}</td>
                                                 </tr>
                                                 <tr *ngIf="!details?.contacts?.length"><td colspan="2">Aucun contact</td></tr>
                                             </tbody>
@@ -52,20 +58,69 @@
                                     </fieldset>
                                 </div>
                             </div>
-
                             <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <fieldset>
+                                        <legend>SYNTHÈSE DU SOP</legend>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Auteur</label>
+                                                <input class="form-control" [value]="sop?.auteurMatricule || '-'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Création</label>
+                                                <input class="form-control" [value]="sop?.dateCreation ? (sop.dateCreation | date:'dd/MM/yyyy') : '-'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Modification</label>
+                                                <input class="form-control" [value]="sop?.dateModification ? (sop.dateModification | date:'dd/MM/yyyy') : '-'" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Version</label>
+                                                <input class="form-control" [value]="(details?.versions?.length || 0) + ' Version(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Contact</label>
+                                                <input class="form-control" [value]="(details?.contacts?.length || 0) + ' Contact(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Destinataire</label>
+                                                <input class="form-control" [value]="(details?.destinataires?.length || 0) + ' Destinataire(s)'" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Équipe</label>
+                                                <input class="form-control" [value]="(details?.equipeProjet?.length || 0) + ' Membre(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Flowchart</label>
+                                                <input class="form-control" [value]="(details?.flowcharts?.length || 0) + ' Flowchart(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Annexe</label>
+                                                <input class="form-control" [value]="(details?.annexes?.length || 0) + ' Annexe(s)'" readonly>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">              
                                 <div class="col-md-6 d-flex">
                                     <fieldset class="w-100">
-                                        <legend>LISTE DES DESTINATAIRES</legend>
+                                        <legend>HISTORIQUE DES VERSIONS</legend>
                                         <table class="table table-borderless border">
-                                            <thead><tr><th>Nom</th><th>Organisation</th><th>Action</th></tr></thead>
+                                            <thead><tr><th>Date</th><th>Version</th><th>Modification</th></tr></thead>
                                             <tbody>
-                                                <tr *ngFor="let destinataire of details?.destinataires">
-                                                    <td>{{ destinataire.nom || destinataire.matricule || '-' }}</td>
-                                                    <td>{{ destinataire.organisation || '-' }}</td>
-                                                    <td>{{ destinataire.action || '-' }}</td>
+                                                <tr *ngFor="let version of details?.versions">
+                                                    <td>{{ version.dateEntree | date:'dd/MM/yyyy' }}</td>
+                                                    <td>{{ version.numeroVersion }}</td>
+                                                    <td>{{ version.libelleModification || '-' }}</td>
                                                 </tr>
-                                                <tr *ngIf="!details?.destinataires?.length"><td colspan="3">Aucun destinataire</td></tr>
+                                                <tr *ngIf="!details?.versions?.length"><td colspan="3">Aucun historique</td></tr>
                                             </tbody>
                                         </table>
                                     </fieldset>
@@ -104,20 +159,20 @@
                                 </div>
                                 <div class="col-md-6 d-flex">
                                     <fieldset class="w-100">
-                                        <legend>HISTORIQUE DES VERSIONS</legend>
+                                        <legend>LISTE DES DESTINATAIRES</legend>
                                         <table class="table table-borderless border">
-                                            <thead><tr><th>Date</th><th>Version</th><th>Modification</th></tr></thead>
+                                            <thead><tr><th>Nom</th><th>Organisation</th><th>Action</th></tr></thead>
                                             <tbody>
-                                                <tr *ngFor="let version of details?.versions">
-                                                    <td>{{ version.dateEntree | date:'dd/MM/yyyy' }}</td>
-                                                    <td>{{ version.numeroVersion }}</td>
-                                                    <td>{{ version.libelleModification || '-' }}</td>
+                                                <tr *ngFor="let destinataire of details?.destinataires">
+                                                    <td>{{ destinataire.nom || destinataire.matricule || '-' }}</td>
+                                                    <td>{{ destinataire.organisation || '-' }}</td>
+                                                    <td>{{ destinataire.action || '-' }}</td>
                                                 </tr>
-                                                <tr *ngIf="!details?.versions?.length"><td colspan="3">Aucun historique</td></tr>
+                                                <tr *ngIf="!details?.destinataires?.length"><td colspan="3">Aucun destinataire</td></tr>
                                             </tbody>
                                         </table>
                                     </fieldset>
-                                </div>
+                                </div> 
                             </div>
 
                             <div class="row mb-3">
@@ -145,7 +200,7 @@
                             </div>
 
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <fieldset>
                                         <legend>ANNEXES</legend>
                                         <ul>
