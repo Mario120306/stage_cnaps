@@ -183,15 +183,40 @@ textarea.form-control {
 }
 
 .references {
+  flex: 1 1 auto;
   min-height: 350px;
-  height: 350px;
+  height: 100%;
   white-space: pre-wrap;
   resize: none;
 }
 
-.annexe-item {
-  margin-bottom: 1rem;
+.flowchart-details-row {
+  align-items: stretch;
+}
+
+.flowchart-references {
+  display: flex;
+  height: 100%;
+}
+
+.annexes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
   list-style: none;
+}
+
+.annexe-item {
+  flex: 0 1 280px;
+  min-width: 0;
+}
+
+.annexe-title {
+  margin-bottom: 0.5rem;
+  color: #495057;
+  font-weight: 600;
 }
 
 .annexe-image {
@@ -203,6 +228,16 @@ textarea.form-control {
   border: 1px solid #d9e0ec;
   border-radius: 4px;
   background: #fff;
+}
+
+@media (max-width: 767px) {
+  .annexe-item {
+    flex-basis: 100%;
+  }
+
+  .annexe-image {
+    max-width: 100%;
+  }
 }
 
 .flowchart-diagram {
