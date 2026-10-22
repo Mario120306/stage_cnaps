@@ -609,13 +609,65 @@ export class CreationSopComponent implements OnInit {
 
     pageActuelle: number = 1;
 
-    suivant(): void {
-        if (this.pageActuelle < this.pages.length) this.pageActuelle++;
+    private pageEstValidee(page: number): boolean {
+        switch (page) {
+            case 1:
+                return this.enteteValidee && this.destinatairesValides;
+            case 2:
+                return this.equipeProjetValides && this.glossaireValides;
+            case 3:
+                return this.flowchartsValides && this.detailsFlowchartValides;
+            case 4:
+                return this.referencesValidees && this.annexesValidees;
+            default:
+                return false;
+        }
     }
+
+    peutPasserPageActuelle(): boolean {
+        return this.pageActuelle < this.pages.length && this.pageEstValidee(this.pageActuelle);
+    }
+
+    private premierePageNonValidee(jusqua: number): number | null {
+        for (let page = 1; page < jusqua; page++) {
+            if (!this.pageEstValidee(page)) {
+                return page;
+            }
+        }
+        return null;
+    }
+
+    suivant(): void {
+        if (this.pageActuelle >= this.pages.length) {
+            return;
+        }
+
+        if (!this.pageEstValidee(this.pageActuelle)) {
+            this.toastr.warning(
+                "Validez toutes les sections de cette page avant de continuer.",
+                "Sections non validées"
+            );
+            return;
+        }
+
+        this.pageActuelle++;
+    }
+
     precedent(): void {
         if (this.pageActuelle > 1) this.pageActuelle--;
     }
+
     allerA(id: number): void {
+        if (id > this.pageActuelle) {
+            const pageNonValidee = this.premierePageNonValidee(id);
+            if (pageNonValidee !== null) {
+                this.toastr.warning(
+                    `Validez toutes les sections de la page ${pageNonValidee} avant de continuer.`,
+                    "Sections non validées"
+                );
+                return;
+            }
+        }
         this.pageActuelle = id;
     }
 
