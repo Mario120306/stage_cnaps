@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import com.example.sys_sop.modele.Glossaire;
 import com.example.sys_sop.modele.PieceJointe;
 import com.example.sys_sop.modele.Reference;
 import com.example.sys_sop.modele.Sop;
+import com.example.sys_sop.modele.Utilisateur;
 import com.example.sys_sop.modele.Version;
 import com.example.sys_sop.repository.AnnexeRepository;
 import com.example.sys_sop.repository.ContactRepository;
@@ -41,6 +43,7 @@ import com.example.sys_sop.repository.GlossaireRepository;
 import com.example.sys_sop.repository.PieceJointeRepository;
 import com.example.sys_sop.repository.ReferenceRepository;
 import com.example.sys_sop.repository.ServiceDrhRepository;
+import com.example.sys_sop.repository.UtilisateurRepository;
 import com.example.sys_sop.repository.VersionRepository;
 
 @Service
@@ -70,13 +73,18 @@ public class PdfExportService {
     private static final String TXT_PROCEDURE = "TXT021";
     private static final String TXT_ETAPES = "TXT023";
     private static final String TXT_ANNEXES = "TXT024";
+    private static final String TXT_ORGANISATION = "TXT025";
+    private static final String ORGANISATION_DEFAUT = "CNaPS";
 
-    // ===== Polices / tailles =====
+    // ===== Police standard PDF et tailles =====
     private static final PDType1Font F_REG = PDType1Font.HELVETICA;
     private static final PDType1Font F_BOLD = PDType1Font.HELVETICA_BOLD;
-    private static final float SIZE_BODY = 9f;
-    private static final float SIZE_SECTION = 14f;
-    private static final float SIZE_SUB = 11f;
+    private static final float SIZE_BODY = 11f;      // paragraphes, étapes, références
+    private static final float SIZE_TABLE = 11f;     // contenu des tableaux
+    private static final float SIZE_TOC = 11f;       // table des matières
+    private static final float SIZE_SECTION = 14f;   // titre niveau 1 (bleu #2E74B5)
+    private static final float SIZE_H2 = 13f;        // titre niveau 2 (bleu #2E74B5)
+    private static final float SIZE_SUB = 11f;       // titre niveau 3 (bleu foncé #1F4E79)
     private static final float SIZE_TITRE_DOC = 11f;
     private static final float SIZE_HEADER = 9f;
 
@@ -87,7 +95,7 @@ public class PdfExportService {
     private static final float[] COLOR_NOIR = {0f, 0f, 0f};
     private static final float GREY_HEADER = 0.65f;
 
-    // ===== Mise en page (mesurée sur la référence) =====
+    // ===== Mise en page =====
     private static final float PAGE_W = PDRectangle.A4.getWidth();
     private static final float MARGIN_LEFT = 71;
     private static final float MARGIN_RIGHT = 69;
@@ -95,15 +103,29 @@ public class PdfExportService {
     private static final float RIGHT_EDGE = PAGE_W - MARGIN_RIGHT;
     private static final float CONTENT_TOP = 719;
     private static final float CONTENT_BOTTOM = 80;
-    private static final float LINE_HEIGHT = 10.4f;
+
+    private static final float LINE_HEIGHT = 13f;
+    private static final float REF_LINE_HEIGHT = 17f;
+    private static final float TABLE_LINE_HEIGHT = 13f;
+    private static final float TABLE_ROW_PADDING = 4f;
+    private static final float TOC_LINE_HEIGHT = 13f;
+
     private static final float PARAGRAPH_SPACING = 5f;
+    private static final float REF_PARAGRAPH_SPACING = 6f;
+    private static final float STEP_SPACING = 1.5f;
     private static final float SECTION_SPACE_BEFORE = 11f;
     private static final float SECTION_SPACE_AFTER = 14f;
+    private static final float H2_AFTER = 15f;
+    private static final float H3_AFTER = 14f;
     private static final float HEADING_BEFORE_TABLE = 6f;
     private static final float TABLE_SPACE_AFTER = 36f;
     private static final float CELL_PAD = 4f;
 
-    // Retraits des étapes (x du numéro / x du texte) selon la profondeur 1..9
+    private static final float TOC_SPACE_AFTER = 5.5f;
+    private static final float TOC_INDENT = 11f;
+
+    // Retraits des étapes (x du numéro / x du texte) selon la profondeur 0..8
+    // 0 = ligne de groupe ("1. Constatation des recettes"), 1 = "1.1.", 2 = "1.1.1." ...
     private static final float[] STEP_NUM_X = {71, 80, 129, 174, 224, 270, 310, 350, 390};
     private static final float[] STEP_TEXT_X = {97, 129, 174, 224, 270, 310, 350, 390, 430};
 
@@ -114,6 +136,11 @@ public class PdfExportService {
     private static final Charset CP850 = Charset.forName("IBM850");
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.FRENCH);
+
+    private static final String[] UNITES = {"z\u00e9ro", "un", "deux", "trois", "quatre", "cinq", "six", "sept",
+            "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept",
+            "dix-huit", "dix-neuf"};
+    private static final String[] DIZAINES = {"", "", "vingt", "trente", "quarante", "cinquante", "soixante"};
 
     private final TextStatiqueService textStatiqueService;
     private final VersionRepository versionRepository;
@@ -127,13 +154,15 @@ public class PdfExportService {
     private final AnnexeRepository annexeRepository;
     private final PieceJointeRepository pieceJointeRepository;
     private final ServiceDrhRepository serviceDrhRepository;
+    private final UtilisateurRepository utilisateurRepository;
 
     public PdfExportService(TextStatiqueService textStatiqueService, VersionRepository versionRepository,
             ContactRepository contactRepository, DestinataireRepository destinataireRepository,
             EquipeProjetRepository equipeRepository, GlossaireRepository glossaireRepository,
             ReferenceRepository referenceRepository, FlowchartRepository flowchartRepository,
             FlowchartEtapeRepository etapeRepository, AnnexeRepository annexeRepository,
-            PieceJointeRepository pieceJointeRepository, ServiceDrhRepository serviceDrhRepository) {
+            PieceJointeRepository pieceJointeRepository, ServiceDrhRepository serviceDrhRepository,
+            UtilisateurRepository utilisateurRepository) {
         this.textStatiqueService = textStatiqueService;
         this.versionRepository = versionRepository;
         this.contactRepository = contactRepository;
@@ -146,6 +175,7 @@ public class PdfExportService {
         this.annexeRepository = annexeRepository;
         this.pieceJointeRepository = pieceJointeRepository;
         this.serviceDrhRepository = serviceDrhRepository;
+        this.utilisateurRepository = utilisateurRepository;
     }
 
     // ================= STRUCTURES INTERNES =================
@@ -296,9 +326,9 @@ public class PdfExportService {
             drawAnnexes(ctx, sop);
             ctx.close();
 
-            int needed = drawToc(document, reserved, ctx.toc);
-
             int totalPages = document.getNumberOfPages();
+            int needed = drawToc(document, reserved, ctx.toc, totalPages);
+
             for (int i = 0; i < totalPages; i++) {
                 try (PDPageContentStream header = new PDPageContentStream(document, document.getPage(i),
                         PDPageContentStream.AppendMode.APPEND, true, true)) {
@@ -316,16 +346,17 @@ public class PdfExportService {
                 MARGIN_LEFT + CONTENT_WIDTH / 2, ctx.y);
         ctx.y -= 40;
 
-        drawHeading(ctx, staticText(TXT_NOTE_PUB), 0, SECTION_SPACE_AFTER, false);
+        // Ces trois titres figurent aussi dans la table des matières (comme la référence)
+        drawHeading(ctx, staticText(TXT_NOTE_PUB), 0, SECTION_SPACE_AFTER, true);
         String service = serviceLabel(sop);
-        drawRich(ctx, Arrays.asList(Span.plain(staticText(TXT_GUIDE_PUB)), Span.highlight(service),
-                Span.plain(staticText(TXT_CAISSE))), MARGIN_LEFT, CONTENT_WIDTH, true, null, 0, PARAGRAPH_SPACING);
+        drawRich(ctx, Arrays.asList(Span.plain(staticText(TXT_GUIDE_PUB)), Span.bold(service),
+        Span.plain(staticText(TXT_CAISSE))), MARGIN_LEFT, CONTENT_WIDTH, true, null, 0, PARAGRAPH_SPACING);
         drawBodyText(ctx, staticText(TXT_CONFIDENTIEL));
 
-        drawHeading(ctx, staticText(TXT_MARQUE), 0, SECTION_SPACE_AFTER, false);
+        drawHeading(ctx, staticText(TXT_MARQUE), 0, SECTION_SPACE_AFTER, true);
         drawBodyText(ctx, staticText(TXT_MARQUES_RECONNUES));
 
-        drawHeading(ctx, staticText(TXT_COMMENTAIRES), 0, SECTION_SPACE_AFTER, false);
+        drawHeading(ctx, staticText(TXT_COMMENTAIRES), 0, SECTION_SPACE_AFTER, true);
         List<String> emails = contacts(sop).stream().map(Contact::getEmail)
                 .filter(PdfExportService::notBlank).collect(Collectors.toList());
         List<Span> spans = new ArrayList<>();
@@ -362,20 +393,32 @@ public class PdfExportService {
 
     private void drawDestinataires(PageContext ctx, Sop sop) throws IOException {
         String[] headers = {"Nom", "Fonction", "Organisation", "Action"};
-        float[] ratios = {170f / 704, 166f / 704, 168f / 704, 200f / 704};
+        float[] ratios = {220f / 704, 170f / 704, 155f / 704, 159f / 704}; // total = 704
         boolean[] center = {false, false, true, false};
+        String organisation = staticTextOr(TXT_ORGANISATION, ORGANISATION_DEFAUT);
+        Map<String, Utilisateur> utilisateurs = utilisateurRepository.findAll().stream()
+                .filter(u -> notBlank(u.getMatricule()))
+                .collect(Collectors.toMap(u -> u.getMatricule().trim(), u -> u,
+                        (first, second) -> first));
         List<String[]> rows = destinataires(sop).stream().map(d -> new String[] {
                 value(d.getNom(), d.getMatricule(), ""),
-                "",  // pas de fonction dans le modèle actuel
-                value(d.getOrganisation(), ""),
+                fonctionDestinataire(d, utilisateurs),
+                organisation,
                 value(d.getAction(), "")
         }).collect(Collectors.toList());
         drawTable(ctx, headers, ratios, true, center, rows);
     }
 
+    private String fonctionDestinataire(Destinataire destinataire, Map<String, Utilisateur> utilisateurs) {
+        if (!notBlank(destinataire.getMatricule())) return "";
+        Utilisateur utilisateur = utilisateurs.get(destinataire.getMatricule().trim());
+        return utilisateur == null ? "" : value(utilisateur.getLibelleFonction(), "");
+    }
+
     private void drawEquipe(PageContext ctx, Sop sop) throws IOException {
         String[] headers = {"Nom", "Fonction & Responsabilité dans le projet", "Numéro de téléphone", "e-mail"};
-        float[] ratios = {149f / 704, 148f / 704, 148f / 704, 259f / 704};
+        // total = 704 (la colonne e-mail est élargie pour les longues adresses)
+        float[] ratios = {190f / 704, 150f / 704, 125f / 704, 239f / 704};
         List<String[]> rows = equipe(sop).stream().map(e -> new String[] {
                 value(e.getNom(), e.getMatricule(), ""), value(e.getFonction(), ""),
                 value(e.getTelephone(), ""), value(e.getEmail(), "")
@@ -396,61 +439,104 @@ public class PdfExportService {
             for (String[] p : parseParagraphs(reference.getContenu())) {
                 int level = Integer.parseInt(p[0]);
                 if (level == 0) {
-                    drawBodyText(ctx, p[1]);
+                    drawRich(ctx, Collections.singletonList(Span.plain(p[1])), MARGIN_LEFT, CONTENT_WIDTH, true,
+                            null, 0, REF_PARAGRAPH_SPACING, REF_LINE_HEIGHT);
                 } else {
                     float bx = MARGIN_LEFT + 14 * level;
                     float tx = bx + 14;
                     drawRich(ctx, Collections.singletonList(Span.plain(p[1])), tx, RIGHT_EDGE - tx, true,
-                            level == 1 ? "\u2022" : "o", bx, 2f);
+                            level == 1 ? "\u2022" : "o", bx, 3f, REF_LINE_HEIGHT);
                 }
             }
         }
     }
 
+    /**
+     * Section "Flowchart" : phrase d'intro, puis pour chaque flowchart
+     *  - titre du groupe (ex. "Constatation des recettes", "Légendes") en titre niveau 2,
+     *    affiché une seule fois par groupe ;
+     *  - libellé du processus (ex. "Ordre de Virement ... [1h26mn]") en titre niveau 3 ;
+     *  - l'image. Les deux titres alimentent la table des matières (niveaux 1 et 2).
+     */
     private void drawFlowcharts(PageContext ctx, Sop sop) throws IOException {
-        int i = 0;
+        boolean first = true;
+        String groupTitle = "";
         for (Flowchart flowchart : flowcharts(sop)) {
-            if (i++ > 0) ctx.newPage(); // une page par flowchart, comme la référence
-            drawSubheading(ctx, value(flowchart.getTitre(), ""));
-            if (notBlank(flowchart.getInformation())) drawBodyText(ctx, value(flowchart.getInformation(), ""));
+            String titre = value(flowchart.getTitre(), "");
+            String info = value(flowchart.getInformation(), "");
+            if (!first) ctx.newPage(); // une page par flowchart, comme la référence
+            if (first) drawBodyText(ctx, staticText(TXT_PROCEDURE));
+
+            if (notBlank(titre) && !titre.equalsIgnoreCase(groupTitle)) {
+                groupTitle = titre;
+                drawHeading(ctx, titre, 1, H2_AFTER, true);
+            }
+            if (notBlank(info)) drawHeading(ctx, info, 2, H3_AFTER, true);
             drawAttachmentImage(ctx, flowchart.getIdPieceJointe());
+            first = false;
         }
     }
 
+    /**
+     * Section "Etapes" (même structure que la référence) :
+     *   titre du groupe (niveau 2) → libellé du processus (niveau 3) →
+     *   "1. Titre du groupe" (gras, une fois par groupe) → "1.k. Processus" (gras) → "1.k.j. étapes".
+     * Les flowcharts sans étapes (ex. "Légendes") sont ignorés ici.
+     */
     private void drawEtapes(PageContext ctx, Sop sop) throws IOException {
-        int flowchartNumber = 0;
+        int group = 0;
+        int process = 0;
+        String groupTitle = "";
         int[] counters = new int[8];
+
         for (Flowchart flowchart : flowcharts(sop)) {
+            List<FlowchartEtape> steps = etapes(flowchart.getIdFlowchart());
+            if (steps.isEmpty()) continue;
             String titre = value(flowchart.getTitre(), "");
-            if (notBlank(titre)) {
-                flowchartNumber++;
-                Arrays.fill(counters, 0);
-            } else if (flowchartNumber == 0) {
-                flowchartNumber = 1;
+            String info = value(flowchart.getInformation(), "");
+
+            boolean newGroup = group == 0 || (notBlank(titre) && !titre.equalsIgnoreCase(groupTitle));
+            if (newGroup) {
+                group++;
+                process = 0;
+                groupTitle = titre;
+                if (notBlank(titre)) drawHeading(ctx, titre, 1, H2_AFTER, true);
+            }
+            process++;
+            if (notBlank(info)) drawHeading(ctx, info, 2, H3_AFTER, true);
+            if (newGroup && notBlank(titre)) drawStep(ctx, group + ".", titre, 0, true);
+
+            Arrays.fill(counters, 0);
+            counters[0] = process;
+
+            // si les données n'ont pas d'étape de niveau 1, on écrit "1.k. Processus" nous-mêmes
+            boolean startsAtLevel1 = value(steps.get(0).getNiveau(), 1) <= 1;
+            if (!startsAtLevel1 && notBlank(info)) {
+                drawStep(ctx, group + "." + process + ".", info, 1, true);
             }
 
-            ctx.checkPageBreak(LINE_HEIGHT * 4);
-            drawSubheading(ctx, titre);
-            if (notBlank(flowchart.getInformation())) {
-                drawBodyText(ctx, flowchart.getInformation());
-            }
-
-            for (FlowchartEtape step : etapes(flowchart.getIdFlowchart())) {
+            for (FlowchartEtape step : steps) {
                 int level = Math.max(1, Math.min(8, value(step.getNiveau(), 1)));
-                int index = level - 1;
-                counters[index]++;
-                for (int i = index + 1; i < counters.length; i++) counters[i] = 0;
-                for (int i = 0; i < index; i++) if (counters[i] == 0) counters[i] = 1;
-                String number = flowchartNumber + "." + Arrays.stream(counters, 0, level)
+                if (level == 1) {
+                    Arrays.fill(counters, 1, counters.length, 0);
+                } else {
+                    counters[level - 1]++;
+                    for (int i = level; i < counters.length; i++) counters[i] = 0;
+                    for (int i = 1; i < level - 1; i++) if (counters[i] == 0) counters[i] = 1;
+                }
+                String number = group + "." + Arrays.stream(counters, 0, level)
                         .mapToObj(String::valueOf).collect(Collectors.joining(".")) + ".";
-
-                float nx = STEP_NUM_X[level];
-                float tx = STEP_TEXT_X[level];
-                drawRich(ctx, Collections.singletonList(Span.plain(value(step.getInformation(), ""))),
-                        tx, RIGHT_EDGE - tx, true, number, nx, 1f);
+                drawStep(ctx, number, value(step.getInformation(), ""), level, level == 1);
             }
             ctx.y -= 6;
         }
+    }
+
+    private void drawStep(PageContext ctx, String number, String text, int level, boolean bold) throws IOException {
+        float nx = STEP_NUM_X[level];
+        float tx = STEP_TEXT_X[level];
+        Span span = bold ? Span.bold(text) : Span.plain(text);
+        drawRich(ctx, Collections.singletonList(span), tx, RIGHT_EDGE - tx, true, number, nx, STEP_SPACING);
     }
 
     private void drawAnnexes(PageContext ctx, Sop sop) throws IOException {
@@ -478,8 +564,12 @@ public class PdfExportService {
     // ================= TABLEAUX =================
     private void drawTable(PageContext ctx, String[] headers, float[] ratios, boolean greyHeader,
             boolean[] centerBody, List<String[]> rows) throws IOException {
+        // Normalisation : la somme des ratios est ramenée à 1 pour que le tableau
+        // occupe toujours exactement CONTENT_WIDTH (même largeur pour tous les tableaux).
+        float sum = 0;
+        for (float r : ratios) sum += r;
         float[] cols = new float[ratios.length];
-        for (int i = 0; i < cols.length; i++) cols[i] = ratios[i] * CONTENT_WIDTH;
+        for (int i = 0; i < cols.length; i++) cols[i] = ratios[i] / sum * CONTENT_WIDTH;
 
         ctx.checkPageBreak(60);
         drawTableRow(ctx, headers, cols, true, greyHeader, null);
@@ -497,7 +587,7 @@ public class PdfExportService {
         List<List<String>> result = new ArrayList<>();
         for (int i = 0; i < cols.length; i++) {
             String v = i < values.length ? values[i] : "";
-            result.add(wrapText(pdfText(v == null ? "" : v), F_REG, SIZE_BODY, cols[i] - 2 * CELL_PAD));
+            result.add(wrapText(pdfText(v == null ? "" : v), F_REG, SIZE_TABLE, cols[i] - 2 * CELL_PAD));
         }
         return result;
     }
@@ -505,7 +595,7 @@ public class PdfExportService {
     private float rowHeight(String[] values, float[] cols) throws IOException {
         int maxLines = 1;
         for (List<String> l : cellLines(values, cols)) maxLines = Math.max(maxLines, l.size());
-        return maxLines * LINE_HEIGHT + 3;
+        return maxLines * TABLE_LINE_HEIGHT + TABLE_ROW_PADDING * 2;
     }
 
     private void drawTableRow(PageContext ctx, String[] values, float[] cols, boolean header, boolean grey,
@@ -533,13 +623,15 @@ public class PdfExportService {
         x = MARGIN_LEFT;
         for (int i = 0; i < cols.length; i++) {
             boolean center = header || (centerBody != null && i < centerBody.length && centerBody[i]);
-            float baseline = ctx.y - 1.5f - 8f;
+            // centrage vertical du bloc de texte dans la cellule
+            float textBlockH = lines.get(i).size() * TABLE_LINE_HEIGHT;
+            float baseline = ctx.y - (h - textBlockH) / 2 - SIZE_TABLE * 0.9f;
             for (String line : lines.get(i)) {
-                float tw = F_REG.getStringWidth(line) / 1000 * SIZE_BODY;
+                float tw = F_REG.getStringWidth(line) / 1000 * SIZE_TABLE;
                 float tx = center ? x + (cols[i] - tw) / 2 : x + CELL_PAD;
                 boolean mail = !header && line.contains("@");
-                drawStyled(c, line, F_REG, SIZE_BODY, tx, baseline, mail ? COLOR_LIEN : COLOR_NOIR, mail);
-                baseline -= LINE_HEIGHT;
+                drawStyled(c, line, F_REG, SIZE_TABLE, tx, baseline, mail ? COLOR_LIEN : COLOR_NOIR, mail);
+                baseline -= TABLE_LINE_HEIGHT;
             }
             x += cols[i];
         }
@@ -547,22 +639,28 @@ public class PdfExportService {
     }
 
     // ================= TABLE DES MATIÈRES =================
-    /** Remplit les pages réservées ; retourne le nombre de pages réellement nécessaires. */
-    private int drawToc(PDDocument doc, List<PDPage> reserved, List<TocEntry> entries) throws IOException {
+    /**
+     * Remplit les pages réservées ; retourne le nombre de pages réellement nécessaires.
+     * Les entrées viennent de drawHeading(..., addToToc = true) : niveau 0 = sections,
+     * niveau 1 = groupes de flowchart (ex. "Constatation des recettes", "Légendes"),
+     * niveau 2 = processus. Chaque niveau est décalé de TOC_INDENT.
+     */
+    private int drawToc(PDDocument doc, List<PDPage> reserved, List<TocEntry> entries, int totalPages)
+            throws IOException {
         int idx = 0;
         PDPageContentStream cs = openAppend(doc, reserved.get(0));
         float y = CONTENT_TOP;
         drawText(cs, staticText(TXT_TABLE_MATIERES), F_BOLD, SIZE_SECTION, MARGIN_LEFT, y, COLOR_TITRE);
         y -= SECTION_SPACE_AFTER + 4;
-        float dotW = F_REG.getStringWidth(".") / 1000 * SIZE_BODY;
+        float dotW = F_REG.getStringWidth(".") / 1000 * SIZE_TOC;
 
         for (TocEntry e : entries) {
-            float x = MARGIN_LEFT + 12 * e.level;
+            float x = MARGIN_LEFT + TOC_INDENT * e.level;
             String num = String.valueOf(e.page);
-            float numW = F_REG.getStringWidth(num) / 1000 * SIZE_BODY;
-            List<String> lines = wrapText(pdfText(e.title), F_REG, SIZE_BODY, RIGHT_EDGE - x - 28);
+            float numW = F_REG.getStringWidth(num) / 1000 * SIZE_TOC;
+            List<String> lines = wrapText(pdfText(e.title), F_REG, SIZE_TOC, RIGHT_EDGE - x - 28);
             if (lines.isEmpty()) continue;
-            float h = lines.size() * LINE_HEIGHT + 4;
+            float h = lines.size() * TOC_LINE_HEIGHT + TOC_SPACE_AFTER;
 
             if (y - h < CONTENT_BOTTOM) {
                 if (cs != null) cs.close();
@@ -573,18 +671,24 @@ public class PdfExportService {
             if (cs != null) {
                 float ly = y;
                 for (String line : lines) {
-                    drawText(cs, line, F_REG, SIZE_BODY, x, ly);
-                    ly -= LINE_HEIGHT;
+                    drawText(cs, line, F_REG, SIZE_TOC, x, ly);
+                    ly -= TOC_LINE_HEIGHT;
                 }
-                float lastY = ly + LINE_HEIGHT;
-                float endX = x + F_REG.getStringWidth(lines.get(lines.size() - 1)) / 1000 * SIZE_BODY + 3;
+                float lastY = ly + TOC_LINE_HEIGHT;
+                float endX = x + F_REG.getStringWidth(lines.get(lines.size() - 1)) / 1000 * SIZE_TOC + 3;
                 int dots = (int) ((RIGHT_EDGE - numW - 4 - endX) / dotW);
-                if (dots > 0) drawText(cs, ".".repeat(dots), F_REG, SIZE_BODY, endX, lastY);
-                drawText(cs, num, F_REG, SIZE_BODY, RIGHT_EDGE - numW, lastY);
+                if (dots > 0) drawText(cs, ".".repeat(dots), F_REG, SIZE_TOC, endX, lastY);
+                drawText(cs, num, F_REG, SIZE_TOC, RIGHT_EDGE - numW, lastY);
             }
             y -= h;
         }
         if (cs != null) cs.close();
+
+        // "Ce document contient vingt (20) pages" en bas de la dernière page du sommaire
+        PDPageContentStream last = openAppend(doc, reserved.get(reserved.size() - 1));
+        drawText(last, "Ce document contient " + frenchNumber(totalPages) + " (" + totalPages + ") pages",
+                F_REG, SIZE_BODY, MARGIN_LEFT, CONTENT_BOTTOM + 10);
+        last.close();
         return idx + 1;
     }
 
@@ -592,27 +696,35 @@ public class PdfExportService {
         return new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true);
     }
 
+    /** Nombre en lettres (0 à 99) : 20 -> "vingt", 21 -> "vingt et un", 80 -> "quatre-vingts". */
+    private static String frenchNumber(int n) {
+        if (n < 20) return UNITES[Math.max(n, 0)];
+        if (n < 70) {
+            int d = n / 10;
+            int u = n % 10;
+            return DIZAINES[d] + (u == 0 ? "" : u == 1 ? " et un" : "-" + UNITES[u]);
+        }
+        if (n < 80) return n == 71 ? "soixante et onze" : "soixante-" + UNITES[n - 60];
+        if (n < 100) return n == 80 ? "quatre-vingts" : "quatre-vingt-" + UNITES[n - 80];
+        return String.valueOf(n);
+    }
+
     // ================= TITRES / TEXTE =================
-    /** level 0 = titre de section (bleu 14 gras) ; level 1 = sous-titre (bleu foncé 11 gras). */
+    /** level 0 = section (bleu 14 gras) ; 1 = groupe (bleu 13 gras) ; 2 = processus (bleu foncé 11 gras). */
     private void drawHeading(PageContext ctx, String text, int level, float after) throws IOException {
         drawHeading(ctx, text, level, after, true);
     }
 
     private void drawHeading(PageContext ctx, String text, int level, float after, boolean addToToc)
             throws IOException {
-        float size = level == 0 ? SIZE_SECTION : SIZE_SUB;
-        ctx.checkPageBreak(SECTION_SPACE_BEFORE + size + after + 2 * LINE_HEIGHT);
-        if (ctx.y < CONTENT_TOP) ctx.y -= (level == 0 ? SECTION_SPACE_BEFORE : 6f);
-        drawText(ctx.content, text, F_BOLD, size, MARGIN_LEFT, ctx.y, level == 0 ? COLOR_TITRE : COLOR_SOUS_TITRE);
-        if (addToToc) ctx.toc.add(new TocEntry(text, level, ctx.currentPage));
+        float size = level == 0 ? SIZE_SECTION : level == 1 ? SIZE_H2 : SIZE_SUB;
+        float[] color = level >= 2 ? COLOR_SOUS_TITRE : COLOR_TITRE;
+        float before = level == 0 ? SECTION_SPACE_BEFORE : 6f;
+        ctx.checkPageBreak(before + size + after + 2 * LINE_HEIGHT);
+        if (ctx.y < CONTENT_TOP) ctx.y -= before;
+        drawText(ctx.content, text, F_BOLD, size, MARGIN_LEFT, ctx.y, color);
+        if (addToToc && notBlank(text)) ctx.toc.add(new TocEntry(text, level, ctx.currentPage));
         ctx.y -= after;
-    }
-
-    private void drawSubheading(PageContext ctx, String text) throws IOException {
-        ctx.checkPageBreak(SECTION_SPACE_BEFORE + SIZE_SUB + SECTION_SPACE_AFTER);
-        if (ctx.y < CONTENT_TOP) ctx.y -= 6f;
-        drawText(ctx.content, text, F_BOLD, SIZE_SUB, MARGIN_LEFT, ctx.y, COLOR_SOUS_TITRE);
-        ctx.y -= 10f;
     }
 
     private void drawBodyText(PageContext ctx, String text) throws IOException {
@@ -620,9 +732,14 @@ public class PdfExportService {
                 null, 0, PARAGRAPH_SPACING);
     }
 
-    /** Paragraphe multi-styles (gras, surlignage, lien), justifié, avec étiquette optionnelle (puce / numéro). */
     private void drawRich(PageContext ctx, List<Span> spans, float x, float width, boolean justify,
             String label, float labelX, float after) throws IOException {
+        drawRich(ctx, spans, x, width, justify, label, labelX, after, LINE_HEIGHT);
+    }
+
+    /** Paragraphe multi-styles (gras, surlignage, lien), justifié, avec étiquette optionnelle (puce / numéro). */
+    private void drawRich(PageContext ctx, List<Span> spans, float x, float width, boolean justify,
+            String label, float labelX, float after, float lineHeight) throws IOException {
         List<Word> words = new ArrayList<>();
         for (Span s : spans) {
             for (String w : pdfText(s.text).trim().split("\\s+")) {
@@ -630,7 +747,7 @@ public class PdfExportService {
             }
         }
         if (words.isEmpty()) {
-            ctx.y -= LINE_HEIGHT;
+            ctx.y -= lineHeight;
             return;
         }
         float space = F_REG.getStringWidth(" ") / 1000 * SIZE_BODY;
@@ -652,7 +769,7 @@ public class PdfExportService {
         lines.add(cur);
 
         for (int i = 0; i < lines.size(); i++) {
-            ctx.checkPageBreak(LINE_HEIGHT);
+            ctx.checkPageBreak(lineHeight);
             List<Word> line = lines.get(i);
             if (i == 0 && label != null) {
                 drawStyled(ctx.content, label, line.get(0).style.font, SIZE_BODY, labelX, ctx.y, COLOR_NOIR, false);
@@ -677,7 +794,7 @@ public class PdfExportService {
                 drawStyled(ctx.content, w.text, w.style.font, SIZE_BODY, cx, ctx.y, w.style.color, w.style.underline);
                 cx += w.width + gap;
             }
-            ctx.y -= LINE_HEIGHT;
+            ctx.y -= lineHeight;
         }
         ctx.y -= after;
     }
@@ -800,6 +917,16 @@ public class PdfExportService {
         return content == null ? "" : fix(content.replaceAll("\\s+", " ").trim());
     }
 
+    /** Texte statique optionnel : si le code n'existe pas en base, on utilise la valeur par défaut. */
+    private String staticTextOr(String code, String fallback) {
+        try {
+            String text = staticText(code);
+            return notBlank(text) ? text : fallback;
+        } catch (RuntimeException ex) {
+            return fallback;
+        }
+    }
+
     private List<Contact> contacts(Sop sop) {
         return contactRepository.findAll().stream().filter(c -> sop.getIdSop().equals(c.getIdSop())).collect(Collectors.toList());
     }
@@ -809,6 +936,7 @@ public class PdfExportService {
     private List<Destinataire> destinataires(Sop sop) {
         return destinataireRepository.findAll().stream().filter(d -> sop.getIdSop().equals(d.getIdSop())).collect(Collectors.toList());
     }
+
     private List<EquipeProjet> equipe(Sop sop) {
         return equipeRepository.findAll().stream().filter(e -> sop.getIdSop().equals(e.getIdSop())).collect(Collectors.toList());
     }
@@ -881,6 +1009,11 @@ public class PdfExportService {
         return new String(v.getBytes(WIN_1252), WIN_1252);
     }
 
+    /**
+     * Découpe un texte en lignes de largeur maxWidth.
+     * Un mot plus large que la cellule (ex. une longue adresse e-mail) est coupé
+     * caractère par caractère pour ne jamais dépasser de la bordure.
+     */
     private static List<String> wrapText(String text, PDType1Font font, float fontSize, float maxWidth)
             throws IOException {
         List<String> lines = new ArrayList<>();
@@ -888,6 +1021,19 @@ public class PdfExportService {
         StringBuilder current = new StringBuilder();
         for (String word : words) {
             if (word.isEmpty()) continue;
+
+            // mot trop long : on le découpe
+            while (word.length() > 1 && font.getStringWidth(word) / 1000 * fontSize > maxWidth) {
+                if (current.length() > 0) {
+                    lines.add(current.toString());
+                    current = new StringBuilder();
+                }
+                int cut = word.length() - 1;
+                while (cut > 1 && font.getStringWidth(word.substring(0, cut)) / 1000 * fontSize > maxWidth) cut--;
+                lines.add(word.substring(0, cut));
+                word = word.substring(cut);
+            }
+
             String candidate = current.length() == 0 ? word : current + " " + word;
             if (font.getStringWidth(candidate) / 1000 * fontSize > maxWidth && current.length() > 0) {
                 lines.add(current.toString());
@@ -899,4 +1045,4 @@ public class PdfExportService {
         if (current.length() > 0) lines.add(current.toString());
         return lines;
     }
-}
+} 
