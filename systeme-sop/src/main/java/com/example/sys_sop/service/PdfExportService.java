@@ -216,11 +216,13 @@ public class PdfExportService {
         final String text;
         final Span style;
         final float width;
+        final boolean noSpaceBefore;
 
-        Word(String text, Span style, float width) {
+        Word(String text, Span style, float width, boolean noSpaceBefore) {
             this.text = text;
             this.style = style;
             this.width = width;
+            this.noSpaceBefore = noSpaceBefore;
         }
     }
 
@@ -720,11 +722,16 @@ public class PdfExportService {
         float size = level == 0 ? SIZE_SECTION : level == 1 ? SIZE_H2 : SIZE_SUB;
         float[] color = level >= 2 ? COLOR_SOUS_TITRE : COLOR_TITRE;
         float before = level == 0 ? SECTION_SPACE_BEFORE : 6f;
-        ctx.checkPageBreak(before + size + after + 2 * LINE_HEIGHT);
+        List<String> lines = wrapText(pdfText(text), F_BOLD, size, CONTENT_WIDTH);
+        if (lines.isEmpty()) return;
+        ctx.checkPageBreak(before + lines.size() * LINE_HEIGHT + after);
         if (ctx.y < CONTENT_TOP) ctx.y -= before;
-        drawText(ctx.content, text, F_BOLD, size, MARGIN_LEFT, ctx.y, color);
+        for (String line : lines) {
+            drawText(ctx.content, line, F_BOLD, size, MARGIN_LEFT, ctx.y, color);
+            ctx.y -= LINE_HEIGHT;
+        }
         if (addToToc && notBlank(text)) ctx.toc.add(new TocEntry(text, level, ctx.currentPage));
-        ctx.y -= after;
+        ctx.y += LINE_HEIGHT - after;
     }
 
     private void drawBodyText(PageContext ctx, String text) throws IOException {
@@ -743,7 +750,20 @@ public class PdfExportService {
         List<Word> words = new ArrayList<>();
         for (Span s : spans) {
             for (String w : pdfText(s.text).trim().split("\\s+")) {
-                if (!w.isEmpty()) words.add(new Word(w, s, s.font.getStringWidth(w) / 1000 * SIZE_BODY));
+                if (w.isEmpty()) continue;
+                String remaining = w;
+                boolean continuation = false;
+                while (!remaining.isEmpty()) {
+                    int cut = remaining.length();
+                    while (cut > 1
+                            && s.font.getStringWidth(remaining.substring(0, cut)) / 1000 * SIZE_BODY > width) {
+                        cut--;
+                    }
+                    String part = remaining.substring(0, cut);
+                    words.add(new Word(part, s, s.font.getStringWidth(part) / 1000 * SIZE_BODY, continuation));
+                    remaining = remaining.substring(cut);
+                    continuation = true;
+                }
             }
         }
         if (words.isEmpty()) {
@@ -756,7 +776,7 @@ public class PdfExportService {
         List<Word> cur = new ArrayList<>();
         float curW = 0;
         for (Word w : words) {
-            float add = cur.isEmpty() ? w.width : space + w.width;
+            float add = cur.isEmpty() || w.noSpaceBefore ? w.width : space + w.width;
             if (!cur.isEmpty() && curW + add > width) {
                 lines.add(cur);
                 cur = new ArrayList<>();
@@ -776,7 +796,10 @@ public class PdfExportService {
             }
             float wordsW = 0;
             for (Word w : line) wordsW += w.width;
-            int gaps = line.size() - 1;
+            int gaps = 0;
+            for (int j = 1; j < line.size(); j++) {
+                if (!line.get(j).noSpaceBefore) gaps++;
+            }
             float gap = space;
             if (justify && i < lines.size() - 1 && gaps > 0) {
                 float g = (width - wordsW) / gaps;
@@ -785,14 +808,17 @@ public class PdfExportService {
             float cx = x;
             for (int k = 0; k < line.size(); k++) {
                 Word w = line.get(k);
-                boolean joinNext = k < line.size() - 1 && w.style.highlight && line.get(k + 1).style.highlight;
+                boolean hasSpaceBefore = k > 0 && !w.noSpaceBefore;
+                if (hasSpaceBefore) cx += gap;
+                boolean joinNext = k < line.size() - 1 && !line.get(k + 1).noSpaceBefore
+                        && w.style.highlight && line.get(k + 1).style.highlight;
                 if (w.style.highlight) {
                     ctx.content.setNonStrokingColor(1f, 1f, 0f);
                     ctx.content.addRect(cx, ctx.y - 2.2f, w.width + (joinNext ? gap : 0), SIZE_BODY + 1.5f);
                     ctx.content.fill();
                 }
                 drawStyled(ctx.content, w.text, w.style.font, SIZE_BODY, cx, ctx.y, w.style.color, w.style.underline);
-                cx += w.width + gap;
+                cx += w.width;
             }
             ctx.y -= lineHeight;
         }
@@ -844,13 +870,13 @@ public class PdfExportService {
         c.stroke();
 
         float midX = (col1 + col2) / 2;
-        drawCentered(c, fix(sop.getTitre()), F_REG, SIZE_HEADER, midX, 792);
+        drawCenteredFit(c, fix(sop.getTitre()), F_REG, SIZE_HEADER, midX, 792, col2 - col1 - 8);
         drawCentered(c, staticText(TXT_SOP), F_REG, SIZE_HEADER, midX, 778);
         drawCentered(c, staticText(TXT_MANUEL), F_REG, SIZE_HEADER, midX, 764);
         drawCentered(c, staticText(TXT_SLA), F_REG, SIZE_HEADER, midX, 750);
 
         float rightX = (col2 + right) / 2;
-        drawCentered(c, fix(sop.getNumeroSop()), F_REG, 10f, rightX, 788);
+        drawCenteredFit(c, fix(sop.getNumeroSop()), F_REG, 10f, rightX, 788, right - col2 - 8);
         drawCentered(c, "Version " + value(sop.getVersionCourante(), ""), F_REG, SIZE_HEADER, rightX, 768);
 
         String[] parts = {"Page ", String.valueOf(currentPage), " of ", String.valueOf(totalPages)};
@@ -873,6 +899,14 @@ public class PdfExportService {
         String t = pdfText(text);
         float w = font.getStringWidth(t) / 1000 * size;
         drawStyled(c, t, font, size, centerX - w / 2, y, COLOR_NOIR, false);
+    }
+
+    private static void drawCenteredFit(PDPageContentStream c, String text, PDType1Font font,
+            float size, float centerX, float y, float maxWidth) throws IOException {
+        String t = pdfText(text);
+        float textWidth = font.getStringWidth(t) / 1000 * size;
+        float fittedSize = textWidth > maxWidth ? size * maxWidth / textWidth : size;
+        drawCentered(c, t, font, fittedSize, centerX, y);
     }
 
     private static void drawText(PDPageContentStream c, String text, PDType1Font font, float size,

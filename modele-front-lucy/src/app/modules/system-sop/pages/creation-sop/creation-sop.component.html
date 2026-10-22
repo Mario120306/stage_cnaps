@@ -685,7 +685,7 @@
 
               <button type="button"
                       class="btn cnaps-btn-valider"
-                      [disabled]="pageActuelle === pages.length"
+                      [disabled]="pageActuelle === pages.length || !peutPasserPageActuelle()"
                       (click)="suivant()">
                 SUIVANT <i class="fa fa-arrow-right pl-1"></i>
               </button>

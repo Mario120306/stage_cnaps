@@ -146,15 +146,29 @@
                                 <div class="col-md-6 d-flex">
                                     <fieldset class="w-100">
                                         <legend>GLOSSAIRE</legend>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Acronyme</th><th>Terme</th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let terme of details?.glossaire">
-                                                    <td>{{ terme.acronyme || '-' }}</td><td>{{ terme.terme || '-' }}</td>
-                                                </tr>
-                                                <tr *ngIf="!details?.glossaire?.length"><td colspan="2">Aucun terme</td></tr>
-                                            </tbody>
-                                        </table>
+                                        <div class="row">
+                                            <div class="col-12 col-md-6">
+                                                <table class="table table-borderless border">
+                                                    <thead><tr><th>Acronyme</th><th>Terme</th></tr></thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let terme of details?.glossaire?.slice(0, ((details?.glossaire?.length || 0) + 1) / 2)">
+                                                            <td>{{ terme.acronyme || '-' }}</td><td>{{ terme.terme || '-' }}</td>
+                                                        </tr>
+                                                        <tr *ngIf="!details?.glossaire?.length"><td colspan="2">Aucun terme</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-12 col-md-6" *ngIf="details?.glossaire?.length">
+                                                <table class="table table-borderless border">
+                                                    <thead><tr><th>Acronyme</th><th>Terme</th></tr></thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let terme of details?.glossaire?.slice(((details?.glossaire?.length || 0) + 1) / 2)">
+                                                            <td>{{ terme.acronyme || '-' }}</td><td>{{ terme.terme || '-' }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </fieldset>
                                 </div>
                                 <div class="col-md-6 d-flex">
@@ -175,7 +189,7 @@
                                 </div> 
                             </div>
 
-                            <div class="row mb-3">
+                            <div class="row mb-3 flowchart-details-row">
                                 <div class="col-md-6 d-flex">
                                     <fieldset class="w-100">
                                         <legend>FLOWCHART ET DÉTAILS</legend>
@@ -192,7 +206,7 @@
                                     </fieldset>
                                 </div>
                                 <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
+                                    <fieldset class="w-100 flowchart-references">
                                         <legend>RÉFÉRENCES LÉGALES ET RÉGLEMENTAIRES</legend>
                                         <textarea class="form-control references" readonly>{{ referencesText }}</textarea>
                                     </fieldset>
@@ -203,9 +217,9 @@
                                 <div class="col-md-12">
                                     <fieldset>
                                         <legend>ANNEXES</legend>
-                                        <ul>
+                                        <ul class="annexes-list">
                                             <li *ngFor="let annexe of details?.annexes" class="annexe-item">
-                                                <div>{{ annexe.titre || 'Annexe' }} - {{ pieceJointeNom(annexe.idPieceJointe) }}</div>
+                                                <div class="annexe-title">{{ annexe.titre || 'Annexe' }}</div>
                                                 <img *ngIf="pieceJointeImage(annexe.idPieceJointe) as image"
                                                     class="annexe-image" [src]="image" [alt]="annexe.titre || 'Annexe'">
                                                 <div *ngIf="!pieceJointeImage(annexe.idPieceJointe)" class="text-muted">
