@@ -22,4 +22,12 @@ public class UtilisateurService {
         return utilisateurRepository.findById(matricule)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + matricule));
     }
+
+    public List<Utilisateur> searchByMail(String mail) {
+        return utilisateurRepository.searchByMail(mail);
+    }
+
+    public List<Utilisateur> searchByMatricule(String matricule) {
+        return utilisateurRepository.searchByMatricule(matricule);
+    }
 }

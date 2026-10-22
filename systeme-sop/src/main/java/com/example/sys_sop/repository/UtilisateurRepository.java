@@ -39,12 +39,30 @@ public class UtilisateurRepository {
             + "code_fonction, libelle_fonction, mail, tel_gsm FROM INTRANET.VIEW_ANNUAIRE_ELECTRONIQUE ";
 
     public List<Utilisateur> findAll() {
-        return jdbcTemplate.query(SELECT_COLUMNS + "ORDER BY matricule", ROW_MAPPER);
+        return jdbcTemplate.query(SELECT_COLUMNS + " ORDER BY matricule ", ROW_MAPPER);
     }
 
     public Optional<Utilisateur> findById(String matricule) {
-        return jdbcTemplate.query(SELECT_COLUMNS + "WHERE matricule = ?", ROW_MAPPER, matricule)
+        return jdbcTemplate.query(SELECT_COLUMNS + " WHERE matricule = ?", ROW_MAPPER, matricule)
                 .stream()
                 .findFirst();
+    }
+
+    public List<Utilisateur> searchByMail(String mail) {
+        // Utilisation de ROWNUM pour compatibilité Oracle 11g et antérieur
+        String sql = "SELECT * FROM ("
+                + SELECT_COLUMNS
+                + "WHERE LOWER(mail) LIKE LOWER(?) ORDER BY mail"
+                + ") WHERE ROWNUM <= 8";
+        return jdbcTemplate.query(sql, ROW_MAPPER, "%" + mail.trim() + "%");
+    }
+
+    public List<Utilisateur> searchByMatricule(String matricule) {
+        // Utilisation de ROWNUM pour compatibilité Oracle 11g et antérieur
+        String sql = "SELECT * FROM ("
+                + SELECT_COLUMNS
+                + "WHERE LOWER(matricule) LIKE LOWER(?) ORDER BY matricule"
+                + ") WHERE ROWNUM <= 8";
+        return jdbcTemplate.query(sql, ROW_MAPPER, "%" + matricule.trim() + "%");
     }
 }

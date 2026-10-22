@@ -10,20 +10,16 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.web.bind.annotation.*;
 import com.example.sys_sop.dto.ExportDto;
 import com.example.sys_sop.modele.Export;
-import com.example.sys_sop.modele.PieceJointe;
 import com.example.sys_sop.service.ExportService;
-import com.example.sys_sop.service.PieceJointeService;
 
 @RestController
 @RequestMapping("/api/exports")
 public class ExportController {
 
     private final ExportService service;
-    private final PieceJointeService pieceJointeService;
 
-    public ExportController(ExportService service, PieceJointeService pieceJointeService) { 
+    public ExportController(ExportService service) {
         this.service = service; 
-        this.pieceJointeService = pieceJointeService;
     }
     @GetMapping 
     public List<ExportDto> getAll() { 
@@ -60,18 +56,15 @@ public class ExportController {
         if (latest == null || latest.getNomFichierPdf() == null || latest.getNomFichierPdf().trim().isEmpty()) {
             throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun export PDF enregistré pour ce SOP");
         }
-        // Find piece jointe that contains the PDF bytes
-        PieceJointe pj = pieceJointeService.findBySopAndNomFichier(idSop, latest.getNomFichierPdf());
-        if (pj == null || pj.getContenu() == null) {
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND, "Contenu PDF introuvable pour le fichier : " + latest.getNomFichierPdf());
-        }
+        byte[] pdf = service.findPdf(latest.getIdExport());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition.attachment().filename(latest.getNomFichierPdf()).build());
-        headers.setContentLength(pj.getContenu().length);
+        headers.set("X-Pdf-Filename", latest.getNomFichierPdf());
+        headers.setContentLength(pdf.length);
 
-        return new ResponseEntity<>(pj.getContenu(), headers, HttpStatus.OK);
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 
     private Export toEntity(ExportDto d) { 

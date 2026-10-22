@@ -38,7 +38,12 @@ export class CreationSopComponent implements OnInit {
     termesGlossaire="";
     actionDestinataire = "Approbation final";
     glossaire:{acronyme:string;termes:string} []=[];
-    agents: Utilisateur[] = [];
+    agentsEmailSuggerees: Utilisateur[] = [];
+    destinatairesSuggereesBackend: Utilisateur[] = [];
+    equipeSuggereesBackend: Utilisateur[] = [];
+    private rechercheEmailId = 0;
+    private rechercheDestinataireId = 0;
+    private rechercheEquipeId = 0;
     agentsSelectionnes: Utilisateur[]=[];
     equipeProjet:Utilisateur[]=[];
     matriculeDestinataire = "";
@@ -89,13 +94,6 @@ export class CreationSopComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         try {
-            this.agents = await this.utilisateurService.getAll();
-        } catch (error) {
-            console.error('Erreur lors du chargement des agents', error);
-            this.toastr.error('Impossible de charger la liste des agents.', 'Erreur');
-        }
-
-        try {
             this.services = await this.serviceService.getAll();
         } catch (error) {
             console.error('Erreur lors du chargement des services', error);
@@ -123,7 +121,7 @@ export class CreationSopComponent implements OnInit {
             return [];
         }
 
-        return this.agents
+        return this.agentsEmailSuggerees
             .filter(agent =>
                 agent.mail &&
                 !this.agentsSelectionnes.some(
@@ -143,7 +141,7 @@ export class CreationSopComponent implements OnInit {
             return [];
         }
 
-        return this.agents
+        return this.destinatairesSuggereesBackend
             .filter(agent =>
                 agent.matricule &&
                 !this.destinataires.some(
@@ -158,7 +156,7 @@ export class CreationSopComponent implements OnInit {
         if(!recherche){
             return[];
         }
-        return this.agents
+        return this.equipeSuggereesBackend
                 .filter(agent => 
                     agent.matricule && 
                     !this.equipeProjet.some(
@@ -169,6 +167,66 @@ export class CreationSopComponent implements OnInit {
                         .includes(recherche)
                 )
                 .slice(0,8);
+    }
+
+    async rechercherParEmail(email: string): Promise<void> {
+        const recherche = email.trim();
+        const rechercheId = ++this.rechercheEmailId;
+        if (!recherche || this.enteteValidee) {
+            this.agentsEmailSuggerees = [];
+            return;
+        }
+        try {
+            const resultats = await this.utilisateurService.searchByMail(recherche);
+            if (rechercheId === this.rechercheEmailId) {
+                this.agentsEmailSuggerees = resultats;
+            }
+        } catch (error) {
+            console.error('Erreur lors de la recherche des agents par email', error);
+            if (rechercheId === this.rechercheEmailId) {
+                this.agentsEmailSuggerees = [];
+            }
+        }
+    }
+
+    async rechercherDestinataire(matricule: string): Promise<void> {
+        const recherche = matricule.trim();
+        const rechercheId = ++this.rechercheDestinataireId;
+        if (!recherche || this.destinatairesValides) {
+            this.destinatairesSuggereesBackend = [];
+            return;
+        }
+        try {
+            const resultats = await this.utilisateurService.searchByMatricule(recherche);
+            if (rechercheId === this.rechercheDestinataireId) {
+                this.destinatairesSuggereesBackend = resultats;
+            }
+        } catch (error) {
+            console.error('Erreur lors de la recherche des agents par matricule', error);
+            if (rechercheId === this.rechercheDestinataireId) {
+                this.destinatairesSuggereesBackend = [];
+            }
+        }
+    }
+
+    async rechercherEquipeParMatricule(matricule: string): Promise<void> {
+        const recherche = matricule.trim();
+        const rechercheId = ++this.rechercheEquipeId;
+        if (!recherche) {
+            this.equipeSuggereesBackend = [];
+            return;
+        }
+        try {
+            const resultats = await this.utilisateurService.searchByMatricule(recherche);
+            if (rechercheId === this.rechercheEquipeId) {
+                this.equipeSuggereesBackend = resultats;
+            }
+        } catch (error) {
+            console.error('Erreur lors de la recherche des agents par matricule', error);
+            if (rechercheId === this.rechercheEquipeId) {
+                this.equipeSuggereesBackend = [];
+            }
+        }
     }
     selectionnerDestinataire(agent: Utilisateur): void {
         if (this.destinatairesValides) {
@@ -222,7 +280,7 @@ export class CreationSopComponent implements OnInit {
         const agent = this.destinataireSelectionne &&
             this.destinataireSelectionne.matricule.trim().toLocaleLowerCase() === matricule
             ? this.destinataireSelectionne
-            : this.agents.find(
+            : this.destinatairesSuggereesBackend.find(
             utilisateur => utilisateur.matricule.trim().toLocaleLowerCase() === matricule
         );
         if (!agent) {
@@ -240,6 +298,7 @@ export class CreationSopComponent implements OnInit {
         this.destinataires = [...this.destinataires, { agent, action }];
         this.matriculeDestinataire = "";
         this.destinataireSelectionne = null;
+        this.destinatairesSuggereesBackend = [];
         this.actionDestinataire = "Approbation final";
     }
     private estImageValide(fichier: File): boolean {
@@ -297,9 +356,9 @@ export class CreationSopComponent implements OnInit {
         }
 
         const titre = this.titreFlowchart.trim();
-        if (!this.fichierFlowchart || !this.informationFlowchart) {
+        if (!this.fichierFlowchart) {
             this.toastr.warning(
-                "Saisissez l'information et choisissez une pièce jointe.",
+                "choisissez une pièce jointe.",
                 "Information manquante"
             );
             return;
@@ -343,7 +402,6 @@ export class CreationSopComponent implements OnInit {
         }
         if (
             this.flowchartDetailId === null ||
-            !this.informationsDetailFlowchart.trim() ||
             this.niveauDecalageDetail === null
         ) {
             this.toastr.warning(
@@ -532,13 +590,13 @@ export class CreationSopComponent implements OnInit {
         this.flowchartsValides = true;
     }
     validerDetailsFlowchart(): void {
-        if (this.detailsFlowchart.length === 0) {
+        /*if (this.detailsFlowchart.length === 0) {
             this.toastr.warning(
                 "Ajoutez au moins un détail avant de valider.",
                 "Aucun détail"
             );
             return;
-        }
+        }*/
         this.detailsFlowchartValides = true;
     }
     // 4 pages = 8 sections regroupées 2 par 2

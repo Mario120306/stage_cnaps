@@ -1,45 +1,111 @@
 import { Component, HostListener, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ToastrService } from "ngx-toastr";
-import { environment } from 'src/environments/environment';
+import { environment } from "src/environments/environment";
+import { Sop } from "../../model/sop.model";
+import { SopDetails, SopFlowchartEtape } from "../../services/sop.service";
+import { SopService } from "../../services/sop.service";
 
 interface FlowchartStep {
+    idFlowchart: string;
     titre: string;
+    numero: number;
     pieceJointe: string;
     informations: string;
     niveau: string;
+    etapes: NumberedFlowchartEtape[];
+    idPieceJointe: string | null;
+}
+
+interface NumberedFlowchartEtape extends SopFlowchartEtape {
+    numero: string;
 }
 
 @Component({
-    selector:'app-vueSOP',
-    templateUrl:'./vue-sop.component.html',
-    styleUrls:['./vue-sop.component.scss'],
+    selector: "app-vueSOP",
+    templateUrl: "./vue-sop.component.html",
+    styleUrls: ["./vue-sop.component.scss"]
 })
-export class VueSopComponent implements OnInit{
+export class VueSopComponent implements OnInit {
     idSop: string | null = null;
+    sop: Sop | null = null;
+    details: SopDetails | null = null;
+    flowchartEtapes: FlowchartStep[] = [];
     detailFlowchartSelectionne: FlowchartStep | null = null;
-    flowchartEtapes: FlowchartStep[] = [
-        {
-            titre: 'Ordre de Virement / Avis de Débit / Avis de Virement CCP [1h26mn]',
-            pieceJointe: 'Ordre_virment.png',
-            informations: 'Vérifier les informations du virement et joindre les documents nécessaires.',
-            niveau: 'Niveau 1 (Ex : 1.1)'
-        },
-        {
-            titre: 'Réception des Chèques et Mandats CCP [2h51mn]',
-            pieceJointe: 'Reception_cheque.jpg',
-            informations: 'Contrôler la réception des chèques et des mandats CCP.',
-            niveau: 'Niveau 2 (Ex : 1.1.1)'
-        }
-    ];
+    chargement = true;
 
     constructor(
-        private toastr:ToastrService,
-        private router:Router,
-        private route:ActivatedRoute
-    ){}
-    ngOnInit(): void {
-        this.idSop = this.route.snapshot.queryParamMap.get('idSop');
+        private toastr: ToastrService,
+        private router: Router,
+        private route: ActivatedRoute,
+        private sopService: SopService
+    ) {}
+
+    async ngOnInit(): Promise<void> {
+        this.idSop = this.route.snapshot.queryParamMap.get("idSop");
+        if (!this.idSop) {
+            this.chargement = false;
+            this.toastr.error("Aucun SOP sélectionné.", "Erreur");
+            return;
+        }
+
+        try {
+            this.details = await this.sopService.getDetails(this.idSop);
+            this.sop = this.details.sop;
+            let numeroTitre = 0;
+            const compteurs = [0, 0, 0, 0];
+            this.flowchartEtapes = this.details.flowcharts
+                .slice()
+                .sort((a, b) => (a.ordre || 0) - (b.ordre || 0))
+                .map(flowchart => {
+                    const titre = flowchart.titre || "";
+                    if (titre.trim()) {
+                        numeroTitre++;
+                        compteurs.fill(0);
+                    } else if (numeroTitre === 0) {
+                        numeroTitre = 1;
+                    }
+
+                    const etapes = this.details!.flowchartEtapes
+                        .filter(etape => etape.idFlowchart === flowchart.idFlowchart)
+                        .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+                    const etapesNumerotees = etapes.map(etape => {
+                        const profondeur = Math.max(0, Math.min(compteurs.length - 1, (etape.niveau || 1) - 1));
+                        for (let index = 0; index < profondeur; index++) {
+                            if (compteurs[index] === 0) {
+                                compteurs[index] = 1;
+                            }
+                        }
+                        compteurs[profondeur]++;
+                        for (let index = profondeur + 1; index < compteurs.length; index++) {
+                            compteurs[index] = 0;
+                        }
+
+                        return {
+                            ...etape,
+                            numero: [numeroTitre, ...compteurs.slice(0, profondeur + 1)].join(".")
+                        };
+                    });
+                    const pieceJointe = this.details!.piecesJointes.find(
+                        piece => piece.idPieceJointe === flowchart.idPieceJointe
+                    );
+                    return {
+                        idFlowchart: flowchart.idFlowchart,
+                        titre,
+                        numero: numeroTitre,
+                        pieceJointe: pieceJointe?.nomFichier || "Aucune pièce jointe",
+                        informations: flowchart.information || "",
+                        niveau: etapesNumerotees.map(etape => `Niveau ${etape.niveau ?? "-"}`).join(", "),
+                        etapes: etapesNumerotees,
+                        idPieceJointe: flowchart.idPieceJointe
+                    };
+                });
+        } catch (error) {
+            console.error("Erreur lors du chargement du SOP", error);
+            this.toastr.error("Les données du SOP n'ont pas pu être chargées.", "Erreur");
+        } finally {
+            this.chargement = false;
+        }
     }
 
     ouvrirDetailFlowchart(etape: FlowchartStep): void {
@@ -50,76 +116,75 @@ export class VueSopComponent implements OnInit{
         this.detailFlowchartSelectionne = null;
     }
 
-    @HostListener('document:keydown.escape')
+    @HostListener("document:keydown.escape")
     fermerDetailFlowchartAvecEchap(): void {
         this.fermerDetailFlowchart();
     }
 
-    info():void{
-        this.toastr.info('Message /notification INFO','');
-    }
-    success(): void {
-        this.toastr.success('Message / notification SUCCESS', '');
+    pieceJointeNom(idPieceJointe: string | null): string {
+        return this.details?.piecesJointes.find(piece => piece.idPieceJointe === idPieceJointe)?.nomFichier
+            || "Aucune pièce jointe";
     }
 
-    warning(): void {
-        this.toastr.warning('Message / notification WARNING', '');
+    pieceJointeImage(idPieceJointe: string | null): string | null {
+        const piece = this.details?.piecesJointes.find(item => item.idPieceJointe === idPieceJointe);
+        if (!piece?.contenu) {
+            return null;
+        }
+        if (piece.contenu.startsWith("data:")) {
+            return piece.contenu;
+        }
+        return `data:${piece.typeMime || "image/*"};base64,${piece.contenu}`;
     }
 
-    error(): void {
-        this.toastr.error('Message / notification ERROR', '');
+    get referencesText(): string {
+        return this.details?.references?.length
+            ? this.details.references.map(reference => reference.contenu || "").join("\n\n")
+            : "Aucune référence";
     }
 
     annuler(): void {
-        this.router.navigate(['/system-sop/liste-sop']);
+        this.router.navigate(["/system-sop/liste-sop"]);
     }
 
     modifier(): void {
-        this.router.navigate(['/system-sop/creation-sop'], {
+        this.router.navigate(["/system-sop/creation-sop"], {
             queryParams: this.idSop ? { idSop: this.idSop } : {}
         });
     }
 
     supprimer(): void {
-        if (window.confirm('Voulez-vous supprimer ce SOP ?')) {
-            this.router.navigate(['/system-sop/liste-sop']);
+        if (window.confirm("Voulez-vous supprimer ce SOP ?")) {
+            this.router.navigate(["/system-sop/liste-sop"]);
         }
     }
 
     async telechargerPdf(): Promise<void> {
         if (!this.idSop) {
-            this.toastr.error('Aucun SOP sélectionné pour le téléchargement.', 'Téléchargement PDF');
+            this.toastr.error("Aucun SOP sélectionné pour le téléchargement.", "Téléchargement PDF");
             return;
         }
-
         try {
             const response = await fetch(`${environment.apiUrl}/exports/last/${this.idSop}/download`, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/pdf'
-                }
+                headers: { Accept: "application/pdf" }
             });
-
             if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text || 'Aucun PDF exporté pour ce SOP.');
+                throw new Error((await response.text()) || "Aucun PDF exporté pour ce SOP.");
             }
-
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            const fileName = `SOP_${this.idSop}.pdf`;
-
+            const link = document.createElement("a");
+            const fileName = response.headers.get("X-Pdf-Filename") || `sop-${this.sop?.numeroSop || this.idSop}.pdf`;
             link.href = url;
             link.download = fileName;
             document.body.appendChild(link);
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
-            this.toastr.success('Téléchargement du PDF terminé.', 'PDF');
+            this.toastr.success("Téléchargement du PDF terminé.", "PDF");
         } catch (error: any) {
-            console.error('Erreur téléchargement PDF', error);
-            this.toastr.error(error?.message || 'Le PDF n’a pas pu être téléchargé.', 'Téléchargement PDF');
+            console.error("Erreur téléchargement PDF", error);
+            this.toastr.error(error?.message || "Le PDF n'a pas pu être téléchargé.", "Téléchargement PDF");
         }
     }
-}    
+}

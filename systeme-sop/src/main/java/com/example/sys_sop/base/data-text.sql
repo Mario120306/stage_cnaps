@@ -37,7 +37,7 @@ INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT002', 'MAN
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT003', 'Service Level Agreement(SLA)', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT004', 'CNaPS Standard Operating Procedure Manuel', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT005', 'Note sur la publication', 'O');
-INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT006', 'Ce guide est publié par la', 'O');
+INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT006', 'Ce guide est publié par :', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT007', 'de la Caisse Nationationale de Prévoyance Sociale, à l''usage exclusif des employés et agents autorisés.', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT008', 'Il contient des informations confidentielles, propriété de la Caisse, et à n''importe quelles conditions ne peut être délivré à toute personne étrangère à la Caisse sans autorisation expresse.', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT009', 'Marque déposée', 'O');
@@ -56,5 +56,6 @@ INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT021', 'La 
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT022', 'Légendes', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT023', 'Etapes :', 'O');
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT024', 'Annexes', 'O'); -- Note : J'ai remplacé le doublon TXT022 par TXT024 pour l'annexe
+INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT025', 'CNaPS', 'O');
 
 COMMIT;

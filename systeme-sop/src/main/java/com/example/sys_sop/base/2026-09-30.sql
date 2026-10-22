@@ -194,8 +194,14 @@ CREATE TABLE SOP_EXPORT(
     date_export         DATE DEFAULT SYSDATE NOT NULL,
     nom_fichier_pdf     VARCHAR2(255),
     genere_par          VARCHAR2(10),
+    contenu_pdf         BLOB,
     CONSTRAINT fk_export_sop FOREIGN KEY (id_sop) 
         REFERENCES SOP(id_sop) ON DELETE CASCADE,
     CONSTRAINT fk_export_version FOREIGN KEY (id_version) 
         REFERENCES SOP_VERSION(id_version)
 );
+
+CREATE SEQUENCE seq_sop
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE;

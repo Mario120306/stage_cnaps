@@ -75,6 +75,7 @@
                             placeholder="Rechercher par nom ou adresse mail"
                             autocomplete="off"
                             [(ngModel)]="rechercheEmail"
+                            (ngModelChange)="rechercherParEmail($event)"
                             [readonly]="enteteValidee"
                           />
                           <ul class="agent-suggestions" *ngIf="agentsSuggerees.length">
@@ -140,7 +141,7 @@
                             placeholder="Saisir le matricule"
                             autocomplete="off"
                             [(ngModel)]="matriculeDestinataire"
-                            (ngModelChange)="modifierMatriculeDestinataire($event)"
+                            (ngModelChange)="modifierMatriculeDestinataire($event); rechercherDestinataire($event)"
                             [readonly]="destinatairesValides"
                           />
                           <ul class="agent-suggestions" *ngIf="destinatairesSuggerees.length">
@@ -235,6 +236,7 @@
                               placeholder="Saisir le matricule"
                               autocomplete="off"
                               [(ngModel)]="rechercheEquipe"
+                              (ngModelChange)="rechercherEquipeParMatricule($event)"
                               [readOnly]="equipeProjetValides"
                               />
                               <ul class="agent-suggestions" *ngIf="equipeSuggeree.length">
@@ -289,7 +291,7 @@
                   <fieldset class="w-100 d-flex flex-column">
                     <legend><i class="fa pr-2"></i>GLOSSAIRE</legend>
                     <div class="form-row align-items-end">
-                      <div class="form-group col-md-5">
+                      <div class="form-group col-md-3">
                         <label class="text-info">Acronyme*</label>
                         <input 
                             type="text" 
@@ -299,7 +301,7 @@
                             [disabled]="glossaireValides"
                             />
                       </div>
-                      <div class="form-group col-md-4">
+                      <div class="form-group col-md-6">
                         <label class="text-info">Termes*</label>
                         <input 
                             type="text" 

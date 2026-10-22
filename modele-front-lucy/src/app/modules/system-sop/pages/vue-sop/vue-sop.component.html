@@ -4,264 +4,234 @@
             <div class="card">
                 <div class="card-body">
                     <fieldset>
-                        <legend>
-                            <i class="fa fa-file-invoice pr-2"></i> VUE DU SOP
-                        </legend>
-                        <div class="row mb-3">
-                            <div class="col-md-6 d-flex">
-                                <fieldset class="w-100 d-flex flex-column">
-                                    <legend><i class="fa pr-2"></i>ENTETE</legend>
-                                    <div class="form-row align-items-end">
-                                        <div class="form-group col-md-6">
-                                            <label class="text-info">Titre du SOP</label>
-                                            <input type="text"
-                                                    class="form-control"  
-                                                   value="Procedure de reception des livraisons" 
-                                                   readonly>
+                        <legend><i class="fa fa-file-invoice pr-2"></i> VUE DU SOP</legend>
+                        <div *ngIf="chargement" class="text-center p-4">Chargement des données du SOP...</div>
+                        <div *ngIf="!chargement && sop">
+                            <div class="row mb-3">
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>ENTÊTE</legend>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label class="text-info">Titre du SOP</label>
+                                                <input class="form-control" [value]="sop?.titre || ''" readonly>
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <label class="text-info">Numéro</label>
+                                                <input class="form-control" [value]="sop?.numeroSop || ''" readonly>
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <label class="text-info">Version</label>
+                                                <input class="form-control" [value]="sop?.versionCourante || ''" readonly>
+                                            </div>
                                         </div>
-                                        <div class="form-group col-md-3">
-                                            <label class="text-info">Numéro du SOP</label>
-                                            <input type="text"
-                                                    class="form-control"
-                                                    value="SOP030"
-                                                    readonly>
-                                        </div>
-                                        <div class="form-group col-md-3">
-                                            <label class="text-info">Numéro du version</label>
-                                            <input type="text"
-                                                    class="form-control"
-                                                    value="2"
-                                                    readonly>
-                                        </div>
-                                    </div>
-                                    <div class="form-row align-items-center flex-grow-1">
-                                            <div class="form-group  col-md-6">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
                                                 <label class="text-info">Direction</label>
-                                                <input  type="text" 
-                                                        class="form-control"
-                                                        value="Direction Systeme d Information"
-                                                        readonly
-                                                />
+                                                <input class="form-control" [value]="sop?.libelleDirection || ''" readonly>
+                                            </div>
+                                            <div class="form-group col-md-6">
                                                 <label class="text-info">Service</label>
-                                                <input  type="text" 
-                                                        class="form-control"
-                                                        value="Service Support Technique"
-                                                        readonly
-                                                />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <table class="table table-borderless border" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Email des agents à afficher (commentaire)</th>
-                                                    </tr>
-                                                </thead>    
-                                                <tbody class="text-center">
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Rabenaivo.sedra@cnaps.mg</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Randrianimerina.rova@cnaps.mg</td>
-                                                    </tr>
-                                                </tbody>
-                                                </table>
+                                                <input class="form-control" [value]="sop?.libelleService || ''" readonly>
                                             </div>
                                         </div>
-                                </fieldset>
-                            </div>
-                            <div class="col-md-6 d-flex">
-                                <fieldset class="w-100 d-flex flex-column">
-                                    <legend><i class="fa pr-2"></i>LISTE DES DESTINATAIRES</legend>
-                                        <div class="form-row align-items-start flex-grow-1">
-                                            
-                                            <div class="col-md-12">
-                                                <table class="table table-borderless border" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Nom</th>
-                                                        <th>Fonction</th>
-                                                        <th>Action</th>
-                                                        <th>Email de l'agent</th>
-                                                        <th>Action par selection</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="text-center">
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Rabenaivo sedra</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Directeur de service</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Approbation final</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Rabenaivo.sedra@cnaps.mg</td>
-                                                        <td class="text-left" style="font-size: 13px;">Approbation final</td>
-                                                    </tr>
-                                                    <tr><td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Randrianimerina rova</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Devellopeur</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Approbation final</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Randrianimerina.rova@cnaps.mg</td>
-                                                        <td class="text-left" style="font-size: 13px;">Approbation final</td>
-                                                    </tr>
-                                                </tbody>
-                                                </table>
-                                            </div>
-                                        </div>    
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6 d-flex">
-                                <fieldset class="w-100 d-flex flex-column">
-                                    <legend><i class="fa pr-2"></i>EQUIPE DE PROJETS</legend>
-                                        <div class="form-row align-items-start flex-grow-1">
-                                            <div class="col-md-12">
-                                                <table class="table table-borderless border" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Nom</th>
-                                                        <th>Fonction</th>
-                                                        <th>Email de l'agent</th>
-                                                        <th>Numero du teléphone</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="text-center">
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Rabenaivo sedra</td>                                                       <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Directeur</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Rabenaivo.sedra@cnaps.mg</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">+261 32 53 869 05</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Randrianiriana rija</td>                                                    <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Recepteur</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Rabenaivo.sedra@cnaps.mg</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">+261 32 53 869 05</td>
-                                                </tbody>
-                                                </table>
-                                            </div>
-                                        </div>    
-                                </fieldset>
-                            </div>
-                            <div class="col-md-6 d-flex">
-                                <fieldset class="w-100 d-flex flex-column">
-                                    <legend> <i class="fa pr-2"></i>GLOSSAIRE  <i class="fa pr-2"></i>ET  HISTORIQUE</legend>
-                                    <div class="form-row align-items-start">
-                                        <div class="col-md-6">
-                                            <table class="table table-borderless border" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Acronyme</th>
-                                                        <th>Termes</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="text-center">
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">AC</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Avis de Crédit</td>                                                        
-                                                    </tr>                                                  <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Imm & DNS</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Immatriculation et Déclaration Nominative des Salaires</td>                                                        
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <table class="table table-borderless border" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date de sortie</th>
-                                                        <th>version</th>
-                                                        <th>Modification</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="text-center">
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">20/11/2026</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">0.1</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Draft version</td>                                                        
-                                                    </tr>                                                  
-                                                    <tr>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">12/12/2026</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">0.2</td>
-                                                        <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">Draft version</td>                                                         
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6 d-flex">
-                                <fieldset class="w-100 d-flex flex-column">
-                                    <legend><i class="fa pr-2"></i> FLOWCHART ET DETAILS</legend>
-                                    <div class="form-row align-items-start flex-grow-1">
-                                        <div class="col-md-12">
-                                            <table class="table table-borderless border" style="font-size: 11px;">
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>CONTACTS À AFFICHER</legend>
+                                        <table class="table table-borderless border">
                                             <thead>
                                                 <tr>
-                                                    <th>Titre du document</th>
-                                                    <th>Pièce jointe</th>
-                                                <th></th>
+                                                    <th>Email</th>
+                                                    <th>Matricule</th>
                                                 </tr>
                                             </thead>
-                                            <tbody class="text-center">
-                                                <tr *ngFor="let etape of flowchartEtapes">
-                                                    <td class="text-left" style="font-size: 13px;color: rgb(154,154,154);">{{ etape.titre }}</td>
-                                                    <td class="text-left" style="font-size: 13px;">{{ etape.pieceJointe }}</td>
-                                                    <td class="text-center">
-                                                        <button type="button" class="btn-fa-eye" title="Voir le détail"
-                                                                (click)="ouvrirDetailFlowchart(etape)">
-                                                            Voir détails
-                                                        </button>
-                                                    </td>
+                                            <tbody>
+                                                <tr *ngFor="let contact of details?.contacts">
+                                                    <td>{{ contact.email || '-' }}</td>
+                                                    <td>{{ contact.matricule || '-' }}</td>
                                                 </tr>
+                                                <tr *ngIf="!details?.contacts?.length"><td colspan="2">Aucun contact</td></tr>
                                             </tbody>
-                                            </table>
+                                        </table>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <fieldset>
+                                        <legend>SYNTHÈSE DU SOP</legend>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Auteur</label>
+                                                <input class="form-control" [value]="sop?.auteurMatricule || '-'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Création</label>
+                                                <input class="form-control" [value]="sop?.dateCreation ? (sop.dateCreation | date:'dd/MM/yyyy') : '-'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Modification</label>
+                                                <input class="form-control" [value]="sop?.dateModification ? (sop.dateModification | date:'dd/MM/yyyy') : '-'" readonly>
+                                            </div>
                                         </div>
-                                    </div>
-                                </fieldset>    
-                            </div>
-                            <div class="col-md-6 d-flex">
-                                <fieldset class="w-100 d-flex flex-column">
-                                    <legend><i class="fa pr-2"></i>REFERENCES LEGALES ET REGLEMENTAIRES</legend>
-                                    <div class="form-row">
-                                        <div class="form-group col-md-12">
-                                            <textarea class="form-control"
-                                                style="min-height: 350px;" readonly>
-                                                La Caisse Nationale de Prévoyance Sociale est un établissement public à caractère industriel et commercial. A ce titre, elle est soumise aux législations et règlementations relatives à ces établissements.
-                                                        Suivant les dispositions de l’article 4 de l’Ordonnance N° 62-078 du 29 Septembre 1962 portant création de la caisse nationale d’allocations familiales et d’ accidents du travail, d’une part, et l’article 1er de la loi N°68-023 du 17 Décembre 1968 instituant un régime de retraites et créant la caisse nationale de prévoyance sociale, d’autre part, la CNaPS est chargée de gérer les régimes de compensation :
-                                                        -	des prestations familiales ;
-                                                        -	des accidents du travail et maladies professionnelles ;
-                                                        -	des prestations de retraite.
-
-                                                        Le Décret N°69-145 du 8 Avril 1969 fixant le Code de Prévoyance Sociale définit les catégories de bénéficiaires, les conditions d’octroi ainsi que les bases de calcul des droits relatifs aux prestations gérées par la CNaPS.
-
-                                                        Le Livre I du Code traite l’organisation et le fonctionnement de la Caisse Nationale de Prévoyance Sociale.
-                                                        L’organisation de la Caisse décrit dans ce premier livre du code est composée :
-                                                        •	du Conseil d’Administration ;
-                                                        •	des services sous l’autorité du Directeur (les opérations financières et comptables sont effectuées par le Directeur et l’Agent Comptable) ;
-                                                        •	de la tutelle de la caisse. Cette dernière est, selon l’article 26 du Code :
-                                                        o	à la tutelle du Ministère du Travail, de l’Emploi, de la Fonction Publique et des Lois Sociales (MTEFPLS),
-                                                        o	à la tutelle conjointe du MTEFPLS et du Ministère des Finances en ce qui concerne les opérations financières.
-
-                                                        Le fonctionnement de la Caisse figuré dans le titre II du Code se présente comme suit : est décrit dans le premier chapitre les ressources et dépenses de la caisse et dans le deuxième chapitre les règles financières et comptables
-                                                        Le rôle du Directeur dans la section I du deuxième chapitre est défini, dans sa disposition générale ‘art 51 du code à constater et liquider les droits et charges de la caisse
-                                            </textarea>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Version</label>
+                                                <input class="form-control" [value]="(details?.versions?.length || 0) + ' Version(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Contact</label>
+                                                <input class="form-control" [value]="(details?.contacts?.length || 0) + ' Contact(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Destinataire</label>
+                                                <input class="form-control" [value]="(details?.destinataires?.length || 0) + ' Destinataire(s)'" readonly>
+                                            </div>
                                         </div>
-                                    </div>
-                                </fieldset>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Équipe</label>
+                                                <input class="form-control" [value]="(details?.equipeProjet?.length || 0) + ' Membre(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Flowchart</label>
+                                                <input class="form-control" [value]="(details?.flowcharts?.length || 0) + ' Flowchart(s)'" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Annexe</label>
+                                                <input class="form-control" [value]="(details?.annexes?.length || 0) + ' Annexe(s)'" readonly>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
                             </div>
-                            <div class="sop-actions">
-                                <button type="button" class="btn sop-btn-create" (click)="modifier()">
-                                    <i class="fa fa-edit pr-1"></i> MODIFIER
-                                </button>
-                                <button type="button" class="btn sop-btn-delete" (click)="supprimer()">
-                                    <i class="fa fa-trash pr-1"></i> SUPPRIMER
-                                </button>
-                                <button type="button" class="btn sop-btn-download" (click)="telechargerPdf()">
-                                    <i class="fa fa-file-pdf pr-1"></i> TÉLÉCHARGER PDF
-                                </button>
-                                <button type="button" class="btn sop-btn-cancel" (click)="annuler()">
-                                    <i class="fa fa-times pr-1"></i> ANNULER
-                                </button>
+
+                            <div class="row mb-3">              
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>ÉQUIPE DE PROJET</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Fonction</th><th>Email</th><th>Téléphone</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let membre of details?.equipeProjet">
+                                                    <td>{{ membre.nom || '-' }}</td><td>{{ membre.fonction || '-' }}</td>
+                                                    <td>{{ membre.email || '-' }}</td><td>{{ membre.telephone || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.equipeProjet?.length"><td colspan="4">Aucun membre</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>HISTORIQUE DES VERSIONS</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Date</th><th>Version</th><th>Modification</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let version of details?.versions">
+                                                    <td>{{ version.dateEntree | date:'dd/MM/yyyy' }}</td>
+                                                    <td>{{ version.numeroVersion }}</td>
+                                                    <td>{{ version.libelleModification || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.versions?.length"><td colspan="3">Aucun historique</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+                                </div>
                             </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>GLOSSAIRE</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Acronyme</th><th>Terme</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let terme of details?.glossaire">
+                                                    <td>{{ terme.acronyme || '-' }}</td><td>{{ terme.terme || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.glossaire?.length"><td colspan="2">Aucun terme</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>LISTE DES DESTINATAIRES</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Organisation</th><th>Action</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let destinataire of details?.destinataires">
+                                                    <td>{{ destinataire.nom || destinataire.matricule || '-' }}</td>
+                                                    <td>{{ destinataire.organisation || '-' }}</td>
+                                                    <td>{{ destinataire.action || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.destinataires?.length"><td colspan="3">Aucun destinataire</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+                                </div> 
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>FLOWCHART ET DÉTAILS</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Titre</th><th>Pièce jointe</th><th></th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let etape of flowchartEtapes">
+                                                    <td>{{ etape.titre }}</td><td>{{ etape.pieceJointe }}</td>
+                                                    <td><button type="button" class="btn-fa-eye" (click)="ouvrirDetailFlowchart(etape)">Voir détails</button></td>
+                                                </tr>
+                                                <tr *ngIf="!flowchartEtapes.length"><td colspan="3">Aucun flowchart</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
+                                        <legend>RÉFÉRENCES LÉGALES ET RÉGLEMENTAIRES</legend>
+                                        <textarea class="form-control references" readonly>{{ referencesText }}</textarea>
+                                    </fieldset>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <fieldset>
+                                        <legend>ANNEXES</legend>
+                                        <ul>
+                                            <li *ngFor="let annexe of details?.annexes" class="annexe-item">
+                                                <div>{{ annexe.titre || 'Annexe' }} - {{ pieceJointeNom(annexe.idPieceJointe) }}</div>
+                                                <img *ngIf="pieceJointeImage(annexe.idPieceJointe) as image"
+                                                    class="annexe-image" [src]="image" [alt]="annexe.titre || 'Annexe'">
+                                                <div *ngIf="!pieceJointeImage(annexe.idPieceJointe)" class="text-muted">
+                                                    Image indisponible
+                                                </div>
+                                            </li>
+                                            <li *ngIf="!details?.annexes?.length">Aucune annexe</li>
+                                        </ul>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="!chargement && !sop" class="alert alert-warning">SOP introuvable.</div>
+                        <div class="sop-actions">
+                            <button type="button" class="btn sop-btn-create" (click)="modifier()" [disabled]="!sop">
+                                <i class="fa fa-edit pr-1" aria-hidden="true"></i> MODIFIER
+                            </button>
+                            <button type="button" class="btn sop-btn-delete" (click)="supprimer()">
+                                <i class="fa fa-trash pr-1" aria-hidden="true"></i> SUPPRIMER
+                            </button>
+                            <button type="button" class="btn sop-btn-download" (click)="telechargerPdf()" [disabled]="!sop">
+                                <i class="fa fa-download pr-1" aria-hidden="true"></i> TÉLÉCHARGER PDF
+                            </button>
+                            <button type="button" class="btn sop-btn-cancel" (click)="annuler()">
+                                <i class="fa fa-times pr-1" aria-hidden="true"></i> ANNULER
+                            </button>
                         </div>
                     </fieldset>
                 </div>
@@ -269,39 +239,39 @@
         </div>
     </div>
 </div>
+
 <div *ngIf="detailFlowchartSelectionne" class="flowchart-modal-backdrop" (click)="fermerDetailFlowchart()">
-    <section class="flowchart-modal" role="dialog" aria-modal="true"
-        aria-labelledby="flowchart-modal-title" (click)="$event.stopPropagation()">
-            <header class="flowchart-modal-header">
-                <h2 id="flowchart-modal-title" style="color: #0f2d67;font-weight:700;font-size:15px;">Détail du flowchart</h2>
-                <button type="button" class="flowchart-modal-close" aria-label="Fermer" title="Fermer"
-                    (click)="fermerDetailFlowchart()">
-                    <i class="fa fa-times"></i>
-                </button>
-            </header>
-            <div class="flowchart-modal-content">
-                <aside class="flowchart-preview" aria-label="Flowchart des étapes">
-                    <h3>FLOWCHART</h3>
-                    <div class="flowchart-diagram">
-                    
-                    </div>
-                </aside>
-                    <div class="flowchart-detail-scroll">
-                        <div class="flowchart-detail">
-                            <p class="flowchart-detail-label">Titre du document</p>
-                            <p>{{ detailFlowchartSelectionne.titre }}</p>
-                            <p class="flowchart-detail-label">Pièce jointe</p>
-                            <p>{{ detailFlowchartSelectionne.pieceJointe }}</p>
-                            <p class="flowchart-detail-label">Informations nécessaires</p>
-                            <p>{{ detailFlowchartSelectionne.informations }}</p>
-                            <p class="flowchart-detail-label">Niveau de décalage</p>
-                            <p>{{ detailFlowchartSelectionne.niveau }}</p>
-                        </div>
-                    </div>
-            </div>    
-            <footer class="flowchart-modal-footer">
-                <button type="button" class="btn cnaps-btn-valider" (click)="fermerDetailFlowchart()">FERMER</button>
-            </footer>
-    </section>    
+    <section class="flowchart-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header class="flowchart-modal-header">
+        
+        </header>
+        <div class="flowchart-modal-content">
+            <aside class="flowchart-preview">
+                <img *ngIf="pieceJointeImage(detailFlowchartSelectionne.idPieceJointe) as image"
+                    class="flowchart-image" [src]="image" [alt]="detailFlowchartSelectionne.pieceJointe">
+                <div *ngIf="!pieceJointeImage(detailFlowchartSelectionne.idPieceJointe)" class="text-muted">
+                    Image indisponible
+                </div>
+            </aside>
+            <div class="flowchart-detail-scroll">
+                <div class="flowchart-detail">
+                    <p class="flowchart-detail-label">Titre du document</p>
+                    <p *ngIf="detailFlowchartSelectionne.titre.trim()">
+                        <strong>{{ detailFlowchartSelectionne.numero }}. {{ detailFlowchartSelectionne.titre }}</strong>
+                    </p>
+                    <p *ngIf="!detailFlowchartSelectionne.titre.trim()">Aucun titre</p>
+                    <p class="flowchart-detail-label">Pièce jointe</p><p>{{ detailFlowchartSelectionne.pieceJointe }}</p>
+                    <p class="flowchart-detail-label">Informations nécessaires</p><p>{{ detailFlowchartSelectionne.informations || '-' }}</p>
+                    <p class="flowchart-detail-label">Étapes</p>
+                    <p *ngFor="let etape of detailFlowchartSelectionne.etapes"
+                       class="flowchart-step-detail"
+                       [style.margin-left.rem]="((etape.niveau || 1) - 1) * 1.5">
+                        {{ etape.numero }}. {{ etape.information || '-' }} (niveau {{ etape.niveau || '-' }})
+                    </p>
+                    <p *ngIf="!detailFlowchartSelectionne.etapes.length">Aucune étape</p>
+                </div>
+            </div>
+        </div>
+        <footer class="flowchart-modal-footer"><button type="button" class="btn cnaps-btn-valider" (click)="fermerDetailFlowchart()">FERMER</button></footer>
+    </section>
 </div>
- 

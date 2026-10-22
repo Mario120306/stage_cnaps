@@ -8,7 +8,7 @@ export const environment = {
   FILE_STORAGE: "http://192.168.2.177:88/filestorage",
   GRH: 'http://192.168.2.242/grh',
   MERCURE_PUBLISH_URL: "http://192.168.2.242:3000/.well-known/mercure",
-  apiUrl:"http://localhost:8080/api",
+  apiUrl:"http://localhost:8081/api",
 };
 
 /*

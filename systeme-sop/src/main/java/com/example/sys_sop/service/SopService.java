@@ -33,6 +33,7 @@ import com.example.sys_sop.modele.PieceJointe;
 import com.example.sys_sop.modele.Reference;
 import com.example.sys_sop.modele.Sop;
 import com.example.sys_sop.modele.Version;
+import com.example.sys_sop.modele.Export;
 import com.example.sys_sop.repository.AnnexeRepository;
 import com.example.sys_sop.repository.ContactRepository;
 import com.example.sys_sop.repository.DestinataireRepository;
@@ -44,6 +45,7 @@ import com.example.sys_sop.repository.PieceJointeRepository;
 import com.example.sys_sop.repository.ReferenceRepository;
 import com.example.sys_sop.repository.SopRepository;
 import com.example.sys_sop.repository.VersionRepository;
+import com.example.sys_sop.repository.ExportRepository;
 
 @Service
 public class SopService {
@@ -58,6 +60,8 @@ public class SopService {
     private final AnnexeRepository annexeRepository;
     private final FlowchartRepository flowchartRepository;
     private final FlowchartEtapeRepository flowchartEtapeRepository;
+    private final ExportRepository exportRepository;
+    private final PdfExportService pdfExportService;
 
     public SopService(
             SopRepository repository,
@@ -70,7 +74,9 @@ public class SopService {
             PieceJointeRepository pieceJointeRepository,
             AnnexeRepository annexeRepository,
             FlowchartRepository flowchartRepository,
-            FlowchartEtapeRepository flowchartEtapeRepository) {
+            FlowchartEtapeRepository flowchartEtapeRepository,
+            ExportRepository exportRepository,
+            PdfExportService pdfExportService) {
         this.repository = repository;
         this.versionRepository = versionRepository;
         this.contactRepository = contactRepository;
@@ -82,6 +88,8 @@ public class SopService {
         this.annexeRepository = annexeRepository;
         this.flowchartRepository = flowchartRepository;
         this.flowchartEtapeRepository = flowchartEtapeRepository;
+        this.exportRepository = exportRepository;
+        this.pdfExportService = pdfExportService;
     }
     public List<Sop> findAll() { 
         return repository.findAll(); 
@@ -105,7 +113,7 @@ public class SopService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le matricule du créateur est obligatoire.");
         }
 
-        long numero = repository.countSops() + 1;
+        long numero = repository.nextSopNumber();
         String numeroSop = String.format(java.util.Locale.ROOT, "SOP%03d", numero);
         Sop sop = new Sop(numeroSop, numeroSop, request.getTitre(), "1",
                 request.getCodeService(), request.getAuteurMatricule(), 0,
@@ -171,6 +179,11 @@ public class SopService {
             flowchartEtapeRepository.create(new FlowchartEtape(newId(), idFlowchart, etape.getInformation(),
                     etape.getNiveau(), modeNumerotation, etape.getOrdre()));
         }
+
+        byte[] pdf = pdfExportService.generate(sop);
+        String nomFichierPdf = numeroSop +"_"+ sop.getTitre()+"_"+ "CNaPS" + "_v" + sop.getVersionCourante() + ".pdf";
+        exportRepository.create(new Export(newId(), numeroSop, idVersion, "Draft version", 1, null,
+                nomFichierPdf, request.getAuteurMatricule()), pdf);
 
         return repository.findById(numeroSop).orElse(sop);
     }
