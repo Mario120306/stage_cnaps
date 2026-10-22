@@ -1,0 +1,79 @@
+# Frontend (modele-front-lucy)
+
+# Compiled output
+/modele-front-lucy/dist/
+/modele-front-lucy/tmp/
+/modele-front-lucy/out-tsc/
+/modele-front-lucy/bazel-out/
+
+# Dependencies
+/modele-front-lucy/node_modules/
+
+# Profiling files
+/modele-front-lucy/chrome-profiler-events*.json
+
+# IDEs and editors
+/modele-front-lucy/.idea/
+/modele-front-lucy/.project
+/modele-front-lucy/.classpath
+/modele-front-lucy/.c9/
+/modele-front-lucy/*.launch
+/modele-front-lucy/.settings/
+/modele-front-lucy/*.sublime-workspace
+/modele-front-lucy/.vscode/*
+!/modele-front-lucy/.vscode/settings.json
+!/modele-front-lucy/.vscode/tasks.json
+!/modele-front-lucy/.vscode/launch.json
+!/modele-front-lucy/.vscode/extensions.json
+/modele-front-lucy/.history/
+
+# Miscellaneous
+/modele-front-lucy/.sass-cache/
+/modele-front-lucy/connect.lock
+/modele-front-lucy/coverage/
+/modele-front-lucy/libpeerconnection.log
+/modele-front-lucy/npm-debug.log
+/modele-front-lucy/yarn-error.log
+/modele-front-lucy/testem.log
+/modele-front-lucy/typings/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Backend (systeme-sop)
+/systeme-sop/target/
+!/systeme-sop/**/src/main/**/target/
+!/systeme-sop/**/src/test/**/target/
+
+# Spring Tool Suite
+/systeme-sop/.apt_generated/
+/systeme-sop/.classpath
+/systeme-sop/.factorypath
+/systeme-sop/.project
+/systeme-sop/.settings/
+/systeme-sop/.springBeans
+/systeme-sop/.sts4-cache/
+
+# IntelliJ IDEA
+/systeme-sop/.idea/
+/systeme-sop/*.iws
+/systeme-sop/*.iml
+/systeme-sop/*.ipr
+
+# NetBeans
+/systeme-sop/nbproject/private/
+/systeme-sop/nbbuild/
+/systeme-sop/dist/
+/systeme-sop/nbdist/
+/systeme-sop/.nb-gradle/
+/systeme-sop/build/
+!/systeme-sop/**/src/main/**/build/
+!/systeme-sop/**/src/test/**/build/
+
+# VS Code
+/systeme-sop/.vscode/
+
+# Maven wrapper
+/systeme-sop/.mvn/wrapper/maven-wrapper.jar
+/systeme-sop/HELP.md

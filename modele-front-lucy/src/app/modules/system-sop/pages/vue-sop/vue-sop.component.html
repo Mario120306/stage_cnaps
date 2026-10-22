@@ -111,6 +111,21 @@
                             <div class="row mb-3">              
                                 <div class="col-md-6 d-flex">
                                     <fieldset class="w-100">
+                                        <legend>ÉQUIPE DE PROJET</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Fonction</th><th>Email</th><th>Téléphone</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let membre of details?.equipeProjet">
+                                                    <td>{{ membre.nom || '-' }}</td><td>{{ membre.fonction || '-' }}</td>
+                                                    <td>{{ membre.email || '-' }}</td><td>{{ membre.telephone || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.equipeProjet?.length"><td colspan="4">Aucun membre</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+                                </div>
+                                <div class="col-md-6 d-flex">
+                                    <fieldset class="w-100">
                                         <legend>HISTORIQUE DES VERSIONS</legend>
                                         <table class="table table-borderless border">
                                             <thead><tr><th>Date</th><th>Version</th><th>Modification</th></tr></thead>
@@ -121,21 +136,6 @@
                                                     <td>{{ version.libelleModification || '-' }}</td>
                                                 </tr>
                                                 <tr *ngIf="!details?.versions?.length"><td colspan="3">Aucun historique</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
-                                        <legend>ÉQUIPE DE PROJET</legend>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Nom</th><th>Fonction</th><th>Email</th><th>Téléphone</th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let membre of details?.equipeProjet">
-                                                    <td>{{ membre.nom || '-' }}</td><td>{{ membre.fonction || '-' }}</td>
-                                                    <td>{{ membre.email || '-' }}</td><td>{{ membre.telephone || '-' }}</td>
-                                                </tr>
-                                                <tr *ngIf="!details?.equipeProjet?.length"><td colspan="4">Aucun membre</td></tr>
                                             </tbody>
                                         </table>
                                     </fieldset>
