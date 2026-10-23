@@ -5,6 +5,7 @@ import { environment } from "src/environments/environment";
 import { Sop } from "../../model/sop.model";
 import { SopDetails, SopFlowchartEtape } from "../../services/sop.service";
 import { SopService } from "../../services/sop.service";
+import { AccountService } from "../../services/account.service";
 
 interface FlowchartStep {
     idFlowchart: string;
@@ -41,7 +42,8 @@ export class VueSopComponent implements OnInit {
         private toastr: ToastrService,
         private router: Router,
         private route: ActivatedRoute,
-        private sopService: SopService
+        private sopService: SopService,
+        private accountService: AccountService
     ) {}
 
     async ngOnInit(): Promise<void> {
@@ -53,7 +55,7 @@ export class VueSopComponent implements OnInit {
         }
 
         try {
-            this.details = await this.sopService.getDetails(this.idSop);
+            this.details = await this.sopService.getDetails(this.idSop, this.accountService.getMatricule());
             this.sop = this.details.sop;
             let numeroTitre = 0;
             const compteurs = [0, 0, 0, 0];
@@ -134,15 +136,11 @@ export class VueSopComponent implements OnInit {
 
     pieceJointeImage(idPieceJointe: string | null): string | null {
         const piece = this.details?.piecesJointes.find(item => item.idPieceJointe === idPieceJointe);
-        if (!piece?.contenu) {
+        if (!piece || (piece.typeMime && !piece.typeMime.startsWith("image/"))) {
             return null;
         }
-        if (piece.contenu.startsWith("data:")) {
-            return piece.contenu;
-        }
-        return `data:${piece.typeMime || "image/*"};base64,${piece.contenu}`;
+        return `${environment.apiUrl}/pieces-jointes/${encodeURIComponent(idPieceJointe!)}/contenu`;
     }
-
     get referencesText(): string {
         return this.details?.references?.length
             ? this.details.references.map(reference => reference.contenu || "").join("\n\n")
@@ -154,6 +152,9 @@ export class VueSopComponent implements OnInit {
     }
 
     modifier(): void {
+        if (!this.details?.createur) {
+            return;
+        }
         this.router.navigate(["/system-sop/modification-sop"], {
             queryParams: this.idSop ? { idSop: this.idSop } : {}
         });

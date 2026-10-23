@@ -23,6 +23,9 @@ public class AnnexeRepository {
     public List<Annexe> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Annexe> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<Annexe> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_annexe=?", MAPPER, id).stream().findFirst(); 
     }

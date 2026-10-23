@@ -3,6 +3,8 @@ package com.example.sys_sop.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.sys_sop.dto.PieceJointeDto;
@@ -28,7 +30,24 @@ public class PieceJointeController {
     }
     @GetMapping("/{id}")
     public PieceJointeDto getById(@PathVariable String id) { 
-        return toDto(service.findById(id)); 
+        return toDto(service.findMetadataById(id)); 
+    }
+    @GetMapping("/{id}/contenu")
+    public ResponseEntity<byte[]> getContent(@PathVariable String id) {
+        PieceJointe piece = service.findMetadataById(id);
+        byte[] contenu = service.findContentById(id);
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        if (piece.getTypeMime() != null && !piece.getTypeMime().isBlank()) {
+            try {
+                mediaType = MediaType.parseMediaType(piece.getTypeMime());
+            } catch (IllegalArgumentException ignored) {
+                // Keep the safe binary default for an invalid stored MIME type.
+            }
+        }
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .cacheControl(CacheControl.maxAge(java.time.Duration.ofHours(1)).cachePublic())
+                .body(contenu);
     }
     @PostMapping 
     public ResponseEntity<PieceJointeDto> create(@RequestBody PieceJointeDto dto) { 

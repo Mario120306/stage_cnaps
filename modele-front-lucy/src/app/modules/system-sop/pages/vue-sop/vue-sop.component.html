@@ -225,10 +225,10 @@
                         <div *ngIf="!chargement && !sop" class="alert alert-warning">SOP introuvable.</div>
 
                         <div class="sop-actions">
-                            <button type="button" class="btn sop-btn-create" (click)="modifier()" [disabled]="!sop">
+                            <button *ngIf="details?.createur" type="button" class="btn sop-btn-create" (click)="modifier()" [disabled]="!sop">
                                 <i class="fa fa-edit pr-1" aria-hidden="true"></i> MODIFIER
                             </button>
-                            <button type="button" class="btn sop-btn-delete" (click)="ouvrirConfirmationSuppression()">
+                            <button *ngIf="details?.createur" type="button" class="btn sop-btn-delete" (click)="ouvrirConfirmationSuppression()">
                                 <i class="fa fa-trash pr-1" aria-hidden="true"></i> SUPPRIMER
                             </button>
                             <button type="button" class="btn sop-btn-download" (click)="telechargerPdf()" [disabled]="!sop">

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,10 @@ import com.example.sys_sop.dto.GlossaireDto;
 import com.example.sys_sop.dto.PieceJointeDto;
 import com.example.sys_sop.dto.ReferenceDto;
 import com.example.sys_sop.dto.SopCreationDto;
+import com.example.sys_sop.dto.SopDetailsDto;
+import com.example.sys_sop.dto.SopDto;
+import com.example.sys_sop.dto.PieceJointeDetailDto;
+import com.example.sys_sop.dto.VersionDto;
 import com.example.sys_sop.modele.Annexe;
 import com.example.sys_sop.modele.Contact;
 import com.example.sys_sop.modele.Destinataire;
@@ -96,6 +101,49 @@ public class SopService {
     }
     public Sop findById(String id) { 
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SOP introuvable : " + id)); 
+    }
+
+    public SopDetailsDto findDetailsById(String idSop, String matricule) {
+        Sop sop = findById(idSop);
+        return new SopDetailsDto(
+                toDto(sop),
+                contactRepository.findBySop(idSop).stream()
+                        .map(e -> new ContactDto(e.getIdContact(), e.getIdSop(), e.getMatricule(), e.getEmail(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                destinataireRepository.findBySop(idSop).stream()
+                        .map(e -> new DestinataireDto(e.getIdDestinataire(), e.getIdSop(), e.getMatricule(), e.getNom(),
+                                e.getOrganisation(), e.getAction(), e.getDateAction(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                equipeProjetRepository.findBySop(idSop).stream()
+                        .map(e -> new EquipeProjetDto(e.getIdMembre(), e.getIdSop(), e.getMatricule(), e.getNom(),
+                                e.getFonction(), e.getTelephone(), e.getEmail(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                glossaireRepository.findBySop(idSop).stream()
+                        .map(e -> new GlossaireDto(e.getIdGlossaire(), e.getIdSop(), e.getAcronyme(), e.getTerme(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                referenceRepository.findBySop(idSop).stream()
+                        .map(e -> new ReferenceDto(e.getIdReference(), e.getIdSop(), e.getContenu(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                versionRepository.findBySop(idSop).stream()
+                        .map(e -> new VersionDto(e.getIdVersion(), e.getIdSop(), e.getNumeroVersion(), e.getDateEntree(),
+                                e.getLibelleModification(), e.getAuteurModification(), e.getCodeStatut()))
+                        .collect(Collectors.toList()),
+                flowchartRepository.findBySop(idSop).stream()
+                        .map(e -> new FlowchartDto(e.getIdFlowchart(), e.getIdSop(), e.getTitre(), e.getInformation(),
+                                e.getOrdre(), e.getIdPieceJointe()))
+                        .collect(Collectors.toList()),
+                flowchartEtapeRepository.findBySop(idSop).stream()
+                        .map(e -> new FlowchartEtapeDto(e.getIdEtape(), e.getIdFlowchart(), e.getInformation(),
+                                e.getNiveau(), e.getModeNumerotation(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                pieceJointeRepository.findBySop(idSop).stream()
+                        .map(e -> new PieceJointeDetailDto(e.getIdPieceJointe(), e.getNomFichier(),
+                                e.getTypeMime(), e.getUsage()))
+                        .collect(Collectors.toList()),
+                annexeRepository.findBySop(idSop).stream()
+                        .map(e -> new AnnexeDto(e.getIdAnnexe(), e.getIdSop(), e.getTitre(), e.getIdPieceJointe(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                matricule != null && matricule.equalsIgnoreCase(sop.getAuteurMatricule()));
     }
 
     @Transactional
@@ -282,6 +330,13 @@ public class SopService {
 
     private static String newId() {
         return UUID.randomUUID().toString();
+    }
+
+    private SopDto toDto(Sop e) {
+        return new SopDto(e.getIdSop(), e.getNumeroSop(), e.getTitre(), e.getVersionCourante(),
+                e.getCodeService(), e.getAuteurMatricule(), e.getSectionValidee(), e.getCodeStatut(),
+                e.getSupprime(), e.getDateSuppression(), e.getDateCreation(), e.getDateModification(),
+                e.getLibelleService(), e.getLibelleDirection());
     }
 
     private static String requiredKey(String key, String type) {

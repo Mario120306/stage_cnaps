@@ -22,6 +22,9 @@ public class ContactRepository {
     public List<Contact> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Contact> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<Contact> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_contact=?", MAPPER, id).stream().findFirst(); 
     }

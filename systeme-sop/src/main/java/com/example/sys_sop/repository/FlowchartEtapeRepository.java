@@ -24,6 +24,10 @@ public class FlowchartEtapeRepository {
     public List<FlowchartEtape> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<FlowchartEtape> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_flowchart IN "
+                + "(SELECT id_flowchart FROM SOP_FLOWCHART WHERE id_sop=?) ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<FlowchartEtape> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_etape=?", MAPPER, id).stream().findFirst(); 
     }

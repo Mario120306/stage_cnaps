@@ -49,4 +49,8 @@ export class Sop extends Mere {
         this.libelleService=libelleService;
         this.libelleDirection=libelleDirection;
     }
+
+    getDetails<T>(id: string, query = ""): Promise<T> {
+        return this.request<T>(`${this.resourcePlural}/${id}/details${query}`);
+    }
 }

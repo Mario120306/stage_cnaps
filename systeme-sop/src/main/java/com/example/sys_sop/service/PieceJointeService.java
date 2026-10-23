@@ -21,6 +21,15 @@ public class PieceJointeService {
     public PieceJointe findById(String id) { 
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pièce jointe introuvable : " + id)); 
     }
+    public PieceJointe findMetadataById(String id) {
+        return repository.findMetadataById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Pièce jointe introuvable : " + id));
+    }
+    public byte[] findContentById(String id) {
+        return repository.findContentById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Pièce jointe introuvable : " + id));
+    }
     public PieceJointe create(PieceJointe entity) { 
         repository.create(entity); return entity; 
     }

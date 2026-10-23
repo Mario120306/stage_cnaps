@@ -60,16 +60,9 @@ export class ListeSopComponent implements OnInit{
         try{
 
             const response = await this.sopService.getAll(params);
-            this.sops = response as SopModel[];
-            const esc = encodeURIComponent;
-            const query = Object.entries(params)
-                .map(([k,v])=>`${esc(k)}=${esc(String(v))}`).join('&');
-            const metaRes = await fetch(`${(this.sopService as any).api.baseUrl}/sops?${query}`);
-            if (metaRes.ok){
-                const meta = await metaRes.json();
-                this.totalElements = meta.totalElements || 0;
-                this.totalPages = meta.totalPages || 0;
-            }
+            this.sops = response.content ?? [];
+            this.totalElements = response.totalElements ?? 0;
+            this.totalPages = response.totalPages ?? 0;
         }catch(err){
             console.error('Erreur chargement sops', err);
         }

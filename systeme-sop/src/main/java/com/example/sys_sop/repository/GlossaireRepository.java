@@ -23,6 +23,9 @@ public class GlossaireRepository {
     public List<Glossaire> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Glossaire> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<Glossaire> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_glossaire=?", MAPPER, id).stream().findFirst(); 
     }

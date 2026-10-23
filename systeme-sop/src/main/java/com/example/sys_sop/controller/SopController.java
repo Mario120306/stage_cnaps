@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.sys_sop.dto.SopCreationDto;
 import com.example.sys_sop.dto.SopDto;
+import com.example.sys_sop.dto.SopDetailsDto;
 import com.example.sys_sop.modele.Sop;
 import com.example.sys_sop.service.SopService;
 
@@ -39,6 +40,12 @@ public class SopController {
     @GetMapping("/{id}") 
     public SopDto getById(@PathVariable String id) { 
         return toDto(service.findById(id)); 
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<SopDetailsDto> getDetails(@PathVariable String id,
+            @RequestParam(required = false) String matricule) {
+        return ResponseEntity.ok(service.findDetailsById(id, matricule));
     }
     @PostMapping 
     public ResponseEntity<SopDto> create(@RequestBody SopCreationDto dto) {

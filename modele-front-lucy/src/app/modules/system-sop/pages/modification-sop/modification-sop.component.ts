@@ -5,6 +5,7 @@ import { ToastrService } from "ngx-toastr";
 import { Utilisateur } from "../../model/utilisateur.model";
 import { UtilisateurService } from "../../services/utilisateur.service";
 import { SopDetails, SopFlowchartEtape, SopService, SopUpdatePayload } from "../../services/sop.service";
+import { AccountService } from "../../services/account.service";
 
 interface EditableFlowchart {
     idFlowchart: string;
@@ -45,7 +46,8 @@ export class ModificationSopComponent implements OnInit {
         private router: Router,
         private sopService: SopService,
         private utilisateurService: UtilisateurService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private accountService: AccountService
     ) {}
 
     async ngOnInit(): Promise<void> {
@@ -56,7 +58,12 @@ export class ModificationSopComponent implements OnInit {
             return;
         }
         try {
-            this.details = await this.sopService.getDetails(this.idSop);
+            this.details = await this.sopService.getDetails(this.idSop, this.accountService.getMatricule());
+            if (!this.details.createur) {
+                this.toastr.error("Vous n'êtes pas le créateur de ce SOP.", "Accès refusé");
+                await this.router.navigate(["/system-sop/vue-sop"], { queryParams: { idSop: this.idSop } });
+                return;
+            }
             this.titre = this.details.sop.titre || "";
             this.references = this.details.references.map(reference => reference.contenu || "").join("\n\n");
             let numeroTitre = 0;

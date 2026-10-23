@@ -14,11 +14,18 @@ import java.sql.Timestamp;
 public class PieceJointeRepository {
 
     private static final String SELECT = "SELECT id_piece_jointe,id_sop,usage,nom_fichier,type_mime,taille,contenu,auteur_matricule,date_insert FROM SOP_PIECE_JOINTE ";
+    private static final String SELECT_METADATA = "SELECT id_piece_jointe,id_sop,usage,nom_fichier,type_mime,taille,"
+            + "auteur_matricule,date_insert FROM SOP_PIECE_JOINTE ";
     
     private static final RowMapper<PieceJointe> MAPPER = (rs, n) -> new PieceJointe(
             rs.getString("ID_PIECE_JOINTE"), rs.getString("ID_SOP"), rs.getString("USAGE"),
             rs.getString("NOM_FICHIER"), rs.getString("TYPE_MIME"), rs.getObject("TAILLE", Long.class),
             rs.getBytes("CONTENU"), rs.getString("AUTEUR_MATRICULE"),
+            rs.getObject("DATE_INSERT", java.time.LocalDateTime.class));
+    private static final RowMapper<PieceJointe> METADATA_MAPPER = (rs, n) -> new PieceJointe(
+            rs.getString("ID_PIECE_JOINTE"), rs.getString("ID_SOP"), rs.getString("USAGE"),
+            rs.getString("NOM_FICHIER"), rs.getString("TYPE_MIME"), rs.getObject("TAILLE", Long.class),
+            null, rs.getString("AUTEUR_MATRICULE"),
             rs.getObject("DATE_INSERT", java.time.LocalDateTime.class));
     
     private final JdbcTemplate jdbc;
@@ -27,10 +34,20 @@ public class PieceJointeRepository {
         this.jdbc = jdbc; 
     }
     public List<PieceJointe> findAll() { 
-        return jdbc.query(SELECT + "ORDER BY date_insert DESC", MAPPER); 
+        return jdbc.query(SELECT_METADATA + "ORDER BY date_insert DESC", METADATA_MAPPER); 
+    }
+    public List<PieceJointe> findBySop(String idSop) {
+        return jdbc.query(SELECT_METADATA + "WHERE id_sop=? ORDER BY date_insert DESC", METADATA_MAPPER, idSop);
     }
     public Optional<PieceJointe> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_piece_jointe=?", MAPPER, id).stream().findFirst(); 
+    }
+    public Optional<PieceJointe> findMetadataById(String id) {
+        return jdbc.query(SELECT_METADATA + "WHERE id_piece_jointe=?", METADATA_MAPPER, id).stream().findFirst();
+    }
+    public Optional<byte[]> findContentById(String id) {
+        return jdbc.query("SELECT contenu FROM SOP_PIECE_JOINTE WHERE id_piece_jointe=?",
+                (rs, n) -> rs.getBytes("CONTENU"), id).stream().findFirst();
     }
     public int create(PieceJointe e) {
         String sql = "INSERT INTO SOP_PIECE_JOINTE (id_piece_jointe,id_sop,usage,nom_fichier,type_mime,taille,contenu,auteur_matricule,date_insert) VALUES (?,?,?,?,?,?,?,?,?)";
