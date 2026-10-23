@@ -6,10 +6,15 @@
                     <fieldset>
                         <legend><i class="fa fa-file-invoice pr-2"></i> VUE DU SOP</legend>
                         <div *ngIf="chargement" class="text-center p-4">Chargement des données du SOP...</div>
+
                         <div *ngIf="!chargement && sop">
-                            <div class="row mb-3">
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
+
+                            <div class="row sop-masonry">
+
+                                <!-- ============ COLONNE GAUCHE ============ -->
+                                <div class="col-md-6 sop-col">
+
+                                    <fieldset>
                                         <legend>ENTÊTE</legend>
                                         <div class="form-row">
                                             <div class="form-group col-md-6">
@@ -36,30 +41,7 @@
                                             </div>
                                         </div>
                                     </fieldset>
-                                </div>
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
-                                        <legend>CONTACTS À AFFICHER</legend>
-                                        <table class="table table-borderless border">
-                                            <thead>
-                                                <tr>
-                                                    <th>Email</th>
-                                                    <th>Matricule</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr *ngFor="let contact of details?.contacts">
-                                                    <td>{{ contact.email || '-' }}</td>
-                                                    <td>{{ contact.matricule || '-' }}</td>
-                                                </tr>
-                                                <tr *ngIf="!details?.contacts?.length"><td colspan="2">Aucun contact</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </fieldset>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-12">
+
                                     <fieldset>
                                         <legend>SYNTHÈSE DU SOP</legend>
                                         <div class="form-row">
@@ -105,46 +87,8 @@
                                             </div>
                                         </div>
                                     </fieldset>
-                                </div>
-                            </div>
 
-                            <div class="row mb-3">              
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
-                                        <legend>ÉQUIPE DE PROJET</legend>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Nom</th><th>Fonction</th><th>Email</th><th>Téléphone</th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let membre of details?.equipeProjet">
-                                                    <td>{{ membre.nom || '-' }}</td><td>{{ membre.fonction || '-' }}</td>
-                                                    <td>{{ membre.email || '-' }}</td><td>{{ membre.telephone || '-' }}</td>
-                                                </tr>
-                                                <tr *ngIf="!details?.equipeProjet?.length"><td colspan="4">Aucun membre</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </fieldset>
-                                </div>
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
-                                        <legend>HISTORIQUE DES VERSIONS</legend>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Date</th><th>Version</th><th>Modification</th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let version of details?.versions">
-                                                    <td>{{ version.dateEntree | date:'dd/MM/yyyy' }}</td>
-                                                    <td>{{ version.numeroVersion }}</td>
-                                                    <td>{{ version.libelleModification || '-' }}</td>
-                                                </tr>
-                                                <tr *ngIf="!details?.versions?.length"><td colspan="3">Aucun historique</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </fieldset>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
+                                    <fieldset>
                                         <legend>GLOSSAIRE</legend>
                                         <div class="row">
                                             <div class="col-12 col-md-6">
@@ -170,28 +114,8 @@
                                             </div>
                                         </div>
                                     </fieldset>
-                                </div>
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
-                                        <legend>LISTE DES DESTINATAIRES</legend>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Nom</th><th>Organisation</th><th>Action</th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let destinataire of details?.destinataires">
-                                                    <td>{{ destinataire.nom || destinataire.matricule || '-' }}</td>
-                                                    <td>{{ destinataire.organisation || '-' }}</td>
-                                                    <td>{{ destinataire.action || '-' }}</td>
-                                                </tr>
-                                                <tr *ngIf="!details?.destinataires?.length"><td colspan="3">Aucun destinataire</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </fieldset>
-                                </div> 
-                            </div>
 
-                            <div class="row mb-3 flowchart-details-row">
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100">
+                                    <fieldset>
                                         <legend>FLOWCHART ET DÉTAILS</legend>
                                         <table class="table table-borderless border">
                                             <thead><tr><th>Titre</th><th>Pièce jointe</th><th></th></tr></thead>
@@ -204,17 +128,7 @@
                                             </tbody>
                                         </table>
                                     </fieldset>
-                                </div>
-                                <div class="col-md-6 d-flex">
-                                    <fieldset class="w-100 flowchart-references">
-                                        <legend>RÉFÉRENCES LÉGALES ET RÉGLEMENTAIRES</legend>
-                                        <textarea class="form-control references" readonly>{{ referencesText }}</textarea>
-                                    </fieldset>
-                                </div>
-                            </div>
 
-                            <div class="row mb-3">
-                                <div class="col-md-12">
                                     <fieldset>
                                         <legend>ANNEXES</legend>
                                         <ul class="annexes-list">
@@ -229,15 +143,92 @@
                                             <li *ngIf="!details?.annexes?.length">Aucune annexe</li>
                                         </ul>
                                     </fieldset>
+
+                                </div>
+
+                                <!-- ============ COLONNE DROITE ============ -->
+                                <div class="col-md-6 sop-col">
+
+                                    <fieldset>
+                                        <legend>CONTACTS À AFFICHER</legend>
+                                        <table class="table table-borderless border">
+                                            <thead>
+                                                <tr>
+                                                    <th>Email</th>
+                                                    <th>Matricule</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let contact of details?.contacts">
+                                                    <td>{{ contact.email || '-' }}</td>
+                                                    <td>{{ contact.matricule || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.contacts?.length"><td colspan="2">Aucun contact</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>ÉQUIPE DE PROJET</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Fonction</th><th>Email</th><th>Téléphone</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let membre of details?.equipeProjet">
+                                                    <td>{{ membre.nom || '-' }}</td><td>{{ membre.fonction || '-' }}</td>
+                                                    <td>{{ membre.email || '-' }}</td><td>{{ membre.telephone || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.equipeProjet?.length"><td colspan="4">Aucun membre</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>HISTORIQUE DES VERSIONS</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Date</th><th>Version</th><th>Modification</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let version of details?.versions">
+                                                    <td>{{ version.dateEntree | date:'dd/MM/yyyy' }}</td>
+                                                    <td>{{ version.numeroVersion }}</td>
+                                                    <td>{{ version.libelleModification || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.versions?.length"><td colspan="3">Aucun historique</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>LISTE DES DESTINATAIRES</legend>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Organisation</th><th>Action</th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let destinataire of details?.destinataires">
+                                                    <td>{{ destinataire.nom || destinataire.matricule || '-' }}</td>
+                                                    <td>{{ destinataire.organisation || '-' }}</td>
+                                                    <td>{{ destinataire.action || '-' }}</td>
+                                                </tr>
+                                                <tr *ngIf="!details?.destinataires?.length"><td colspan="3">Aucun destinataire</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>RÉFÉRENCES LÉGALES ET RÉGLEMENTAIRES</legend>
+                                        <textarea class="form-control references" readonly>{{ referencesText }}</textarea>
+                                    </fieldset>
+
                                 </div>
                             </div>
+
                         </div>
+
                         <div *ngIf="!chargement && !sop" class="alert alert-warning">SOP introuvable.</div>
+
                         <div class="sop-actions">
                             <button type="button" class="btn sop-btn-create" (click)="modifier()" [disabled]="!sop">
                                 <i class="fa fa-edit pr-1" aria-hidden="true"></i> MODIFIER
                             </button>
-                            <button type="button" class="btn sop-btn-delete" (click)="supprimer()">
+                            <button type="button" class="btn sop-btn-delete" (click)="ouvrirConfirmationSuppression()">
                                 <i class="fa fa-trash pr-1" aria-hidden="true"></i> SUPPRIMER
                             </button>
                             <button type="button" class="btn sop-btn-download" (click)="telechargerPdf()" [disabled]="!sop">
@@ -257,7 +248,7 @@
 <div *ngIf="detailFlowchartSelectionne" class="flowchart-modal-backdrop" (click)="fermerDetailFlowchart()">
     <section class="flowchart-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
         <header class="flowchart-modal-header">
-        
+
         </header>
         <div class="flowchart-modal-content">
             <aside class="flowchart-preview">
@@ -289,3 +280,30 @@
         <footer class="flowchart-modal-footer"><button type="button" class="btn cnaps-btn-valider" (click)="fermerDetailFlowchart()">FERMER</button></footer>
     </section>
 </div>
+
+<ng-container *ngIf="confirmationSuppression">
+    <div class="modal-backdrop show sop-confirm-backdrop" [class.closing]="confirmationEnFermeture"></div>
+    <div class="modal show d-block sop-confirm-modal" [class.closing]="confirmationEnFermeture" tabindex="-1" role="dialog" aria-modal="true" (click)="fermerConfirmationSuppression()">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation de suppression</h5>
+                    <button type="button" class="close" aria-label="Fermer" (click)="fermerConfirmationSuppression()" [disabled]="suppressionEnCours">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Voulez-vous vraiment supprimer ce SOP ?</p>
+                    <p class="text-muted mb-0">Cette action mettra le statut du SOP à <strong>STAT002</strong>.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-danger" (click)="fermerConfirmationSuppression()" [disabled]="suppressionEnCours">ANNULER</button>
+                    <button type="button" class="btn btn-success" (click)="supprimer()" [disabled]="suppressionEnCours">
+                        <span *ngIf="suppressionEnCours" class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+                        CONFIRMER
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-container>

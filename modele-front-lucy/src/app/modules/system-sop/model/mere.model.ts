@@ -33,6 +33,9 @@ export class Mere{
             }
             throw new Error(`Erreur API :${res.status}- ${detailErreur}`);
         }
+        if (res.status === 204) {
+            return undefined as unknown as T;
+        }
         return res.json();
     }
     async getById<T>(id:string):Promise<T>{

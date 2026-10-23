@@ -1,0 +1,271 @@
+<div class="main-content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <fieldset>
+                        <legend><i class="fa fa-edit pr-2"></i> MODIFICATION DU SOP</legend>
+                        <div *ngIf="chargement" class="text-center p-4">Chargement...</div>
+
+                        <div *ngIf="!chargement && details">
+
+                            <div class="row sop-masonry">
+
+                                <!-- ============ COLONNE GAUCHE ============ -->
+                                <div class="col-lg-6 sop-col">
+
+                                    <fieldset>
+                                        <legend>ENTÊTE</legend>
+                                        <div class="form-group">
+                                            <label class="text-info">Titre du SOP</label>
+                                            <input class="form-control" [(ngModel)]="titre">
+                                        </div>
+
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Numéro</label>
+                                                <input class="form-control" [value]="details.sop.numeroSop" readonly>
+                                            </div>
+
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Service</label>
+                                                <input class="form-control" [value]="details.sop.libelleService || details.sop.codeService" readonly>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label class="text-info">Version actuelle</label>
+                                                <input class="form-control" [value]="details.sop.versionCourante" readonly>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>CONTACTS À AFFICHER</legend>
+                                        <div class="form-group mb-3">
+                                            <div class="row no-gutters">
+                                                <div class="col-md-12">
+                                                    <div class="agent-autocomplete" [formGroup]="rechercheForm">
+                                                        <input type="search" class="form-control search-input" placeholder="Rechercher par nom ou email"
+                                                            formControlName="contact" (input)="rechercherContact(rechercheForm.controls.contact.value || '')" autocomplete="off">
+                                                        <ul class="agent-suggestions" *ngIf="contactsSuggerees.length">
+                                                            <li *ngFor="let agent of contactsSuggerees">
+                                                                <button type="button" (click)="ajouterContact(agent)">
+                                                                    {{ agent.mail }} <small>({{ agent.nom }} {{ agent.prenoms }})</small>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Email</th><th>Matricule</th><th class="col-action"></th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let contact of details.contacts; let i = index">
+                                                    <td>{{ contact.email || '-' }}</td>
+                                                    <td>{{ contact.matricule || '-' }}</td>
+                                                    <td class="col-action">
+                                                        <button type="button" class="btn-fa-close" (click)="retirerContact(i)" aria-label="Retirer le contact" title="Retirer">
+                                                            <i class="fa fa-times"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr *ngIf="!details.contacts.length"><td colspan="3" class="empty-row">Aucun contact</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>DESTINATAIRES</legend>
+                                        <div class="form-group mb-3">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col-md-8 pr-md-2">
+                                                    <div class="agent-autocomplete" [formGroup]="rechercheForm">
+                                                        <input type="search" class="form-control search-input" placeholder="Rechercher par matricule"
+                                                            formControlName="destinataire" (input)="rechercherDestinataire(rechercheForm.controls.destinataire.value || '')" autocomplete="off">
+                                                        <ul class="agent-suggestions" *ngIf="destinatairesSuggerees.length">
+                                                            <li *ngFor="let agent of destinatairesSuggerees">
+                                                                <button type="button" (click)="ajouterDestinataire(agent)">
+                                                                    {{ agent.matricule }} — {{ agent.mail }}
+                                                                    <small>({{ agent.nom }} {{ agent.prenoms }})</small>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 pl-md-0">
+                                                    <input class="form-control action-input" placeholder="Action" [(ngModel)]="actionDestinataire">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Matricule</th><th>Action</th><th class="col-action"></th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let item of details.destinataires; let i = index">
+                                                    <td>{{ item.nom || '-' }}</td>
+                                                    <td>{{ item.matricule || '-' }}</td>
+                                                    <td>{{ item.action || '-' }}</td>
+                                                    <td class="col-action">
+                                                        <button type="button" class="btn-fa-close" (click)="retirerDestinataire(i)" aria-label="Retirer le destinataire" title="Retirer">
+                                                            <i class="fa fa-times"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr *ngIf="!details.destinataires?.length"><td colspan="4" class="empty-row">Aucun destinataire</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>ÉQUIPE DE PROJET</legend>
+                                        <div class="form-group mb-3">
+                                            <div class="agent-autocomplete" [formGroup]="rechercheForm">
+                                                <input type="search" class="form-control search-input" placeholder="Rechercher par matricule"
+                                                    formControlName="equipe" (input)="rechercherEquipeParMatricule(rechercheForm.controls.equipe.value || '')" autocomplete="off">
+                                                <ul class="agent-suggestions" *ngIf="equipeSuggeree.length">
+                                                    <li *ngFor="let agent of equipeSuggeree">
+                                                        <button type="button" (click)="ajouterMembre(agent)">
+                                                            {{ agent.matricule }} — {{ agent.nom }} {{ agent.prenoms }}
+                                                            <small>({{ agent.mail }})</small>
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <table class="table table-borderless border">
+                                            <thead><tr><th>Nom</th><th>Matricule</th><th>Fonction</th><th class="col-action"></th></tr></thead>
+                                            <tbody>
+                                                <tr *ngFor="let item of details.equipeProjet; let i = index">
+                                                    <td>{{ item.nom || '-' }}</td>
+                                                    <td>{{ item.matricule || '-' }}</td>
+                                                    <td>{{ item.fonction || '-' }}</td>
+                                                    <td class="col-action">
+                                                        <button type="button" class="btn-fa-close" (click)="retirerMembre(i)" aria-label="Retirer le membre" title="Retirer">
+                                                            <i class="fa fa-times"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr *ngIf="!details.equipeProjet?.length"><td colspan="4" class="empty-row">Aucun membre</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>GLOSSAIRE</legend>
+                                        <div class="toolbar-row mb-3">
+                                            <button type="button" class="btn-add" (click)="ajouterTerme()">
+                                                <i class="fa fa-plus pr-1" aria-hidden="true"></i> Ajouter un terme
+                                            </button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 col-md-6">
+                                                <table class="table table-borderless border table-inputs">
+                                                    <thead><tr><th>Acronyme</th><th>Terme</th><th class="col-action"></th></tr></thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let item of details.glossaire?.slice(0, ((details.glossaire?.length || 0) + 1) / 2); let i = index">
+                                                            <td><input class="form-control" [(ngModel)]="item.acronyme" placeholder="Acronyme"></td>
+                                                            <td><input class="form-control" [(ngModel)]="item.terme" placeholder="Terme"></td>
+                                                            <td class="col-action">
+                                                                <button type="button" class="btn-fa-close" (click)="retirerTerme(i)" aria-label="Retirer le terme" title="Retirer">
+                                                                    <i class="fa fa-times"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr *ngIf="!details.glossaire?.length"><td colspan="3" class="empty-row">Aucun terme</td></tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-12 col-md-6" *ngIf="details.glossaire?.length">
+                                                <table class="table table-borderless border table-inputs">
+                                                    <thead><tr><th>Acronyme</th><th>Terme</th><th class="col-action"></th></tr></thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let item of details.glossaire?.slice(((details.glossaire?.length || 0) + 1) / 2); let i = index">
+                                                            <td><input class="form-control" [(ngModel)]="item.acronyme" placeholder="Acronyme"></td>
+                                                            <td><input class="form-control" [(ngModel)]="item.terme" placeholder="Terme"></td>
+                                                            <td class="col-action">
+                                                                <button type="button" class="btn-fa-close" (click)="retirerTerme(i + ((details.glossaire.length + 1) / 2))" aria-label="Retirer le terme" title="Retirer">
+                                                                    <i class="fa fa-times"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                </div>
+
+                                <!-- ============ COLONNE DROITE ============ -->
+                                <div class="col-lg-6 sop-col">
+
+                                    <fieldset>
+                                        <legend>FLOWCHART - DÉTAILS EXISTANTS</legend>
+                                        <div *ngFor="let flowchart of flowcharts" class="flowchart-edit">
+                                            <details>
+                                                <summary>
+                                                    <span class="flowchart-summary">
+                                                        <strong>{{ flowchart.titre || '-' }}</strong>
+                                                        <span class="flowchart-information-preview">
+                                                            {{ flowchart.information || 'Aucune information renseignée' }}
+                                                        </span>
+                                                    </span>
+                                                </summary>
+                                                <div class="flowchart-details">
+                                                    <label class="text-info">Informations nécessaires</label>
+                                                    <textarea class="form-control mb-3" rows="2" [(ngModel)]="flowchart.information"></textarea>
+
+                                                    <label class="text-info">Étapes</label>
+                                                    <div *ngFor="let etape of flowchart.etapes" class="step-row">
+                                                        <span class="step-number">{{ etape.numero }}</span>
+                                                        <textarea class="form-control" rows="2" [(ngModel)]="etape.information"></textarea>
+                                                    </div>
+                                                    <p *ngIf="!flowchart.etapes.length" class="empty-row">Aucune étape.</p>
+                                                </div>
+                                            </details>
+                                        </div>
+                                        <p *ngIf="!flowcharts.length" class="empty-row">Aucun flowchart.</p>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>RÉFÉRENCES LÉGALES ET RÉGLEMENTAIRES</legend>
+                                        <textarea class="form-control references-edit" [(ngModel)]="references"></textarea>
+                                    </fieldset>
+
+                                </div>
+                            </div>
+
+                            <div class="sop-actions">
+                                <button type="button" class="btn sop-btn-create" (click)="enregistrer()" [disabled]="sauvegardeEnCours">
+                                    <i class="fa fa-save pr-1" aria-hidden="true"></i>
+                                    {{ sauvegardeEnCours ? 'ENREGISTREMENT...' : 'ENREGISTRER LA MODIFICATION' }}
+                                </button>
+                                <button type="button" class="btn sop-btn-cancel" (click)="annuler()" [disabled]="sauvegardeEnCours">
+                                    <i class="fa fa-times pr-1" aria-hidden="true"></i> ANNULER
+                                </button>
+                            </div>
+                        </div>
+
+                        <div *ngIf="!chargement && !details" class="alert alert-warning">SOP introuvable.</div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="sauvegardeEnCours"
+     class="sop-loading-backdrop"
+     role="status"
+     aria-live="polite"
+     aria-label="Modification du SOP en cours">
+    <div class="sop-loading-card">
+        <div class="sop-clock" aria-hidden="true">
+            <span class="sop-clock-hand hour-hand"></span>
+            <span class="sop-clock-hand minute-hand"></span>
+            <span class="sop-clock-center"></span>
+        </div>
+
+        <p>Modification du SOP en cours...</p>
+        <span>Veuillez patienter.</span>
+    </div>
+</div>

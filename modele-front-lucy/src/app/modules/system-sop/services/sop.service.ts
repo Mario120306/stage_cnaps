@@ -22,11 +22,11 @@ export interface SopFlowchartEtape {
 
 export interface SopDetails {
     sop: Sop;
-    contacts: Array<{ matricule: string | null; email: string | null; ordre: number | null }>;
-    destinataires: Array<{ nom: string | null; organisation: string | null; action: string | null; matricule: string | null; ordre: number | null }>;
-    equipeProjet: Array<{ nom: string | null; fonction: string | null; telephone: string | null; email: string | null; ordre: number | null }>;
-    glossaire: Array<{ acronyme: string | null; terme: string | null; ordre: number | null }>;
-    references: Array<{ contenu: string | null; ordre: number | null }>;
+    contacts: Array<{ idContact?: string; matricule: string | null; email: string | null; ordre: number | null }>;
+    destinataires: Array<{ idDestinataire?: string; nom: string | null; organisation: string | null; action: string | null; matricule: string | null; ordre: number | null }>;
+    equipeProjet: Array<{ idMembre?: string; nom: string | null; fonction: string | null; telephone: string | null; email: string | null; matricule?: string | null; ordre: number | null }>;
+    glossaire: Array<{ idGlossaire?: string; acronyme: string | null; terme: string | null; ordre: number | null }>;
+    references: Array<{ idReference?: string; contenu: string | null; ordre: number | null }>;
     versions: Array<{ numeroVersion: string; dateEntree: string | null; libelleModification: string | null }>;
     flowcharts: SopFlowchart[];
     flowchartEtapes: SopFlowchartEtape[];
@@ -87,6 +87,16 @@ export type SopCreationPayload = Partial<Sop> & {
     }>;
 };
 
+export type SopUpdatePayload = Partial<Sop> & {
+    contacts: Array<{ idContact?: string; matricule: string; email: string; ordre: number }>;
+    destinataires: Array<{ idDestinataire?: string; matricule: string; nom: string; organisation: string; action: string; ordre: number }>;
+    equipeProjet: Array<{ idMembre?: string; matricule: string; nom: string; fonction: string; telephone: string; email: string; ordre: number }>;
+    glossaire: Array<{ idGlossaire?: string; acronyme: string; terme: string; ordre: number }>;
+    references: Array<{ idReference?: string; contenu: string; ordre: number }>;
+    flowcharts: Array<{ idFlowchart: string; information: string }>;
+    flowchartEtapes: Array<{ idEtape: string; idFlowchart: string; information: string; niveau: number; modeNumerotation: "AUTO" | "MANUEL"; ordre: number }>;
+};
+
 @Injectable({ providedIn: "root" })
 export class SopService {
     private readonly api = new Sop("","","","","","",0,"","","","","","","");
@@ -107,8 +117,12 @@ export class SopService {
         return this.api.create<Sop>(sop);
     }
 
-    update(id: string, sop: Partial<Sop>): Promise<Sop> {
+    update(id: string, sop: SopUpdatePayload): Promise<Sop> {
         return this.api.update<Sop>(id, sop);
+    }
+
+    softDelete(id: string): Promise<void> {
+        return this.api.delete(id);
     }
 
     async getDetails(idSop: string): Promise<SopDetails> {

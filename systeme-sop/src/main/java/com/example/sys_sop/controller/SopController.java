@@ -45,18 +45,15 @@ public class SopController {
         return ResponseEntity.status(HttpStatus.CREATED)
                             .body(toDto(service.create(dto)));
     }
-    @PutMapping("/{id}") 
-    public ResponseEntity<SopDto> update(@PathVariable String id, @RequestBody SopDto dto) {
-        Sop entity = toEntity(dto); entity.setIdSop(id);
-        return service.update(entity) ? ResponseEntity.ok(toDto(entity)) : ResponseEntity.notFound().build();
+    @PutMapping("/{id}")
+    public ResponseEntity<SopDto> update(@PathVariable String id, @RequestBody SopCreationDto dto) {
+        return ResponseEntity.ok(toDto(service.update(id, dto)));
     }
-    /*@DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable String id) {
-        return service.deleteById(id) ? ResponseEntity
-                .noContent()
-                .build() : ResponseEntity
-                .notFound()
-                .build();
-    }*/
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
     private Sop toEntity(SopDto d) { 
         return new Sop(d.getIdSop(), d.getNumeroSop(), 
                     d.getTitre(), d.getVersionCourante(), d.getCodeService(), 

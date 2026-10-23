@@ -56,4 +56,7 @@ public class ReferenceRepository {
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_REFERENCE WHERE id_reference=?", id); 
     }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_REFERENCE WHERE id_sop=?", idSop);
+    }
 }

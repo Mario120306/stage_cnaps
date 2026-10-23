@@ -39,4 +39,7 @@ public class DestinataireRepository {
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_DESTINATAIRE WHERE id_destinataire=?", id); 
     }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_DESTINATAIRE WHERE id_sop=?", idSop);
+    }
 }

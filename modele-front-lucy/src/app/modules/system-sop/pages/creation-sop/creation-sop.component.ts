@@ -743,7 +743,7 @@ export class CreationSopComponent implements OnInit {
                 destinataires: this.destinataires.map(({ agent, action }, index) => ({
                     matricule: agent.matricule,
                     nom: `${agent.nom} ${agent.prenoms}`.trim(),
-                    organisation: agent.libelleService || "",
+                    organisation: agent.libelleService || "CNaPS",
                     action,
                     ordre: index + 1
                 })),

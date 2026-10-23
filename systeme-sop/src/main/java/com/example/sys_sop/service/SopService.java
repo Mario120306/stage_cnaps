@@ -97,6 +97,16 @@ public class SopService {
     public Sop findById(String id) { 
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SOP introuvable : " + id)); 
     }
+
+    @Transactional
+    public void softDelete(String id) {
+        findById(id);
+        int updated = repository.softDelete(id, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+        if (updated == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "SOP introuvable : " + id);
+        }
+    }
+
     public Sop create(Sop entity) { 
         repository.create(entity); return entity; 
     }
@@ -121,15 +131,18 @@ public class SopService {
         repository.create(sop);
 
         String idVersion = Long.toString(versionRepository.countAll() + 1);
-        versionRepository.create(new Version(idVersion, numeroSop, "1", null, null, null, "STAT001"));
+        versionRepository.create(new Version(idVersion, numeroSop, "1", null, "Draft version", null, "STAT001"));
 
         for (ContactDto contact : values(request.getContacts())) {
             contactRepository.create(new Contact(newId(), numeroSop, contact.getMatricule(),
                     contact.getEmail(), contact.getOrdre()));
         }
         for (DestinataireDto destinataire : values(request.getDestinataires())) {
+            String organisation = destinataire.getOrganisation() == null
+                    || destinataire.getOrganisation().isBlank()
+                    ? "CNaPS" : destinataire.getOrganisation();
             destinataireRepository.create(new Destinataire(newId(), numeroSop, destinataire.getMatricule(),
-                    destinataire.getNom(), destinataire.getOrganisation(), destinataire.getAction(),
+                    destinataire.getNom(), organisation, destinataire.getAction(),
                     destinataire.getDateAction(), destinataire.getOrdre()));
         }
         for (EquipeProjetDto membre : values(request.getEquipeProjet())) {
@@ -186,6 +199,79 @@ public class SopService {
                 nomFichierPdf, request.getAuteurMatricule()), pdf);
 
         return repository.findById(numeroSop).orElse(sop);
+    }
+
+    @Transactional
+    public Sop update(String idSop, SopCreationDto request) {
+        Sop current = findById(idSop);
+        if (request == null || request.getTitre() == null || request.getTitre().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le titre du SOP est obligatoire.");
+        }
+
+        int nextVersion = versionRepository.countVersionByIdSop(idSop) + 1;
+        Sop updated = new Sop(idSop, current.getNumeroSop(), request.getTitre().trim(),
+                String.valueOf(nextVersion), current.getCodeService(), current.getAuteurMatricule(),
+                current.getSectionValidee(), current.getCodeStatut(), current.getSupprime(),
+                current.getDateSuppression(), current.getDateCreation(), current.getDateModification(),
+                current.getLibelleService(), current.getLibelleDirection());
+        repository.update(updated);
+
+        contactRepository.deleteBySop(idSop);
+        for (ContactDto contact : values(request.getContacts())) {
+            contactRepository.create(new Contact(newId(), idSop, contact.getMatricule(),
+                    contact.getEmail(), contact.getOrdre()));
+        }
+        destinataireRepository.deleteBySop(idSop);
+        for (DestinataireDto destinataire : values(request.getDestinataires())) {
+            String organisation = destinataire.getOrganisation() == null
+                    || destinataire.getOrganisation().isBlank() ? "CNaPS" : destinataire.getOrganisation();
+            destinataireRepository.create(new Destinataire(newId(), idSop, destinataire.getMatricule(),
+                    destinataire.getNom(), organisation, destinataire.getAction(),
+                    destinataire.getDateAction(), destinataire.getOrdre()));
+        }
+        equipeProjetRepository.deleteBySop(idSop);
+        for (EquipeProjetDto membre : values(request.getEquipeProjet())) {
+            equipeProjetRepository.create(new EquipeProjet(newId(), idSop, membre.getMatricule(),
+                    membre.getNom(), membre.getFonction(), membre.getTelephone(), membre.getEmail(), membre.getOrdre()));
+        }
+        glossaireRepository.deleteBySop(idSop);
+        for (GlossaireDto terme : values(request.getGlossaire())) {
+            glossaireRepository.create(new Glossaire(newId(), idSop, terme.getAcronyme(),
+                    terme.getTerme(), terme.getOrdre()));
+        }
+        referenceRepository.deleteBySop(idSop);
+        for (ReferenceDto reference : values(request.getReferences())) {
+            referenceRepository.create(new Reference(newId(), idSop, reference.getContenu(), reference.getOrdre()));
+        }
+
+        for (FlowchartDto flowchart : values(request.getFlowcharts())) {
+            Flowchart existing = flowchartRepository.findById(flowchart.getIdFlowchart())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Flowchart introuvable : " + flowchart.getIdFlowchart()));
+            flowchartRepository.update(new Flowchart(existing.getIdFlowchart(), existing.getIdSop(),
+                    existing.getTitre(), flowchart.getInformation(), existing.getOrdre(), existing.getIdPieceJointe()));
+        }
+        for (FlowchartEtapeDto etape : values(request.getFlowchartEtapes())) {
+            if (etape.getIdEtape() == null || etape.getIdEtape().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Une étape existante du flowchart doit conserver son identifiant.");
+            }
+            FlowchartEtape existing = flowchartEtapeRepository.findById(etape.getIdEtape())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Étape de flowchart introuvable : " + etape.getIdEtape()));
+            flowchartEtapeRepository.update(new FlowchartEtape(existing.getIdEtape(), existing.getIdFlowchart(),
+                    etape.getInformation(), existing.getNiveau(), existing.getModeNumerotation(), existing.getOrdre()));
+        }
+
+        String idVersion = Long.toString(versionRepository.countAll() + 1);
+        versionRepository.create(new Version(idVersion, idSop, String.valueOf(nextVersion), null,
+                "Draft Version", current.getAuteurMatricule(), current.getCodeStatut()));
+        byte[] pdf = pdfExportService.generate(updated);
+        String nomFichierPdf = updated.getNumeroSop() + "_" + updated.getTitre()
+                + "_CNaPS_v" + updated.getVersionCourante() + ".pdf";
+        exportRepository.create(new Export(newId(), idSop, idVersion, "Draft Version", 1, null,
+                nomFichierPdf, current.getAuteurMatricule()), pdf);
+        return updated;
     }
     public boolean update(Sop entity) { 
         return repository.update(entity) > 0; 

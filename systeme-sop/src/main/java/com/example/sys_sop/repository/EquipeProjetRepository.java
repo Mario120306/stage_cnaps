@@ -37,4 +37,7 @@ public class EquipeProjetRepository {
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_EQUIPE_PROJET WHERE id_membre=?", id); 
     }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_EQUIPE_PROJET WHERE id_sop=?", idSop);
+    }
 }

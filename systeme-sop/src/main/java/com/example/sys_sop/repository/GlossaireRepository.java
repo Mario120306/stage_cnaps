@@ -37,4 +37,7 @@ public class GlossaireRepository {
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_GLOSSAIRE WHERE id_glossaire=?", id); 
     }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_GLOSSAIRE WHERE id_sop=?", idSop);
+    }
 }

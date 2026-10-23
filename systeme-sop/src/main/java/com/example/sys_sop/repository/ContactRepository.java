@@ -35,4 +35,7 @@ public class ContactRepository {
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_CONTACT WHERE id_contact=?", id); 
     }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_CONTACT WHERE id_sop=?", idSop);
+    }
 }

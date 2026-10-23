@@ -4,6 +4,7 @@ import { ListeSopComponent } from "./pages/liste-sop/liste-sop.component";
 import { NgModule } from "@angular/core";
 import { CreationSopComponent } from "./pages/creation-sop/creation-sop.component";
 import { VueSopComponent } from "./pages/vue-sop/vue-sop.component";
+import { ModificationSopComponent } from "./pages/modification-sop/modification-sop.component";
 
 const routes:Routes=[
     {
@@ -27,6 +28,10 @@ const routes:Routes=[
             {
                 path:'vue-sop',
                 component:VueSopComponent,
+            },
+            {
+                path:'modification-sop',
+                component:ModificationSopComponent,
             }
         ],
     },

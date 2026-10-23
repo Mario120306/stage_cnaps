@@ -32,6 +32,9 @@ export class VueSopComponent implements OnInit {
     details: SopDetails | null = null;
     flowchartEtapes: FlowchartStep[] = [];
     detailFlowchartSelectionne: FlowchartStep | null = null;
+    confirmationSuppression = false;
+    confirmationEnFermeture = false;
+    suppressionEnCours = false;
     chargement = true;
 
     constructor(
@@ -119,6 +122,9 @@ export class VueSopComponent implements OnInit {
     @HostListener("document:keydown.escape")
     fermerDetailFlowchartAvecEchap(): void {
         this.fermerDetailFlowchart();
+        if (!this.suppressionEnCours) {
+            this.fermerConfirmationSuppression();
+        }
     }
 
     pieceJointeNom(idPieceJointe: string | null): string {
@@ -148,14 +154,48 @@ export class VueSopComponent implements OnInit {
     }
 
     modifier(): void {
-        this.router.navigate(["/system-sop/creation-sop"], {
+        this.router.navigate(["/system-sop/modification-sop"], {
             queryParams: this.idSop ? { idSop: this.idSop } : {}
         });
     }
 
-    supprimer(): void {
-        if (window.confirm("Voulez-vous supprimer ce SOP ?")) {
+    ouvrirConfirmationSuppression(): void {
+        if (!this.idSop) {
+            this.toastr.error("Aucun SOP sélectionné pour la suppression.", "Suppression");
+            return;
+        }
+        this.confirmationSuppression = true;
+    }
+
+    fermerConfirmationSuppression(): void {
+        if (!this.confirmationSuppression || this.confirmationEnFermeture) {
+            return;
+        }
+        // Laisse jouer l'animation de sortie avant de retirer le modal du DOM
+        this.confirmationEnFermeture = true;
+        setTimeout(() => {
+            this.confirmationSuppression = false;
+            this.confirmationEnFermeture = false;
+        }, 150);
+    }
+
+    async supprimer(): Promise<void> {
+        if (!this.idSop) {
+            this.toastr.error("Aucun SOP sélectionné pour la suppression.", "Suppression");
+            return;
+        }
+
+        this.suppressionEnCours = true;
+        try {
+            await this.sopService.softDelete(this.idSop);
+            this.toastr.success("Le SOP a été supprimé avec succès.", "Suppression");
+            this.confirmationSuppression = false;
             this.router.navigate(["/system-sop/liste-sop"]);
+        } catch (error: any) {
+            console.error("Erreur lors de la suppression du SOP", error);
+            this.toastr.error(error?.message || "La suppression du SOP a échoué.", "Suppression");
+        } finally {
+            this.suppressionEnCours = false;
         }
     }
 
