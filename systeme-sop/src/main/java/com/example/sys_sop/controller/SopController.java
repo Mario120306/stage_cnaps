@@ -61,13 +61,13 @@ public class SopController {
         service.softDelete(id);
         return ResponseEntity.noContent().build();
     }
-    private Sop toEntity(SopDto d) { 
+    /*private Sop toEntity(SopDto d) { 
         return new Sop(d.getIdSop(), d.getNumeroSop(), 
                     d.getTitre(), d.getVersionCourante(), d.getCodeService(), 
                     d.getAuteurMatricule(),d.getSectionValidee(), d.getCodeStatut(),
                     d.getSupprime(),d.getDateSuppression(), d.getDateCreation(),d.getDateModification(),
                     d.getLibelleService(),d.getLibelleDirection()); 
-    }
+    }*/
     private SopDto toDto(Sop e) { 
         return new SopDto(e.getIdSop(), e.getNumeroSop(),
                         e.getTitre(), e.getVersionCourante(), 

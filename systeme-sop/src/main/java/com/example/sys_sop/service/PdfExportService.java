@@ -208,7 +208,7 @@ public class PdfExportService {
 
         static Span plain(String t) { return new Span(t, F_REG, COLOR_NOIR, false, false); }
         static Span bold(String t) { return new Span(t, F_BOLD, COLOR_NOIR, false, false); }
-        static Span highlight(String t) { return new Span(t, F_BOLD, COLOR_NOIR, false, true); }
+        /*static Span highlight(String t) { return new Span(t, F_BOLD, COLOR_NOIR, false, true); }*/
         static Span link(String t) { return new Span(t, F_REG, COLOR_LIEN, true, false); }
     }
 

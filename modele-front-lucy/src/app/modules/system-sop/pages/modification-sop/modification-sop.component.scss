@@ -30,7 +30,7 @@
 }
 .table-inputs .form-control:focus {
     border-color: #5b3ec8;
-    //box-shadow: 0 0 0 0.15rem rgba(91, 62, 200, 0.15);
+    /* box-shadow: 0 0 0 0.15rem rgba(91, 62, 200, 0.15); */
     outline: none;
 }
 .empty-row {
@@ -38,6 +38,29 @@
     font-style: italic;
     font-size: 0.85rem;
 }
+
+/* ===== Tableaux scrollables (hauteur adaptée à l'écran) ===== */
+.table-scroll {
+    max-height: clamp(160px, 24vh, 240px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #dee2e6;
+    -webkit-overflow-scrolling: touch;
+}
+.table-scroll .table {
+    margin-bottom: 0;
+    border: none !important;
+}
+/* En-tête figé pendant le scroll */
+.table-scroll .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #e9effc;
+}
+.table-scroll::-webkit-scrollbar { width: 6px; }
+.table-scroll::-webkit-scrollbar-thumb { background: #c5c9d6; border-radius: 3px; }
+.table-scroll::-webkit-scrollbar-thumb:hover { background: #5b3ec8; }
 
 legend {
     font-size: 12px;
@@ -59,6 +82,11 @@ fieldset {
 .sop-col > fieldset {
     flex: 0 0 auto;
     width: 100%;
+}
+/* Égaliser la hauteur des 2 colonnes :
+   le dernier bloc de chaque colonne prend la place restante */
+.sop-col > fieldset:last-child {
+    flex: 1 1 auto;
 }
 
 /* ===== Labels ===== */
@@ -155,7 +183,18 @@ label {
 .btn-fa-close:focus {
     outline: none;
 }
+
 /* ===== Flowchart ===== */
+/* liste scrollable : plusieurs flowcharts ouverts ne rallongent plus la page */
+.flowchart-list {
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.flowchart-list::-webkit-scrollbar { width: 6px; }
+.flowchart-list::-webkit-scrollbar-thumb { background: #c5c9d6; border-radius: 3px; }
+.flowchart-list::-webkit-scrollbar-thumb:hover { background: #5b3ec8; }
+
 .flowchart-edit {
     margin-bottom: 1rem;
     border: 1px solid #d9e0ec;
@@ -247,8 +286,10 @@ textarea.form-control {
     color: #495057;
     font-size: 0.75rem;
 }
+/* le textarea des références remplit le bloc restant de la colonne */
 .references-edit {
-    min-height: 350px;
+    flex: 1 1 auto;
+    min-height: 250px;
 }
 
 /* ===== Boutons d'action ===== */
@@ -282,6 +323,59 @@ textarea.form-control {
 .sop-btn-cancel:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Colonnes empilées (< 992px) : plus besoin de remplir la hauteur */
+@media (max-width: 991.98px) {
+    .sop-col > fieldset:last-child {
+        flex: 0 0 auto;
+    }
+    .references-edit {
+        min-height: 250px;
+    }
+    .flowchart-list {
+        max-height: 360px;
+    }
+}
+
+/* Tablette portrait (< 768px) */
+@media (max-width: 767.98px) {
+    .table-scroll {
+        max-height: 240px;
+    }
+    .toolbar-row {
+        justify-content: stretch;
+    }
+    .toolbar-row .btn-add {
+        width: 100%;
+    }
+}
+
+/* Mobile (< 576px) */
+@media (max-width: 575.98px) {
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    /* tableaux : défilement horizontal en plus du vertical */
+    .table-scroll {
+        overflow-x: auto;
+    }
+    .table-scroll .table {
+        min-width: 460px;
+    }
+
+    .step-row {
+        gap: 0.5rem;
+    }
+
+    .sop-actions > button {
+        flex: 1 1 100%;
+    }
 }
 
 /* ============================================================

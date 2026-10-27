@@ -57,21 +57,23 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Email</th><th>Matricule</th><th class="col-action"></th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let contact of details.contacts; let i = index">
-                                                    <td>{{ contact.email || '-' }}</td>
-                                                    <td>{{ contact.matricule || '-' }}</td>
-                                                    <td class="col-action">
-                                                        <button type="button" class="btn-fa-close" (click)="retirerContact(i)" aria-label="Retirer le contact" title="Retirer">
-                                                            <i class="fa fa-times"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr *ngIf="!details.contacts.length"><td colspan="3" class="empty-row">Aucun contact</td></tr>
-                                            </tbody>
-                                        </table>
+                                        <div class="table-scroll">
+                                            <table class="table table-borderless border">
+                                                <thead><tr><th>Email</th><th>Matricule</th><th class="col-action"></th></tr></thead>
+                                                <tbody>
+                                                    <tr *ngFor="let contact of details.contacts; let i = index">
+                                                        <td>{{ contact.email || '-' }}</td>
+                                                        <td>{{ contact.matricule || '-' }}</td>
+                                                        <td class="col-action">
+                                                            <button type="button" class="btn-fa-close" (click)="retirerContact(i)" aria-label="Retirer le contact" title="Retirer">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr *ngIf="!details.contacts.length"><td colspan="3" class="empty-row">Aucun contact</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </fieldset>
 
                                     <fieldset>
@@ -92,27 +94,29 @@
                                                         </ul>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-4 pl-md-0">
+                                                <div class="col-md-4 pl-md-0 mt-2 mt-md-0">
                                                     <input class="form-control action-input" placeholder="Action" [(ngModel)]="actionDestinataire">
                                                 </div>
                                             </div>
                                         </div>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Nom</th><th>Matricule</th><th>Action</th><th class="col-action"></th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let item of details.destinataires; let i = index">
-                                                    <td>{{ item.nom || '-' }}</td>
-                                                    <td>{{ item.matricule || '-' }}</td>
-                                                    <td>{{ item.action || '-' }}</td>
-                                                    <td class="col-action">
-                                                        <button type="button" class="btn-fa-close" (click)="retirerDestinataire(i)" aria-label="Retirer le destinataire" title="Retirer">
-                                                            <i class="fa fa-times"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr *ngIf="!details.destinataires?.length"><td colspan="4" class="empty-row">Aucun destinataire</td></tr>
-                                            </tbody>
-                                        </table>
+                                        <div class="table-scroll">
+                                            <table class="table table-borderless border">
+                                                <thead><tr><th>Nom</th><th>Matricule</th><th>Action</th><th class="col-action"></th></tr></thead>
+                                                <tbody>
+                                                    <tr *ngFor="let item of details.destinataires; let i = index">
+                                                        <td>{{ item.nom || '-' }}</td>
+                                                        <td>{{ item.matricule || '-' }}</td>
+                                                        <td>{{ item.action || '-' }}</td>
+                                                        <td class="col-action">
+                                                            <button type="button" class="btn-fa-close" (click)="retirerDestinataire(i)" aria-label="Retirer le destinataire" title="Retirer">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr *ngIf="!details.destinataires?.length"><td colspan="4" class="empty-row">Aucun destinataire</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </fieldset>
 
                                     <fieldset>
@@ -131,65 +135,23 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                        <table class="table table-borderless border">
-                                            <thead><tr><th>Nom</th><th>Matricule</th><th>Fonction</th><th class="col-action"></th></tr></thead>
-                                            <tbody>
-                                                <tr *ngFor="let item of details.equipeProjet; let i = index">
-                                                    <td>{{ item.nom || '-' }}</td>
-                                                    <td>{{ item.matricule || '-' }}</td>
-                                                    <td>{{ item.fonction || '-' }}</td>
-                                                    <td class="col-action">
-                                                        <button type="button" class="btn-fa-close" (click)="retirerMembre(i)" aria-label="Retirer le membre" title="Retirer">
-                                                            <i class="fa fa-times"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr *ngIf="!details.equipeProjet?.length"><td colspan="4" class="empty-row">Aucun membre</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </fieldset>
-
-                                    <fieldset>
-                                        <legend>GLOSSAIRE</legend>
-                                        <div class="toolbar-row mb-3">
-                                            <button type="button" class="btn-add" (click)="ajouterTerme()">
-                                                <i class="fa fa-plus pr-1" aria-hidden="true"></i> Ajouter un terme
-                                            </button>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 col-md-6">
-                                                <table class="table table-borderless border table-inputs">
-                                                    <thead><tr><th>Acronyme</th><th>Terme</th><th class="col-action"></th></tr></thead>
-                                                    <tbody>
-                                                        <tr *ngFor="let item of details.glossaire?.slice(0, ((details.glossaire?.length || 0) + 1) / 2); let i = index">
-                                                            <td><input class="form-control" [(ngModel)]="item.acronyme" placeholder="Acronyme"></td>
-                                                            <td><input class="form-control" [(ngModel)]="item.terme" placeholder="Terme"></td>
-                                                            <td class="col-action">
-                                                                <button type="button" class="btn-fa-close" (click)="retirerTerme(i)" aria-label="Retirer le terme" title="Retirer">
-                                                                    <i class="fa fa-times"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                        <tr *ngIf="!details.glossaire?.length"><td colspan="3" class="empty-row">Aucun terme</td></tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <div class="col-12 col-md-6" *ngIf="details.glossaire?.length">
-                                                <table class="table table-borderless border table-inputs">
-                                                    <thead><tr><th>Acronyme</th><th>Terme</th><th class="col-action"></th></tr></thead>
-                                                    <tbody>
-                                                        <tr *ngFor="let item of details.glossaire?.slice(((details.glossaire?.length || 0) + 1) / 2); let i = index">
-                                                            <td><input class="form-control" [(ngModel)]="item.acronyme" placeholder="Acronyme"></td>
-                                                            <td><input class="form-control" [(ngModel)]="item.terme" placeholder="Terme"></td>
-                                                            <td class="col-action">
-                                                                <button type="button" class="btn-fa-close" (click)="retirerTerme(i + ((details.glossaire.length + 1) / 2))" aria-label="Retirer le terme" title="Retirer">
-                                                                    <i class="fa fa-times"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                        <div class="table-scroll">
+                                            <table class="table table-borderless border">
+                                                <thead><tr><th>Nom</th><th>Matricule</th><th>Fonction</th><th class="col-action"></th></tr></thead>
+                                                <tbody>
+                                                    <tr *ngFor="let item of details.equipeProjet; let i = index">
+                                                        <td>{{ item.nom || '-' }}</td>
+                                                        <td>{{ item.matricule || '-' }}</td>
+                                                        <td>{{ item.fonction || '-' }}</td>
+                                                        <td class="col-action">
+                                                            <button type="button" class="btn-fa-close" (click)="retirerMembre(i)" aria-label="Retirer le membre" title="Retirer">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr *ngIf="!details.equipeProjet?.length"><td colspan="4" class="empty-row">Aucun membre</td></tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </fieldset>
 
@@ -200,30 +162,58 @@
 
                                     <fieldset>
                                         <legend>FLOWCHART - DÉTAILS EXISTANTS</legend>
-                                        <div *ngFor="let flowchart of flowcharts" class="flowchart-edit">
-                                            <details>
-                                                <summary>
-                                                    <span class="flowchart-summary">
-                                                        <strong>{{ flowchart.titre || '-' }}</strong>
-                                                        <span class="flowchart-information-preview">
-                                                            {{ flowchart.information || 'Aucune information renseignée' }}
+                                        <div class="flowchart-list">
+                                            <div *ngFor="let flowchart of flowcharts" class="flowchart-edit">
+                                                <details>
+                                                    <summary>
+                                                        <span class="flowchart-summary">
+                                                            <strong>{{ flowchart.titre || '-' }}</strong>
+                                                            <span class="flowchart-information-preview">
+                                                                {{ flowchart.information || 'Aucune information renseignée' }}
+                                                            </span>
                                                         </span>
-                                                    </span>
-                                                </summary>
-                                                <div class="flowchart-details">
-                                                    <label class="text-info">Informations nécessaires</label>
-                                                    <textarea class="form-control mb-3" rows="2" [(ngModel)]="flowchart.information"></textarea>
+                                                    </summary>
+                                                    <div class="flowchart-details">
+                                                        <label class="text-info">Informations nécessaires</label>
+                                                        <textarea class="form-control mb-3" rows="2" [(ngModel)]="flowchart.information"></textarea>
 
-                                                    <label class="text-info">Étapes</label>
-                                                    <div *ngFor="let etape of flowchart.etapes" class="step-row">
-                                                        <span class="step-number">{{ etape.numero }}</span>
-                                                        <textarea class="form-control" rows="2" [(ngModel)]="etape.information"></textarea>
+                                                        <label class="text-info">Étapes</label>
+                                                        <div *ngFor="let etape of flowchart.etapes" class="step-row">
+                                                            <span class="step-number">{{ etape.numero }}</span>
+                                                            <textarea class="form-control" rows="2" [(ngModel)]="etape.information"></textarea>
+                                                        </div>
+                                                        <p *ngIf="!flowchart.etapes.length" class="empty-row">Aucune étape.</p>
                                                     </div>
-                                                    <p *ngIf="!flowchart.etapes.length" class="empty-row">Aucune étape.</p>
-                                                </div>
-                                            </details>
+                                                </details>
+                                            </div>
+                                            <p *ngIf="!flowcharts.length" class="empty-row">Aucun flowchart.</p>
                                         </div>
-                                        <p *ngIf="!flowcharts.length" class="empty-row">Aucun flowchart.</p>
+                                    </fieldset>
+
+                                    <fieldset>
+                                        <legend>GLOSSAIRE</legend>
+                                        <div class="toolbar-row mb-3">
+                                            <button type="button" class="btn-add" (click)="ajouterTerme()">
+                                                <i class="fa fa-plus pr-1" aria-hidden="true"></i> Ajouter un terme
+                                            </button>
+                                        </div>
+                                        <div class="table-scroll">
+                                            <table class="table table-borderless border table-inputs">
+                                                <thead><tr><th>Acronyme</th><th>Terme</th><th class="col-action"></th></tr></thead>
+                                                <tbody>
+                                                    <tr *ngFor="let item of details.glossaire; let i = index">
+                                                        <td><input class="form-control" [(ngModel)]="item.acronyme" placeholder="Acronyme"></td>
+                                                        <td><input class="form-control" [(ngModel)]="item.terme" placeholder="Terme"></td>
+                                                        <td class="col-action">
+                                                            <button type="button" class="btn-fa-close" (click)="retirerTerme(i)" aria-label="Retirer le terme" title="Retirer">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr *ngIf="!details.glossaire?.length"><td colspan="3" class="empty-row">Aucun terme</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </fieldset>
 
                                     <fieldset>
