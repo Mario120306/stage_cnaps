@@ -10,7 +10,7 @@ const routes: Routes = [
   },
   {
     path: 'system-sop',
-    canActivate: [AppGuard],
+    //canActivate: [AppGuard],
     loadChildren: () =>
       import('./modules/system-sop/general.module').then((m) => m.GeneralModule),
   },

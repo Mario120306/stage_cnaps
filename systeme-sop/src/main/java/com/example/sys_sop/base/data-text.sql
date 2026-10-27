@@ -59,3 +59,18 @@ INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT024', 'Ann
 INSERT INTO SOP_TEXT_STATIQUE (code_text, contenu, actif) VALUES ('TXT025', 'CNaPS', 'O');
 
 COMMIT;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

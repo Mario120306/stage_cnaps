@@ -17,6 +17,45 @@
 }
 
 /* ============================================================
+   TABLEAUX SCROLLABLES (le footer reste toujours visible)
+   ============================================================ */
+.table-scroll {
+  /* hauteur adaptée à l'écran : ~5 lignes, entre 180px et 300px */
+  max-height: clamp(180px, 30vh, 300px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #dee2e6;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll .table {
+  margin-bottom: 0;
+  border: none !important;
+}
+
+/* En-tête figé pendant le scroll */
+.table-scroll .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #e9effc;
+}
+
+/* Scrollbar discrète */
+.table-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: #c5c9d6;
+  border-radius: 3px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #5b3ec8;
+}
+
+/* ============================================================
    LEGEND
    ============================================================ */
 legend {
@@ -49,6 +88,7 @@ legend {
   outline: none;
   transition: color 0.15s ease, transform 0.15s ease;
 }
+
 .cnaps-btn-valider {
   background-color: #030a16;
   color: #fff;
@@ -537,6 +577,8 @@ textarea.form-control {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+
+/* ---- Tablette / petit laptop (< 1200px) : les 2 blocs s'empilent ---- */
 @media (max-width: 1199.98px) {
   .etape .ml-2,
   .etape .ml-3,
@@ -544,9 +586,39 @@ textarea.form-control {
   .etape .ml-5 {
     margin-left: 0 !important;
   }
+
+  /* espace entre les 2 fieldsets empilés */
+  .etape .row > [class*="col-"] + [class*="col-"] {
+    margin-top: 1rem;
+  }
+
+  .table-scroll {
+    max-height: 260px;
+  }
 }
 
+/* ---- Tablette portrait (< 768px) ---- */
 @media (max-width: 767.98px) {
+  /* colonnes empilées : on espace les champs */
+  .etape .form-row > [class*="col-"] {
+    margin-bottom: 0.5rem;
+  }
+
+  /* boutons AJOUTER / VALIDER : pleine largeur et centrés */
+  .etape .cnaps-btn-ajouter,
+  .etape .cnaps-btn-valider {
+    width: 100%;
+  }
+
+  .etape .form-row > [class*="col-"].d-flex {
+    justify-content: center;
+  }
+
+  .stepper li {
+    flex: 1 1 calc(50% - 8px);
+    text-align: center;
+  }
+
   .detail-modal {
     width: calc(100vw - 1rem);
     height: calc(100vh - 1rem);
@@ -556,7 +628,26 @@ textarea.form-control {
   }
 }
 
+/* ---- Mobile (< 576px) ---- */
 @media (max-width: 575.98px) {
+  .card-body {
+    padding: 0.75rem;
+  }
+
+  /* tableaux : défilement horizontal en plus du vertical */
+  .table-scroll {
+    max-height: 240px;
+    overflow-x: auto;
+  }
+
+  .etape .table-scroll table {
+    min-width: 460px;
+  }
+
+  .stepper li {
+    flex: 1 1 100%;
+  }
+
   .sop-navigation {
     flex-wrap: wrap;
     justify-content: center !important;
@@ -587,5 +678,13 @@ textarea.form-control {
 
   .detail-modal .modal-body {
     padding: 1rem;
+  }
+
+  .detail-step-item.niveau-2,
+  .detail-step-item.niveau-3,
+  .detail-step-item.niveau-4,
+  .detail-step-item.niveau-5 {
+    margin-left: 0.5rem;
+    padding-left: 0.75rem;
   }
 }

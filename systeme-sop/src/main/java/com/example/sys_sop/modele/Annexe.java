@@ -15,7 +15,7 @@ public class Annexe {
     public String getTitre() { return titre; } 
     public void setTitre(String v) { titre = v; }
     public String getIdPieceJointe() { return idPieceJointe; } 
-    public void setIdPieceJointe(String v) { idPieceJointe = v; }
+    public void setIdPieceJointe(String v) { idPieceJointe = v;}
     public Integer getOrdre() { return ordre; } 
     public void setOrdre(Integer v) { ordre = v; }
 }

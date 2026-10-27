@@ -55,7 +55,7 @@ export class VueSopComponent implements OnInit {
         }
 
         try {
-            this.details = await this.sopService.getDetails(this.idSop, this.accountService.getMatricule());
+            this.details = await this.sopService.getDetails(this.idSop, /*this.accountService.getMatricule()*/ "000001");
             this.sop = this.details.sop;
             let numeroTitre = 0;
             const compteurs = [0, 0, 0, 0];

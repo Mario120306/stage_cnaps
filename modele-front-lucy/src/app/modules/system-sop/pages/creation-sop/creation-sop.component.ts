@@ -168,7 +168,6 @@ export class CreationSopComponent implements OnInit {
                 )
                 .slice(0,8);
     }
-
     async rechercherParEmail(email: string): Promise<void> {
         const recherche = email.trim();
         const rechercheId = ++this.rechercheEmailId;

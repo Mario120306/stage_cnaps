@@ -542,7 +542,17 @@ public class PdfExportService {
     }
 
     private void drawAnnexes(PageContext ctx, Sop sop) throws IOException {
-        for (Annexe annexe : annexes(sop)) drawAttachmentImage(ctx, annexe.getIdPieceJointe());
+        boolean first = true;
+        for (Annexe annexe : annexes(sop)) {
+            String titre = value(annexe.getTitre(), "");
+            if (notBlank(titre)) {
+                // Optionnel : saut de page entre deux annexes (comme pour les flowcharts)
+                if (!first) ctx.newPage();
+                drawHeading(ctx, titre, 1, H3_AFTER, true); // titre niveau 2, ajouté au sommaire
+                first = false;
+            }
+            drawAttachmentImage(ctx, annexe.getIdPieceJointe());
+        }
     }
 
     /** Image à la largeur du contenu, réduite pour tenir dans la page (jamais coupée). */

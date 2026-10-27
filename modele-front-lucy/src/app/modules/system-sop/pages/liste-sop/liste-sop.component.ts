@@ -20,7 +20,7 @@ export class ListeSopComponent implements OnInit{
 
     
     page = 0;
-    size = 5;
+    size =5;
     totalElements = 0;
     totalPages = 0;
 

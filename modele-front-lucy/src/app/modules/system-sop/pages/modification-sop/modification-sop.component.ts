@@ -58,7 +58,7 @@ export class ModificationSopComponent implements OnInit {
             return;
         }
         try {
-            this.details = await this.sopService.getDetails(this.idSop, this.accountService.getMatricule());
+            this.details = await this.sopService.getDetails(this.idSop, /*this.accountService.getMatricule()*/ "000001");
             if (!this.details.createur) {
                 this.toastr.error("Vous n'êtes pas le créateur de ce SOP.", "Accès refusé");
                 await this.router.navigate(["/system-sop/vue-sop"], { queryParams: { idSop: this.idSop } });

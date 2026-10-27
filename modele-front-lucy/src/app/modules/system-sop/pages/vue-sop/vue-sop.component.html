@@ -248,7 +248,7 @@
 <div *ngIf="detailFlowchartSelectionne" class="flowchart-modal-backdrop" (click)="fermerDetailFlowchart()">
     <section class="flowchart-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
         <header class="flowchart-modal-header">
-
+            <h5 class="flowchart-detail-header">Details du Flowchart</h5>
         </header>
         <div class="flowchart-modal-content">
             <aside class="flowchart-preview">
@@ -294,7 +294,7 @@
                 </div>
                 <div class="modal-body text-center">
                     <p>Voulez-vous vraiment supprimer ce SOP ?</p>
-                    <p class="text-muted mb-0">Cette action mettra le statut du SOP à <strong>STAT002</strong>.</p>
+                    <p class="text-muted mb-0">Cette action mettra le statut du SOP en <strong>Archive</strong>.</p>
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-danger" (click)="fermerConfirmationSuppression()" [disabled]="suppressionEnCours">ANNULER</button>

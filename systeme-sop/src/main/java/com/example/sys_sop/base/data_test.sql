@@ -161,6 +161,7 @@ VALUES
 -- ============================================
 INSERT INTO SOP_STATUT (code_statut, libelle, ordre) VALUES ('STAT001', 'ACTIF', 1);
 INSERT INTO SOP_STATUT (code_statut, libelle, ordre) VALUES ('STAT002', 'ARCHIVE', 2);
+
 INSERT INTO SOP (id_sop, numero_sop, titre, code_service, auteur_matricule, code_statut, date_creation, date_modification)
 VALUES ('SOP-001', 'SOP-RH-001', 'Procedure de recrutement', 'S001', '000003', 'STAT001',
         TO_DATE('2025-01-05','YYYY-MM-DD'), TO_DATE('2025-01-12','YYYY-MM-DD'));
@@ -290,3 +291,10 @@ VALUES ('SOP-031', 'SOP-OPS-004', 'Procedure de reception des livraisons', 'S015
         TO_DATE('2025-09-08','YYYY-MM-DD'), TO_DATE('2025-09-12','YYYY-MM-DD'));
 
 COMMIT;
+
+
+
+
+
+
+
