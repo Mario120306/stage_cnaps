@@ -19,6 +19,33 @@ legend{
   font-size:15px;
   font-weight: 700;
 }
+
+/* ===== Tableaux scrollables (hauteur adaptée à l'écran) ===== */
+.table-scroll {
+  max-height: clamp(160px, 24vh, 240px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #dee2e6;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll .table {
+  margin-bottom: 0;
+  border: none !important;
+}
+
+/* En-tête figé pendant le scroll */
+.table-scroll .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #e9effc;
+}
+
+.table-scroll::-webkit-scrollbar { width: 6px; }
+.table-scroll::-webkit-scrollbar-thumb { background: #c5c9d6; border-radius: 3px; }
+.table-scroll::-webkit-scrollbar-thumb:hover { background: #5b3ec8; }
+
 .btn-fa-eye {
   background: none;
   border: none;
@@ -84,6 +111,32 @@ legend{
   background-color: #dc3545;
 }
 
+/* ===== Disposition en 2 colonnes indépendantes ===== */
+.sop-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sop-col > fieldset {
+  flex: 0 0 auto;   /* hauteur = contenu, pas d'étirement */
+  width: 100%;
+}
+
+/* ===== Égaliser la hauteur des 2 colonnes =====
+   le dernier bloc de chaque colonne prend la place restante */
+.sop-col > fieldset:last-child {
+  flex: 1 1 auto;
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ===== Modale flowchart ===== */
 .flowchart-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -154,12 +207,7 @@ legend{
   border-right: 2px solid #d9e0ec;
   background: #f8f9fc;
 }
-fieldset {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 100%;
-}
+
 textarea.form-control {
     border: 1px solid #ced4da;
     border-radius: 4px;
@@ -167,9 +215,8 @@ textarea.form-control {
     font-size: 0.7rem;
     color: #495057;
     background-color: #fff;
-    width: 100% !important;        
-    max-width: 100% !important;     
-      
+    width: 100% !important;
+    max-width: 100% !important;
 }
 .flowchart-image {
   display: block;
@@ -182,21 +229,13 @@ textarea.form-control {
   background: #fff;
 }
 
+/* le textarea des références remplit le bloc restant de la colonne */
 .references {
   flex: 1 1 auto;
-  min-height: 350px;
-  height: 100%;
+  min-height: 200px;
+  height: auto;
   white-space: pre-wrap;
-  resize: none;
-}
-
-.flowchart-details-row {
-  align-items: stretch;
-}
-
-.flowchart-references {
-  display: flex;
-  height: 100%;
+  resize: vertical;
 }
 
 .annexes-list {
@@ -206,6 +245,12 @@ textarea.form-control {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Annexes (images) : scroll aussi */
+.annexes-scroll {
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .annexe-item {
@@ -316,7 +361,9 @@ textarea.form-control {
   font-weight: 700;
   text-transform: uppercase;
 }
-
+.flowchart-detail-header{
+  color: #5b3ec8; 
+}
 .flowchart-modal-footer {
   justify-content: flex-end;
   border-top: 1px solid #e5e5e5;
@@ -360,4 +407,62 @@ textarea.form-control {
   .flowchart-detail {
     padding: 1.25rem;
   }
+}
+
+/* ===== Mobile : colonnes empilées, plus besoin de remplir la hauteur ===== */
+@media (max-width: 767.98px) {
+  .sop-col > fieldset:last-child {
+    flex: 0 0 auto;
+  }
+
+  .references {
+    min-height: 250px;
+  }
+
+  .table-scroll {
+    max-height: 240px;
+    overflow-x: auto;
+  }
+
+  .sop-actions > button {
+    flex: 1 1 100%;
+  }
+}
+
+/* ===== Animation du modal de confirmation (entrée + sortie) ===== */
+@keyframes sop-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sop-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sop-backdrop-in { from { opacity: 0; } to { opacity: 0.5; } }
+@keyframes sop-backdrop-out { from { opacity: 0.5; } to { opacity: 0; } }
+@keyframes sop-slide-in { from { transform: translate(0, -50px); } to { transform: none; } }
+@keyframes sop-slide-out { from { transform: none; } to { transform: translate(0, -50px); } }
+
+.sop-confirm-backdrop {
+  animation: sop-backdrop-in 0.15s linear both;
+}
+.sop-confirm-backdrop.closing {
+  animation: sop-backdrop-out 0.15s linear both;
+}
+.sop-confirm-modal {
+  animation: sop-fade-in 0.15s linear both;
+}
+.sop-confirm-modal.closing {
+  animation: sop-fade-out 0.15s linear both;
+}
+.sop-confirm-modal .modal-dialog {
+  animation: sop-slide-in 0.3s ease-out both;
+}
+.sop-confirm-modal.closing .modal-dialog {
+  animation: sop-slide-out 0.15s ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sop-confirm-backdrop,
+  .sop-confirm-modal,
+  .sop-confirm-modal .modal-dialog {
+    animation: none;
+  }
+}
+.close:focus {
+    outline: none;
 }

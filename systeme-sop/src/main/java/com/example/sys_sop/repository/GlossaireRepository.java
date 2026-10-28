@@ -23,6 +23,9 @@ public class GlossaireRepository {
     public List<Glossaire> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Glossaire> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<Glossaire> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_glossaire=?", MAPPER, id).stream().findFirst(); 
     }
@@ -36,5 +39,8 @@ public class GlossaireRepository {
     }
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_GLOSSAIRE WHERE id_glossaire=?", id); 
+    }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_GLOSSAIRE WHERE id_sop=?", idSop);
     }
 }

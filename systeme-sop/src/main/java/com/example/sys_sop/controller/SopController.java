@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.sys_sop.dto.SopCreationDto;
 import com.example.sys_sop.dto.SopDto;
+import com.example.sys_sop.dto.SopDetailsDto;
 import com.example.sys_sop.modele.Sop;
 import com.example.sys_sop.service.SopService;
 
@@ -40,30 +41,33 @@ public class SopController {
     public SopDto getById(@PathVariable String id) { 
         return toDto(service.findById(id)); 
     }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<SopDetailsDto> getDetails(@PathVariable String id,
+            @RequestParam(required = false) String matricule) {
+        return ResponseEntity.ok(service.findDetailsById(id, matricule));
+    }
     @PostMapping 
     public ResponseEntity<SopDto> create(@RequestBody SopCreationDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                             .body(toDto(service.create(dto)));
     }
-    @PutMapping("/{id}") 
-    public ResponseEntity<SopDto> update(@PathVariable String id, @RequestBody SopDto dto) {
-        Sop entity = toEntity(dto); entity.setIdSop(id);
-        return service.update(entity) ? ResponseEntity.ok(toDto(entity)) : ResponseEntity.notFound().build();
+    @PutMapping("/{id}")
+    public ResponseEntity<SopDto> update(@PathVariable String id, @RequestBody SopCreationDto dto) {
+        return ResponseEntity.ok(toDto(service.update(id, dto)));
     }
-    /*@DeleteMapping("/{id}") public ResponseEntity<Void> delete(@PathVariable String id) {
-        return service.deleteById(id) ? ResponseEntity
-                .noContent()
-                .build() : ResponseEntity
-                .notFound()
-                .build();
-    }*/
-    private Sop toEntity(SopDto d) { 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
+    /*private Sop toEntity(SopDto d) { 
         return new Sop(d.getIdSop(), d.getNumeroSop(), 
                     d.getTitre(), d.getVersionCourante(), d.getCodeService(), 
                     d.getAuteurMatricule(),d.getSectionValidee(), d.getCodeStatut(),
                     d.getSupprime(),d.getDateSuppression(), d.getDateCreation(),d.getDateModification(),
                     d.getLibelleService(),d.getLibelleDirection()); 
-    }
+    }*/
     private SopDto toDto(Sop e) { 
         return new SopDto(e.getIdSop(), e.getNumeroSop(),
                         e.getTitre(), e.getVersionCourante(), 

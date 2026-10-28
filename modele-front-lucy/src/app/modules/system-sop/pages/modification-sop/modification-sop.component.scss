@@ -1,0 +1,469 @@
+/* ===== Tableaux ===== */
+.table th,
+.table td {
+    border-bottom: 1px solid #dee2e6;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    vertical-align: middle;
+}
+.table td {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+.table th {
+    background-color: #e9effc;
+    color: #0f2d67;
+    font-size: 15px;
+    font-weight: 700;
+}
+.table .col-action {
+    width: 44px;
+    text-align: center;
+}
+.table-inputs td {
+    padding: 0.4rem 0.5rem;
+}
+.table-inputs .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 0;
+}
+.table-inputs .form-control:focus {
+    border-color: #5b3ec8;
+    /* box-shadow: 0 0 0 0.15rem rgba(91, 62, 200, 0.15); */
+    outline: none;
+}
+.empty-row {
+    color: #9aa3b2;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+/* ===== Tableaux scrollables (hauteur adaptée à l'écran) ===== */
+.table-scroll {
+    max-height: clamp(160px, 24vh, 240px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #dee2e6;
+    -webkit-overflow-scrolling: touch;
+}
+.table-scroll .table {
+    margin-bottom: 0;
+    border: none !important;
+}
+/* En-tête figé pendant le scroll */
+.table-scroll .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #e9effc;
+}
+.table-scroll::-webkit-scrollbar { width: 6px; }
+.table-scroll::-webkit-scrollbar-thumb { background: #c5c9d6; border-radius: 3px; }
+.table-scroll::-webkit-scrollbar-thumb:hover { background: #5b3ec8; }
+
+legend {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ===== Disposition en 2 colonnes indépendantes ===== */
+fieldset {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.sop-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.sop-col > fieldset {
+    flex: 0 0 auto;
+    width: 100%;
+}
+/* Égaliser la hauteur des 2 colonnes :
+   le dernier bloc de chaque colonne prend la place restante */
+.sop-col > fieldset:last-child {
+    flex: 1 1 auto;
+}
+
+/* ===== Labels ===== */
+label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+/* ===== Recherche + autocomplete ===== */
+.agent-autocomplete {
+  position: relative;
+}
+
+.agent-suggestions {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.agent-suggestions button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: rgb(154, 154, 154);
+  text-align: left;
+}
+
+.agent-suggestions button:hover,
+.agent-suggestions button:focus {
+  background: #e9effc;
+  outline: none;
+}
+
+.agent-suggestions small {
+  color: #6c757d;
+}
+.action-input {
+    height: calc(1.5em + .75rem + 2px);
+}
+
+/* ===== Bouton ajouter (glossaire) ===== */
+.toolbar-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.75rem;
+}
+.btn-add {
+    padding: 6px 14px;
+    border: 1px solid #5b3ec8;
+    border-radius: 5px;
+    background: #fff;
+    color: #5b3ec8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-add:focus {
+    outline: none;
+}
+.btn-add:focus-visible {
+    outline: 2px solid #5b3ec8;
+    outline-offset: 2px;
+}
+
+
+/* ===== Bouton retirer ===== */
+.btn-fa-close {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #dc3545;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+}
+.btn-fa-close:focus {
+    outline: none;
+}
+
+/* ===== Flowchart ===== */
+/* liste scrollable : plusieurs flowcharts ouverts ne rallongent plus la page */
+.flowchart-list {
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.flowchart-list::-webkit-scrollbar { width: 6px; }
+.flowchart-list::-webkit-scrollbar-thumb { background: #c5c9d6; border-radius: 3px; }
+.flowchart-list::-webkit-scrollbar-thumb:hover { background: #5b3ec8; }
+
+.flowchart-edit {
+    margin-bottom: 1rem;
+    border: 1px solid #d9e0ec;
+    border-radius: 6px;
+    background: #fbfcfe;
+}
+.flowchart-edit summary {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    color: #0f2d67;
+    cursor: pointer;
+    list-style: none;
+}
+.flowchart-edit summary::-webkit-details-marker {
+    display: none;
+}
+.flowchart-edit summary::after {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    margin-left: 0.75rem;
+    margin-top: 3px;
+    border-right: 2px solid #5b3ec8;
+    border-bottom: 2px solid #5b3ec8;
+    content: "";
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+}
+.flowchart-edit details[open] summary::after {
+    transform: rotate(225deg);
+}
+.flowchart-edit summary:focus-visible {
+    outline: 2px solid #5b3ec8;
+    outline-offset: -2px;
+}
+.flowchart-summary {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.flowchart-summary strong {
+    font-size: 1rem;
+    font-weight: 700;
+}
+.flowchart-information-preview {
+    overflow: hidden;
+    color: #6b7280;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.flowchart-details {
+    padding: 0 1rem;
+}
+.step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.step-number {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    margin-top: 4px;
+    border-radius: 50%;
+    background: #ece8fb;
+    color: #5b3ec8;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* ===== Textareas ===== */
+textarea.form-control {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #495057;
+    font-size: 0.75rem;
+}
+/* le textarea des références remplit le bloc restant de la colonne */
+.references-edit {
+    flex: 1 1 auto;
+    min-height: 250px;
+}
+
+/* ===== Boutons d'action ===== */
+.sop-actions {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 16px 0 4px;
+    border-top: 1px solid #e5e9f2;
+}
+.sop-btn-create,
+.sop-btn-cancel {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.sop-btn-create {
+    background-color: #5b3ec8;
+}
+.sop-btn-cancel {
+    background-color: #dc3545;
+}
+.sop-btn-create:disabled,
+.sop-btn-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Colonnes empilées (< 992px) : plus besoin de remplir la hauteur */
+@media (max-width: 991.98px) {
+    .sop-col > fieldset:last-child {
+        flex: 0 0 auto;
+    }
+    .references-edit {
+        min-height: 250px;
+    }
+    .flowchart-list {
+        max-height: 360px;
+    }
+}
+
+/* Tablette portrait (< 768px) */
+@media (max-width: 767.98px) {
+    .table-scroll {
+        max-height: 240px;
+    }
+    .toolbar-row {
+        justify-content: stretch;
+    }
+    .toolbar-row .btn-add {
+        width: 100%;
+    }
+}
+
+/* Mobile (< 576px) */
+@media (max-width: 575.98px) {
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    /* tableaux : défilement horizontal en plus du vertical */
+    .table-scroll {
+        overflow-x: auto;
+    }
+    .table-scroll .table {
+        min-width: 460px;
+    }
+
+    .step-row {
+        gap: 0.5rem;
+    }
+
+    .sop-actions > button {
+        flex: 1 1 100%;
+    }
+}
+
+/* ============================================================
+   LOADER SOP — PAGE ASSOMBRIE + HORLOGE BLANCHE
+   ============================================================ */
+.sop-loading-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1070;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(2px);
+}
+
+.sop-loading-card {
+    width: 100%;
+    max-width: 300px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.sop-loading-card p {
+    margin-bottom: 0.25rem;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.sop-loading-card span {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.85rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.sop-clock {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.sop-clock-hand {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: 50% 100%;
+    background: #fff;
+    border-radius: 3px;
+}
+
+.hour-hand {
+    width: 5px;
+    height: 15px;
+    margin-left: -2.5px;
+    animation: sop-clock-hour 8s linear infinite;
+}
+
+.minute-hand {
+    width: 4px;
+    height: 22px;
+    margin-left: -2px;
+    animation: sop-clock-minute 2s linear infinite;
+}
+
+.sop-clock-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+@keyframes sop-clock-minute {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes sop-clock-hour {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

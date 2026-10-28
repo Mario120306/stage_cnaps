@@ -33,6 +33,9 @@ export class Mere{
             }
             throw new Error(`Erreur API :${res.status}- ${detailErreur}`);
         }
+        if (res.status === 204) {
+            return undefined as unknown as T;
+        }
         return res.json();
     }
     async getById<T>(id:string):Promise<T>{
@@ -70,5 +73,17 @@ export class Mere{
             if (query) endpoint += `?${query}`;
         }
         return this.request<T[]>(endpoint);
+    }
+    async getPage<T>(params?: Record<string, string | number | boolean>):Promise<T>{
+        let endpoint = this.resourcePlural;
+        if (params && Object.keys(params).length > 0) {
+            const esc = encodeURIComponent;
+            const query = Object.entries(params)
+                .filter(([_, v]) => v !== undefined && v !== null && String(v) !== "")
+                .map(([k, v]) => `${esc(k)}=${esc(String(v))}`)
+                .join("&");
+            if (query) endpoint += `?${query}`;
+        }
+        return this.request<T>(endpoint);
     }
 }

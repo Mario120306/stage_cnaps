@@ -165,6 +165,12 @@ public class SopRepository {
         return jdbc.update(sql, e.getNumeroSop(), e.getTitre(), e.getVersionCourante(), e.getCodeService(), e.getAuteurMatricule(), e.getSectionValidee(), e.getCodeStatut(), e.getSupprime(), e.getDateSuppression(), e.getDateCreation(), e.getIdSop());
     }
 
+    public int softDelete(String id, Timestamp dateSuppression) {
+        return jdbc.update(
+                "UPDATE SOP SET code_statut=?, supprime=?, date_suppression=?, date_modification=SYSDATE WHERE id_sop=?",
+                "STAT002", "O", dateSuppression, id);
+    }
+
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP WHERE id_sop=?", id); 
     }

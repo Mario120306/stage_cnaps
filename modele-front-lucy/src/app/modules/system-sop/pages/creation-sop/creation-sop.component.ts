@@ -20,42 +20,67 @@ import { ServiceService } from "../../services/service.service";
 })
 export class CreationSopComponent implements OnInit {
 
+    // ============================================================
+    // PROPRIÉTÉS
+    // ============================================================
+
+    // ---------- Général ----------
     idSop: string | null = null;
     isModification = false;
+    soumissionEnCours = false;
+    soumissionTerminee = false;
+
+    // ---------- Navigation (4 pages = 8 sections regroupées 2 par 2) ----------
+    pages = [
+        { id: 1, titre: 'ENTETE + DESTINATAIRES' },
+        { id: 2, titre: 'EQUIPE + GLOSSAIRE' },
+        { id: 3, titre: 'FLOWCHART + DETAILS ' },
+        { id: 4, titre: 'REFERENCES + ANNEXES' }
+    ];
+    pageActuelle: number = 1;
+
+    // ---------- Entête ----------
     enteteValidee = false;
-    destinatairesValides = false;
-    equipeProjetValides=false;
-    glossaireValides=false;
     titreDocument = "";
     services: ServiceModel[] = [];
     codeServiceSelectionne = "";
     numeroVersion: number | null = 1;
-    soumissionEnCours = false;
-    soumissionTerminee = false;
     rechercheEmail = "";
-    rechercheEquipe="";
-    acronymeClossaire="";
-    termesGlossaire="";
-    actionDestinataire = "Approbation final";
-    glossaire:{acronyme:string;termes:string} []=[];
     agentsEmailSuggerees: Utilisateur[] = [];
-    destinatairesSuggereesBackend: Utilisateur[] = [];
-    equipeSuggereesBackend: Utilisateur[] = [];
-    private rechercheEmailId = 0;
-    private rechercheDestinataireId = 0;
-    private rechercheEquipeId = 0;
     agentsSelectionnes: Utilisateur[]=[];
-    equipeProjet:Utilisateur[]=[];
+    private rechercheEmailId = 0;
+
+    // ---------- Destinataires ----------
+    destinatairesValides = false;
     matriculeDestinataire = "";
+    actionDestinataire = "Approbation final";
     destinataireSelectionne: Utilisateur | null = null;
     destinataires: { agent: Utilisateur; action: string }[] = [];
+    destinatairesSuggereesBackend: Utilisateur[] = [];
+    private rechercheDestinataireId = 0;
+
+    // ---------- Équipe de projet ----------
+    equipeProjetValides=false;
+    rechercheEquipe="";
+    equipeProjet:Utilisateur[]=[];
+    equipeSuggereesBackend: Utilisateur[] = [];
+    private rechercheEquipeId = 0;
+
+    // ---------- Glossaire ----------
+    glossaireValides=false;
+    acronymeClossaire="";
+    termesGlossaire="";
+    glossaire:{acronyme:string;termes:string} []=[];
+
+    // ---------- Flowcharts ----------
     flowcharts: Flowchart[] = [];
     flowchartsValides = false;
     titreFlowchart = "";
     informationFlowchart = "";
     fichierFlowchart: File | null = null;
     private prochainFlowchartId = 1;
-    private prochainDetailId = 1;
+
+    // ---------- Détails des étapes du flowchart ----------
     flowchartDetailId: number | null = null;
     informationsDetailFlowchart = "";
     niveauDecalageDetail: number | null = null;
@@ -67,19 +92,27 @@ export class CreationSopComponent implements OnInit {
         { valeur: 3, libelle: "Niveau 3 (Ex : 1.1.1.1)" },
         { valeur: 4, libelle: "Niveau 4 (Ex : 1.1.1.1.1)" }
     ];
+    private prochainDetailId = 1;
+
+    // ---------- Modal détails du flowchart ----------
     detailFlowchartOuvert = false;
     detailFlowchartSelectionne: Flowchart | null = null;
 
-    // Références légales et réglementaires
+    // ---------- Références légales et réglementaires ----------
     referencesLegales = "";
     referencesValidees = false;
 
-    // Annexes
+    // ---------- Annexes ----------
     annexes: AnnexeDraft[] = [];
     annexesValidees = false;
     titreAnnexe = "";
     fichierAnnexe: File | null = null;
     private prochaineAnnexeId = 1;
+
+
+    // ============================================================
+    // CONSTRUCTEUR + INITIALISATION
+    // ============================================================
 
     constructor(
         private toastr: ToastrService,
@@ -114,6 +147,11 @@ export class CreationSopComponent implements OnInit {
             this.toastr.error('Impossible de charger le numéro de version du SOP.', 'Erreur');
         }
     }
+
+
+    // ============================================================
+    // GETTERS (suggestions d'autocomplétion)
+    // ============================================================
 
     get agentsSuggerees(): Utilisateur[] {
         const recherche = this.rechercheEmail.trim().toLocaleLowerCase();
@@ -151,6 +189,7 @@ export class CreationSopComponent implements OnInit {
             )
             .slice(0, 8);
     }
+
     get equipeSuggeree():Utilisateur[]{
         const recherche =this.rechercheEquipe.trim().toLocaleLowerCase();
         if(!recherche){
@@ -168,6 +207,11 @@ export class CreationSopComponent implements OnInit {
                 )
                 .slice(0,8);
     }
+
+
+    // ============================================================
+    // RECHERCHE (appels backend)
+    // ============================================================
 
     async rechercherParEmail(email: string): Promise<void> {
         const recherche = email.trim();
@@ -228,6 +272,12 @@ export class CreationSopComponent implements OnInit {
             }
         }
     }
+
+
+    // ============================================================
+    // SÉLECTION (destinataire + fichiers)
+    // ============================================================
+
     selectionnerDestinataire(agent: Utilisateur): void {
         if (this.destinatairesValides) {
             return;
@@ -246,15 +296,48 @@ export class CreationSopComponent implements OnInit {
             this.destinataireSelectionne = null;
         }
     }
-    ajouterMembreEquipe(agent:Utilisateur):void{
-        if(this.equipeProjet.some(
-            membre=>membre.matricule.toLocaleLowerCase()===agent.matricule.toLocaleLowerCase()
-        )){
+
+    selectionnerFichierFlowchart(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const fichier = input.files?.[0] ?? null;
+
+        if (!fichier) {
+            this.fichierFlowchart = null;
             return;
         }
-        this.equipeProjet=[...this.equipeProjet,agent];
-        this.rechercheEquipe="";
+
+        if (!this.estImageValide(fichier)) {
+            input.value = ''; // reset le input
+            this.fichierFlowchart = null;
+            return;
+        }
+
+        this.fichierFlowchart = fichier;
     }
+
+    selectionnerFichierAnnexe(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const fichier = input.files?.[0] ?? null;
+
+        if (!fichier) {
+            this.fichierAnnexe = null;
+            return;
+        }
+
+        if (!this.estImageValide(fichier)) {
+            input.value = '';
+            this.fichierAnnexe = null;
+            return;
+        }
+
+        this.fichierAnnexe = fichier;
+    }
+
+
+    // ============================================================
+    // AJOUT
+    // ============================================================
+
     ajouterAgent(agent: Utilisateur): void {
         if (this.enteteValidee || !agent.mail || this.agentsSelectionnes.some(
             selectionne => selectionne.mail.toLocaleLowerCase() === agent.mail.toLocaleLowerCase()
@@ -265,6 +348,7 @@ export class CreationSopComponent implements OnInit {
         this.agentsSelectionnes = [...this.agentsSelectionnes, agent];
         this.rechercheEmail = "";
     }
+
     ajouterDestinataire(): void {
         if (this.destinatairesValides) {
             return;
@@ -301,53 +385,40 @@ export class CreationSopComponent implements OnInit {
         this.destinatairesSuggereesBackend = [];
         this.actionDestinataire = "Approbation final";
     }
-    private estImageValide(fichier: File): boolean {
-        const typesAcceptes = [
-            'image/png',
-            'image/jpeg',
-            'image/jpg',
-            'image/gif',
-            'image/webp',
-            'image/svg+xml',
-            'image/bmp',
-            'application/pdf'
-        ];
-        const tailleMax = 5 * 1024 * 1024; // 5 Mo
 
-        if (!typesAcceptes.includes(fichier.type)) {
-            this.toastr.warning(
-                `Le fichier "${fichier.name}" n'est pas une image valide (formats acceptés : PNG, JPG, GIF, WEBP, SVG, BMP,PDF).`,
-                'Fichier invalide'
-            );
-            return false;
+    ajouterMembreEquipe(agent:Utilisateur):void{
+        if(this.equipeProjet.some(
+            membre=>membre.matricule.toLocaleLowerCase()===agent.matricule.toLocaleLowerCase()
+        )){
+            return;
         }
-
-        if (fichier.size > tailleMax) {
-            this.toastr.warning(
-                `Le fichier "${fichier.name}" dépasse la taille maximale de 5 Mo.`,
-                'Fichier trop volumineux'
-            );
-            return false;
-        }
-
-        return true;
+        this.equipeProjet=[...this.equipeProjet,agent];
+        this.rechercheEquipe="";
     }
-    selectionnerFichierFlowchart(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const fichier = input.files?.[0] ?? null;
 
-        if (!fichier) {
-            this.fichierFlowchart = null;
+    ajouterTermeGlossaire():void{
+        const acronyme = this.acronymeClossaire.trim();
+        const termes=this.termesGlossaire.trim();
+
+        if(!acronyme || !termes){
+            this.toastr.warning(
+                "Saisissez l'acronyme et les termes.",
+                "Information manquante"
+            );
             return;
         }
-
-        if (!this.estImageValide(fichier)) {
-            input.value = ''; // reset le input
-            this.fichierFlowchart = null;
+        if(this.glossaire.some(
+            terme => terme.acronyme.toLocaleLowerCase()===acronyme.toLocaleLowerCase()
+        )){
+            this.toastr.warning(
+                "cet  acronyme existe déjà dans le glossaire.",
+                "Acronyme déjà ajouté"
+            );
             return;
         }
-
-        this.fichierFlowchart = fichier;
+        this.glossaire=[...this.glossaire,{acronyme,termes}];
+        this.acronymeClossaire="";
+        this.termesGlossaire="";
     }
 
     ajouterFlowchart(input: HTMLInputElement): void {
@@ -377,23 +448,6 @@ export class CreationSopComponent implements OnInit {
         this.informationFlowchart = "";
         this.fichierFlowchart = null;
         input.value = "";
-    }
-
-    retirerFlowchart(id: number): void {
-        if (this.flowchartsValides) {
-            return;
-        }
-
-        this.flowcharts = this.flowcharts.filter(flowchart => flowchart.id !== id);
-        this.detailsFlowchart = this.detailsFlowchart.filter(
-            detail => detail.flowchartId !== id
-        );
-        if (this.flowchartDetailId === id) {
-            this.flowchartDetailId = this.flowcharts[0]?.id ?? null;
-        }
-        if (this.detailFlowchartSelectionne?.id === id) {
-            this.fermerDetailFlowchart();
-        }
     }
 
     ajouterDetailFlowchart(): void {
@@ -435,43 +489,6 @@ export class CreationSopComponent implements OnInit {
         this.niveauDecalageDetail = null;
     }
 
-    retirerDetailFlowchart(idDetail: number): void {
-        if (this.detailsFlowchartValides) {
-            return;
-        }
-        this.detailsFlowchart = this.detailsFlowchart.filter(
-            element => element.id !== idDetail
-        );
-    }
-    validerReferences(): void {
-        if (!this.referencesLegales.trim()) {
-            this.toastr.warning(
-                "Saisissez les références légales et réglementaires avant de valider.",
-                "Aucune référence"
-            );
-            return;
-        }
-        this.referencesValidees = true;
-    }
-
-    selectionnerFichierAnnexe(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const fichier = input.files?.[0] ?? null;
-
-        if (!fichier) {
-            this.fichierAnnexe = null;
-            return;
-        }
-
-        if (!this.estImageValide(fichier)) {
-            input.value = '';
-            this.fichierAnnexe = null;
-            return;
-        }
-
-        this.fichierAnnexe = fichier;
-    }
-
     ajouterAnnexe(input: HTMLInputElement): void {
         if (this.annexesValidees) {
             return;
@@ -499,49 +516,11 @@ export class CreationSopComponent implements OnInit {
         input.value = "";
     }
 
-    retirerAnnexe(id: number): void {
-        if (this.annexesValidees) {
-            return;
-        }
-        this.annexes = this.annexes.filter(annexe => annexe.id !== id);
-    }
 
-    validerAnnexes(): void {
-        this.annexesValidees = true;
-    }
+    // ============================================================
+    // RETRAIT
+    // ============================================================
 
-    ajouterTermeGlossaire():void{
-        const acronyme = this.acronymeClossaire.trim();
-        const termes=this.termesGlossaire.trim();
-
-        if(!acronyme || !termes){
-            this.toastr.warning(
-                "Saisissez l'acronyme et les termes.",
-                "Information manquante"
-            );
-            return;
-        }
-        if(this.glossaire.some(
-            terme => terme.acronyme.toLocaleLowerCase()===acronyme.toLocaleLowerCase()
-        )){
-            this.toastr.warning(
-                "cet  acronyme existe déjà dans le glossaire.",
-                "Acronyme déjà ajouté"
-            );
-            return;
-        }
-        this.glossaire=[...this.glossaire,{acronyme,termes}];
-        this.acronymeClossaire="";
-        this.termesGlossaire="";
-    }
-    retirerDestinataire(agent: Utilisateur): void {
-        if (this.destinatairesValides) {
-            return;
-        }
-        this.destinataires = this.destinataires.filter(
-            destinataire => destinataire.agent.matricule !== agent.matricule
-        );
-    }
     retirerAgent(agent: Utilisateur): void {
         if (this.enteteValidee) {
             return;
@@ -550,16 +529,72 @@ export class CreationSopComponent implements OnInit {
             selectionne => selectionne.matricule !== agent.matricule
         );
     }
+
+    retirerDestinataire(agent: Utilisateur): void {
+        if (this.destinatairesValides) {
+            return;
+        }
+        this.destinataires = this.destinataires.filter(
+            destinataire => destinataire.agent.matricule !== agent.matricule
+        );
+    }
+
     retirerMembreEquipe(agent:Utilisateur): void{
+        if(this.equipeProjetValides){
+            return;
+        }
         this.equipeProjet =this.equipeProjet.filter(
             membre=>membre.matricule !==agent.matricule
         );
     }
+
     retirerTermeGlossaire(terme:{acronyme:string;termes:string}):void{
+        if(this.glossaireValides){
+            return;
+        }
         this.glossaire=this.glossaire.filter(
             element=>element !==terme
         );
     }
+
+    retirerFlowchart(id: number): void {
+        if (this.flowchartsValides) {
+            return;
+        }
+
+        this.flowcharts = this.flowcharts.filter(flowchart => flowchart.id !== id);
+        this.detailsFlowchart = this.detailsFlowchart.filter(
+            detail => detail.flowchartId !== id
+        );
+        if (this.flowchartDetailId === id) {
+            this.flowchartDetailId = this.flowcharts[0]?.id ?? null;
+        }
+        if (this.detailFlowchartSelectionne?.id === id) {
+            this.fermerDetailFlowchart();
+        }
+    }
+
+    retirerDetailFlowchart(idDetail: number): void {
+        if (this.detailsFlowchartValides) {
+            return;
+        }
+        this.detailsFlowchart = this.detailsFlowchart.filter(
+            element => element.id !== idDetail
+        );
+    }
+
+    retirerAnnexe(id: number): void {
+        if (this.annexesValidees) {
+            return;
+        }
+        this.annexes = this.annexes.filter(annexe => annexe.id !== id);
+    }
+
+
+    // ============================================================
+    // VALIDATION DES SECTIONS
+    // ============================================================
+
     validerEntete(): void {
         if (!this.titreDocument || !this.codeServiceSelectionne || this.agentsSelectionnes.length === 0) {
             this.toastr.warning(
@@ -570,15 +605,19 @@ export class CreationSopComponent implements OnInit {
         }
         this.enteteValidee = true;
     }
+
     validerDestinataires(): void {
         this.destinatairesValides = true;
     }
+
     validerEquipes():void {
         this.equipeProjetValides=true;
     }
+
     validerGlossaires():void{
         this.glossaireValides=true;
     }
+
     validerFlowcharts(): void {
         if (this.flowcharts.length === 0) {
             this.toastr.warning(
@@ -589,6 +628,7 @@ export class CreationSopComponent implements OnInit {
         }
         this.flowchartsValides = true;
     }
+
     validerDetailsFlowchart(): void {
         /*if (this.detailsFlowchart.length === 0) {
             this.toastr.warning(
@@ -599,15 +639,26 @@ export class CreationSopComponent implements OnInit {
         }*/
         this.detailsFlowchartValides = true;
     }
-    // 4 pages = 8 sections regroupées 2 par 2
-    pages = [
-        { id: 1, titre: 'ENTETE + DESTINATAIRES' },
-        { id: 2, titre: 'EQUIPE + GLOSSAIRE' },
-        { id: 3, titre: 'FLOWCHART + DETAILS ' },
-        { id: 4, titre: 'REFERENCES + ANNEXES' }
-    ];
 
-    pageActuelle: number = 1;
+    validerReferences(): void {
+        if (!this.referencesLegales.trim()) {
+            this.toastr.warning(
+                "Saisissez les références légales et réglementaires avant de valider.",
+                "Aucune référence"
+            );
+            return;
+        }
+        this.referencesValidees = true;
+    }
+
+    validerAnnexes(): void {
+        this.annexesValidees = true;
+    }
+
+
+    // ============================================================
+    // NAVIGATION ENTRE LES PAGES
+    // ============================================================
 
     private pageEstValidee(page: number): boolean {
         switch (page) {
@@ -674,6 +725,11 @@ export class CreationSopComponent implements OnInit {
     annulerCreation(): void {
         this.pageActuelle = 1;
     }
+
+
+    // ============================================================
+    // CRÉATION DU SOP (envoi au backend)
+    // ============================================================
 
     async creerSop(): Promise<void> {
         if (this.soumissionEnCours || this.soumissionTerminee) {
@@ -743,7 +799,7 @@ export class CreationSopComponent implements OnInit {
                 destinataires: this.destinataires.map(({ agent, action }, index) => ({
                     matricule: agent.matricule,
                     nom: `${agent.nom} ${agent.prenoms}`.trim(),
-                    organisation: agent.libelleService || "",
+                    organisation: agent.libelleService || "CNaPS",
                     action,
                     ordre: index + 1
                 })),
@@ -798,6 +854,43 @@ export class CreationSopComponent implements OnInit {
         }
     }
 
+
+    // ============================================================
+    // FICHIERS (contrôle + conversion)
+    // ============================================================
+
+    private estImageValide(fichier: File): boolean {
+        const typesAcceptes = [
+            'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'image/bmp',
+            'application/pdf'
+        ];
+        const tailleMax = 5 * 1024 * 1024; // 5 Mo
+
+        if (!typesAcceptes.includes(fichier.type)) {
+            this.toastr.warning(
+                `Le fichier "${fichier.name}" n'est pas une image valide (formats acceptés : PNG, JPG, GIF, WEBP, SVG, BMP,PDF).`,
+                'Fichier invalide'
+            );
+            return false;
+        }
+
+        if (fichier.size > tailleMax) {
+            this.toastr.warning(
+                `Le fichier "${fichier.name}" dépasse la taille maximale de 5 Mo.`,
+                'Fichier trop volumineux'
+            );
+            return false;
+        }
+
+        return true;
+    }
+
     private fichierEnBase64(fichier: File): Promise<string> {
         return new Promise((resolve, reject) => {
             const lecteur = new FileReader();
@@ -820,14 +913,10 @@ export class CreationSopComponent implements OnInit {
         });
     }
 
-    ouvrirDetailFlowchart(flowchart: Flowchart): void {
-        this.detailFlowchartSelectionne = flowchart;
-        this.detailFlowchartOuvert = true;
-    }
 
-    detailsPourFlowchart(flowchartId: number): DetailFlowchart[] {
-        return this.detailsFlowchart.filter(detail => detail.flowchartId === flowchartId);
-    }
+    // ============================================================
+    // DÉTAILS DU FLOWCHART (affichage + numérotation + modal)
+    // ============================================================
 
     // Chaque titre ouvre une nouvelle séquence de premier niveau.
     numeroFlowchart(flowchartId: number): number {
@@ -840,6 +929,10 @@ export class CreationSopComponent implements OnInit {
             .slice(0, index + 1)
             .filter(flowchart => flowchart.titre.trim())
             .length;
+    }
+
+    detailsPourFlowchart(flowchartId: number): DetailFlowchart[] {
+        return this.detailsFlowchart.filter(detail => detail.flowchartId === flowchartId);
     }
 
     detailsNumerotes(flowchartId: number): DetailFlowchartAffiche[] {
@@ -885,6 +978,12 @@ export class CreationSopComponent implements OnInit {
         }));
     }
 
+    ouvrirDetailFlowchart(flowchart: Flowchart): void {
+        this.detailFlowchartSelectionne = flowchart;
+        this.detailFlowchartOuvert = true;
+    }
+
+    /*fermeture*/
     fermerDetailFlowchart(): void {
         this.detailFlowchartOuvert = false;
         this.detailFlowchartSelectionne = null;
@@ -897,6 +996,11 @@ export class CreationSopComponent implements OnInit {
             }
         }
     }
+
+
+    // ============================================================
+    // NOTIFICATIONS DE TEST
+    // ============================================================
 
     info(): void    { this.toastr.info('Message /notification INFO', ''); }
     success(): void { this.toastr.success('Message / notification SUCCESS', ''); }

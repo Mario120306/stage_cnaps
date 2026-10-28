@@ -1,6 +1,3 @@
-/* ============================================================
-   TABLEAUX — bordures horizontales uniquement
-   ============================================================ */
 .table th,
 .table td {
     border-bottom: 1px solid #dee2e6;
@@ -19,19 +16,10 @@
 .table td {
     font-size: 14px;
 }
-
-/* ============================================================
-   LEGEND
-   ============================================================ */
 legend {
     font-size: 12px;
     font-weight: 600;
 }
-
-/* ============================================================
-   PAGINATION — boutons précédent / suivant
-   ============================================================ */
-
 
 .pagination-action:disabled,
 .pagination-action-disabled {
@@ -52,9 +40,51 @@ legend {
   border-radius: 5px;
   border: none;
 }
-/* ============================================================
-   PAGINATION — numéros de page
-   ============================================================ */
+
 .pagination .page-link {
     cursor: pointer;
+}
+.total-sop-badge {
+    display: inline-block;
+    background-color: #f8f9fa;   
+    color: #212529;              
+    border: 1px solid #dee2e6; 
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 10px 20px;
+    line-height: 1.4;
+}
+@media (max-width: 992px) {
+    .total-sop-badge {
+        font-size: 13px;
+        padding: 9px 16px;
+    }
+}
+@media (max-width: 576px) {
+    .total-sop-badge {
+        font-size: 12px;
+        padding: 8px 14px;
+        width: 100%;     
+        text-align: center;
+        display: block;
+    }
+}
+fieldset {
+    margin-bottom: 0.5rem !important;
+}
+
+.table td {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+.d-flex.justify-content-between.align-items-center.mt-3 {
+    margin-top: 0.75rem !important; 
+}
+.mt-2 {
+    margin-top: 0.5rem !important;
+}
+.card-body {
+    padding-bottom: 1rem !important;
 }

@@ -25,6 +25,9 @@ public class VersionRepository {
     public List<Version> findAll() { 
         return jdbc.query(SELECT + "ORDER BY date_entree DESC", MAPPER); 
     }
+    public List<Version> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY date_entree DESC", MAPPER, idSop);
+    }
     public Optional<Version> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_version=?", MAPPER, id).stream().findFirst(); 
     }

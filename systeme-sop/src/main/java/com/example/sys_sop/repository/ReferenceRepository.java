@@ -26,6 +26,9 @@ public class ReferenceRepository {
     public List<Reference> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Reference> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
 
     public Optional<Reference> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_reference=?", MAPPER, id).stream().findFirst(); 
@@ -55,5 +58,8 @@ public class ReferenceRepository {
 
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_REFERENCE WHERE id_reference=?", id); 
+    }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_REFERENCE WHERE id_sop=?", idSop);
     }
 }

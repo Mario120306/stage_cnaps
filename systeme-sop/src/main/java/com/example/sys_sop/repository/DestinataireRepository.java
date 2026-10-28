@@ -23,6 +23,9 @@ public class DestinataireRepository {
     public List<Destinataire> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Destinataire> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<Destinataire> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_destinataire=?", MAPPER, id).stream().findFirst(); 
     }
@@ -38,5 +41,8 @@ public class DestinataireRepository {
     }
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_DESTINATAIRE WHERE id_destinataire=?", id); 
+    }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_DESTINATAIRE WHERE id_sop=?", idSop);
     }
 }

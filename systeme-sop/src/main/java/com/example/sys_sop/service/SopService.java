@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,10 @@ import com.example.sys_sop.dto.GlossaireDto;
 import com.example.sys_sop.dto.PieceJointeDto;
 import com.example.sys_sop.dto.ReferenceDto;
 import com.example.sys_sop.dto.SopCreationDto;
+import com.example.sys_sop.dto.SopDetailsDto;
+import com.example.sys_sop.dto.SopDto;
+import com.example.sys_sop.dto.PieceJointeDetailDto;
+import com.example.sys_sop.dto.VersionDto;
 import com.example.sys_sop.modele.Annexe;
 import com.example.sys_sop.modele.Contact;
 import com.example.sys_sop.modele.Destinataire;
@@ -97,6 +102,59 @@ public class SopService {
     public Sop findById(String id) { 
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SOP introuvable : " + id)); 
     }
+
+    public SopDetailsDto findDetailsById(String idSop, String matricule) {
+        Sop sop = findById(idSop);
+        return new SopDetailsDto(
+                toDto(sop),
+                contactRepository.findBySop(idSop).stream()
+                        .map(e -> new ContactDto(e.getIdContact(), e.getIdSop(), e.getMatricule(), e.getEmail(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                destinataireRepository.findBySop(idSop).stream()
+                        .map(e -> new DestinataireDto(e.getIdDestinataire(), e.getIdSop(), e.getMatricule(), e.getNom(),
+                                e.getOrganisation(), e.getAction(), e.getDateAction(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                equipeProjetRepository.findBySop(idSop).stream()
+                        .map(e -> new EquipeProjetDto(e.getIdMembre(), e.getIdSop(), e.getMatricule(), e.getNom(),
+                                e.getFonction(), e.getTelephone(), e.getEmail(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                glossaireRepository.findBySop(idSop).stream()
+                        .map(e -> new GlossaireDto(e.getIdGlossaire(), e.getIdSop(), e.getAcronyme(), e.getTerme(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                referenceRepository.findBySop(idSop).stream()
+                        .map(e -> new ReferenceDto(e.getIdReference(), e.getIdSop(), e.getContenu(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                versionRepository.findBySop(idSop).stream()
+                        .map(e -> new VersionDto(e.getIdVersion(), e.getIdSop(), e.getNumeroVersion(), e.getDateEntree(),
+                                e.getLibelleModification(), e.getAuteurModification(), e.getCodeStatut()))
+                        .collect(Collectors.toList()),
+                flowchartRepository.findBySop(idSop).stream()
+                        .map(e -> new FlowchartDto(e.getIdFlowchart(), e.getIdSop(), e.getTitre(), e.getInformation(),
+                                e.getOrdre(), e.getIdPieceJointe()))
+                        .collect(Collectors.toList()),
+                flowchartEtapeRepository.findBySop(idSop).stream()
+                        .map(e -> new FlowchartEtapeDto(e.getIdEtape(), e.getIdFlowchart(), e.getInformation(),
+                                e.getNiveau(), e.getModeNumerotation(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                pieceJointeRepository.findBySop(idSop).stream()
+                        .map(e -> new PieceJointeDetailDto(e.getIdPieceJointe(), e.getNomFichier(),
+                                e.getTypeMime(), e.getUsage()))
+                        .collect(Collectors.toList()),
+                annexeRepository.findBySop(idSop).stream()
+                        .map(e -> new AnnexeDto(e.getIdAnnexe(), e.getIdSop(), e.getTitre(), e.getIdPieceJointe(), e.getOrdre()))
+                        .collect(Collectors.toList()),
+                matricule != null && matricule.equalsIgnoreCase(sop.getAuteurMatricule()));
+    }
+
+    @Transactional
+    public void softDelete(String id) {
+        findById(id);
+        int updated = repository.softDelete(id, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+        if (updated == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "SOP introuvable : " + id);
+        }
+    }
+
     public Sop create(Sop entity) { 
         repository.create(entity); return entity; 
     }
@@ -121,15 +179,18 @@ public class SopService {
         repository.create(sop);
 
         String idVersion = Long.toString(versionRepository.countAll() + 1);
-        versionRepository.create(new Version(idVersion, numeroSop, "1", null, null, null, "STAT001"));
+        versionRepository.create(new Version(idVersion, numeroSop, "1", null, "Draft version", null, "STAT001"));
 
         for (ContactDto contact : values(request.getContacts())) {
             contactRepository.create(new Contact(newId(), numeroSop, contact.getMatricule(),
                     contact.getEmail(), contact.getOrdre()));
         }
         for (DestinataireDto destinataire : values(request.getDestinataires())) {
+            String organisation = destinataire.getOrganisation() == null
+                    || destinataire.getOrganisation().isBlank()
+                    ? "CNaPS" : destinataire.getOrganisation();
             destinataireRepository.create(new Destinataire(newId(), numeroSop, destinataire.getMatricule(),
-                    destinataire.getNom(), destinataire.getOrganisation(), destinataire.getAction(),
+                    destinataire.getNom(), organisation, destinataire.getAction(),
                     destinataire.getDateAction(), destinataire.getOrdre()));
         }
         for (EquipeProjetDto membre : values(request.getEquipeProjet())) {
@@ -187,6 +248,79 @@ public class SopService {
 
         return repository.findById(numeroSop).orElse(sop);
     }
+
+    @Transactional
+    public Sop update(String idSop, SopCreationDto request) {
+        Sop current = findById(idSop);
+        if (request == null || request.getTitre() == null || request.getTitre().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le titre du SOP est obligatoire.");
+        }
+
+        int nextVersion = versionRepository.countVersionByIdSop(idSop) + 1;
+        Sop updated = new Sop(idSop, current.getNumeroSop(), request.getTitre().trim(),
+                String.valueOf(nextVersion), current.getCodeService(), current.getAuteurMatricule(),
+                current.getSectionValidee(), current.getCodeStatut(), current.getSupprime(),
+                current.getDateSuppression(), current.getDateCreation(), current.getDateModification(),
+                current.getLibelleService(), current.getLibelleDirection());
+        repository.update(updated);
+
+        contactRepository.deleteBySop(idSop);
+        for (ContactDto contact : values(request.getContacts())) {
+            contactRepository.create(new Contact(newId(), idSop, contact.getMatricule(),
+                    contact.getEmail(), contact.getOrdre()));
+        }
+        destinataireRepository.deleteBySop(idSop);
+        for (DestinataireDto destinataire : values(request.getDestinataires())) {
+            String organisation = destinataire.getOrganisation() == null
+                    || destinataire.getOrganisation().isBlank() ? "CNaPS" : destinataire.getOrganisation();
+            destinataireRepository.create(new Destinataire(newId(), idSop, destinataire.getMatricule(),
+                    destinataire.getNom(), organisation, destinataire.getAction(),
+                    destinataire.getDateAction(), destinataire.getOrdre()));
+        }
+        equipeProjetRepository.deleteBySop(idSop);
+        for (EquipeProjetDto membre : values(request.getEquipeProjet())) {
+            equipeProjetRepository.create(new EquipeProjet(newId(), idSop, membre.getMatricule(),
+                    membre.getNom(), membre.getFonction(), membre.getTelephone(), membre.getEmail(), membre.getOrdre()));
+        }
+        glossaireRepository.deleteBySop(idSop);
+        for (GlossaireDto terme : values(request.getGlossaire())) {
+            glossaireRepository.create(new Glossaire(newId(), idSop, terme.getAcronyme(),
+                    terme.getTerme(), terme.getOrdre()));
+        }
+        referenceRepository.deleteBySop(idSop);
+        for (ReferenceDto reference : values(request.getReferences())) {
+            referenceRepository.create(new Reference(newId(), idSop, reference.getContenu(), reference.getOrdre()));
+        }
+
+        for (FlowchartDto flowchart : values(request.getFlowcharts())) {
+            Flowchart existing = flowchartRepository.findById(flowchart.getIdFlowchart())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Flowchart introuvable : " + flowchart.getIdFlowchart()));
+            flowchartRepository.update(new Flowchart(existing.getIdFlowchart(), existing.getIdSop(),
+                    existing.getTitre(), flowchart.getInformation(), existing.getOrdre(), existing.getIdPieceJointe()));
+        }
+        for (FlowchartEtapeDto etape : values(request.getFlowchartEtapes())) {
+            if (etape.getIdEtape() == null || etape.getIdEtape().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Une étape existante du flowchart doit conserver son identifiant.");
+            }
+            FlowchartEtape existing = flowchartEtapeRepository.findById(etape.getIdEtape())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Étape de flowchart introuvable : " + etape.getIdEtape()));
+            flowchartEtapeRepository.update(new FlowchartEtape(existing.getIdEtape(), existing.getIdFlowchart(),
+                    etape.getInformation(), existing.getNiveau(), existing.getModeNumerotation(), existing.getOrdre()));
+        }
+
+        String idVersion = Long.toString(versionRepository.countAll() + 1);
+        versionRepository.create(new Version(idVersion, idSop, String.valueOf(nextVersion), null,
+                "Draft Version", current.getAuteurMatricule(), current.getCodeStatut()));
+        byte[] pdf = pdfExportService.generate(updated);
+        String nomFichierPdf = updated.getNumeroSop() + "_" + updated.getTitre()
+                + "_CNaPS_v" + updated.getVersionCourante() + ".pdf";
+        exportRepository.create(new Export(newId(), idSop, idVersion, "Draft Version", 1, null,
+                nomFichierPdf, current.getAuteurMatricule()), pdf);
+        return updated;
+    }
     public boolean update(Sop entity) { 
         return repository.update(entity) > 0; 
     }
@@ -196,6 +330,13 @@ public class SopService {
 
     private static String newId() {
         return UUID.randomUUID().toString();
+    }
+
+    private SopDto toDto(Sop e) {
+        return new SopDto(e.getIdSop(), e.getNumeroSop(), e.getTitre(), e.getVersionCourante(),
+                e.getCodeService(), e.getAuteurMatricule(), e.getSectionValidee(), e.getCodeStatut(),
+                e.getSupprime(), e.getDateSuppression(), e.getDateCreation(), e.getDateModification(),
+                e.getLibelleService(), e.getLibelleDirection());
     }
 
     private static String requiredKey(String key, String type) {

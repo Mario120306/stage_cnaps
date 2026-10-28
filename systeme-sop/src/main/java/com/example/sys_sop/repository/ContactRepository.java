@@ -22,6 +22,9 @@ public class ContactRepository {
     public List<Contact> findAll() { 
         return jdbc.query(SELECT + "ORDER BY ordre", MAPPER); 
     }
+    public List<Contact> findBySop(String idSop) {
+        return jdbc.query(SELECT + "WHERE id_sop=? ORDER BY ordre", MAPPER, idSop);
+    }
     public Optional<Contact> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_contact=?", MAPPER, id).stream().findFirst(); 
     }
@@ -34,5 +37,8 @@ public class ContactRepository {
                                 e.getIdSop(), e.getMatricule(), e.getEmail(), e.getOrdre(), e.getIdContact()); }
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_CONTACT WHERE id_contact=?", id); 
+    }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_CONTACT WHERE id_sop=?", idSop);
     }
 }
