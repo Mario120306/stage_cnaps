@@ -1,6 +1,3 @@
-/* ============================================================
-   TABLEAUX
-   ============================================================ */
 .table th,
 .table td {
   border-bottom: 1px solid #dee2e6;
@@ -15,12 +12,7 @@
   font-size: 15px;
   font-weight: 600;
 }
-
-/* ============================================================
-   TABLEAUX SCROLLABLES (le footer reste toujours visible)
-   ============================================================ */
 .table-scroll {
-  /* hauteur adaptée à l'écran : ~5 lignes, entre 180px et 300px */
   max-height: clamp(180px, 30vh, 300px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -33,39 +25,26 @@
   border: none !important;
 }
 
-/* En-tête figé pendant le scroll */
 .table-scroll .table thead th {
   position: sticky;
   top: 0;
   z-index: 2;
   background-color: #e9effc;
 }
-
-/* Scrollbar discrète */
 .table-scroll::-webkit-scrollbar {
   width: 6px;
 }
-
 .table-scroll::-webkit-scrollbar-thumb {
   background: #c5c9d6;
   border-radius: 3px;
 }
-
 .table-scroll::-webkit-scrollbar-thumb:hover {
   background: #5b3ec8;
 }
-
-/* ============================================================
-   LEGEND
-   ============================================================ */
 legend {
   font-size: 12px;
   font-weight: 600;
 }
-
-/* ============================================================
-   BOUTONS GÉNÉRIQUES
-   ============================================================ */
 .btn-fa-close {
   background: none;
   border: none;
@@ -113,9 +92,6 @@ legend {
   outline: none;
 }
 
-/* ============================================================
-   AUTOCOMPLETE AGENTS
-   ============================================================ */
 .agent-autocomplete {
   position: relative;
 }
@@ -159,10 +135,6 @@ legend {
 .destinataire-input {
   color: rgb(154, 154, 154);
 }
-
-/* ============================================================
-   FIELDSET + FORMULAIRES
-   ============================================================ */
 fieldset {
   display: flex;
   flex-direction: column;
@@ -190,10 +162,6 @@ textarea.form-control {
   box-sizing: border-box;
   padding: 0.5rem 0.7rem;
 }
-
-/* ============================================================
-   STEPPER
-   ============================================================ */
 .stepper {
   list-style: none;
   display: flex;
@@ -222,10 +190,6 @@ textarea.form-control {
   background: #d6cdf5;
   color: #5b3ec8;
 }
-
-/* ============================================================
-   NIVEAU DE DÉCALAGE (radios)
-   ============================================================ */
 .niveau-decalage {
   display: flex;
   flex-direction: column;
@@ -253,10 +217,6 @@ textarea.form-control {
   font-size: 0.85rem;
   color: #333;
 }
-
-/* ============================================================
-   ÉTAPES DU SOP (conteneur principal)
-   ============================================================ */
 .etape,
 .etape .row,
 .etape fieldset,
@@ -278,10 +238,6 @@ textarea.form-control {
   max-width: 100%;
   min-width: 0;
 }
-
-/* ============================================================
-   BOUTONS SOP (ANNULER / CREER)
-   ============================================================ */
 .sop-actions {
   display: flex;
   flex-wrap: wrap;
@@ -308,10 +264,6 @@ textarea.form-control {
   color: #fff;
   background-color: #5b3ec8;
 }
-
-/* ============================================================
-   LOADER SOP — PAGE ASSOMBRIE + HORLOGE BLANCHE
-   ============================================================ */
 .sop-loading-backdrop {
   position: fixed;
   inset: 0;
@@ -343,8 +295,6 @@ textarea.form-control {
   font-size: 0.85rem;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
-
-/* Horloge animée - blanche, sans fond, épaisse */
 .sop-clock {
   position: relative;
   width: 60px;
@@ -399,10 +349,6 @@ textarea.form-control {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-
-/* ============================================================
-   MODAL : DÉTAILS DU FLOWCHART (Bootstrap 4)
-   ============================================================ */
 .detail-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -432,8 +378,6 @@ textarea.form-control {
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
   background: #fff;
 }
-
-/* HEADER */
 .detail-modal .modal-header {
   flex: 0 0 auto;
   padding: 1rem 1.25rem;
@@ -461,8 +405,6 @@ textarea.form-control {
   color: #5b3ec8;
   opacity: 1;
 }
-
-/* BODY scrollable */
 .detail-modal .modal-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -471,8 +413,6 @@ textarea.form-control {
   color: #495057;
   font-size: 0.9rem;
 }
-
-/* FOOTER */
 .detail-modal .modal-footer {
   flex: 0 0 auto;
   justify-content: flex-end;
@@ -480,10 +420,6 @@ textarea.form-control {
   border-top: 1px solid #e5e5e5;
   background: #fff;
 }
-
-/* ============================================================
-   CONTENU DU MODAL
-   ============================================================ */
 .detail-modal .detail-modal-label {
   margin-bottom: 0.25rem;
   color: #5b3ec8;
@@ -573,12 +509,6 @@ textarea.form-control {
 .detail-step-item .btn-fa-close:hover {
   color: #c82333;
 }
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-/* ---- Tablette / petit laptop (< 1200px) : les 2 blocs s'empilent ---- */
 @media (max-width: 1199.98px) {
   .etape .ml-2,
   .etape .ml-3,
@@ -586,8 +516,6 @@ textarea.form-control {
   .etape .ml-5 {
     margin-left: 0 !important;
   }
-
-  /* espace entre les 2 fieldsets empilés */
   .etape .row > [class*="col-"] + [class*="col-"] {
     margin-top: 1rem;
   }
@@ -596,15 +524,10 @@ textarea.form-control {
     max-height: 260px;
   }
 }
-
-/* ---- Tablette portrait (< 768px) ---- */
 @media (max-width: 767.98px) {
-  /* colonnes empilées : on espace les champs */
   .etape .form-row > [class*="col-"] {
     margin-bottom: 0.5rem;
   }
-
-  /* boutons AJOUTER / VALIDER : pleine largeur et centrés */
   .etape .cnaps-btn-ajouter,
   .etape .cnaps-btn-valider {
     width: 100%;
@@ -627,14 +550,10 @@ textarea.form-control {
     margin: 0.5rem auto;
   }
 }
-
-/* ---- Mobile (< 576px) ---- */
 @media (max-width: 575.98px) {
   .card-body {
     padding: 0.75rem;
   }
-
-  /* tableaux : défilement horizontal en plus du vertical */
   .table-scroll {
     max-height: 240px;
     overflow-x: auto;

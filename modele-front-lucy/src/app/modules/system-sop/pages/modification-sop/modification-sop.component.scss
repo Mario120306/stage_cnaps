@@ -1,4 +1,3 @@
-/* ===== Tableaux ===== */
 .table th,
 .table td {
     border-bottom: 1px solid #dee2e6;
@@ -30,7 +29,6 @@
 }
 .table-inputs .form-control:focus {
     border-color: #5b3ec8;
-    /* box-shadow: 0 0 0 0.15rem rgba(91, 62, 200, 0.15); */
     outline: none;
 }
 .empty-row {
@@ -39,9 +37,8 @@
     font-size: 0.85rem;
 }
 
-/* ===== Tableaux scrollables (hauteur adaptée à l'écran) ===== */
 .table-scroll {
-    max-height: clamp(160px, 24vh, 240px);
+    max-height: clamp(200px, 32vh, 320px);
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid #dee2e6;
@@ -66,8 +63,6 @@ legend {
     font-size: 12px;
     font-weight: 600;
 }
-
-/* ===== Disposition en 2 colonnes indépendantes ===== */
 fieldset {
     display: flex;
     flex-direction: column;
@@ -83,20 +78,15 @@ fieldset {
     flex: 0 0 auto;
     width: 100%;
 }
-/* Égaliser la hauteur des 2 colonnes :
-   le dernier bloc de chaque colonne prend la place restante */
 .sop-col > fieldset:last-child {
     flex: 1 1 auto;
 }
 
-/* ===== Labels ===== */
 label {
     font-size: 0.75rem;
     font-weight: 600;
     margin-bottom: 0.25rem;
 }
-
-/* ===== Recherche + autocomplete ===== */
 .agent-autocomplete {
   position: relative;
 }
@@ -139,8 +129,6 @@ label {
 .action-input {
     height: calc(1.5em + .75rem + 2px);
 }
-
-/* ===== Bouton ajouter (glossaire) ===== */
 .toolbar-row {
     display: flex;
     justify-content: flex-end;
@@ -165,9 +153,6 @@ label {
     outline: 2px solid #5b3ec8;
     outline-offset: 2px;
 }
-
-
-/* ===== Bouton retirer ===== */
 .btn-fa-close {
     width: 28px;
     height: 28px;
@@ -183,9 +168,6 @@ label {
 .btn-fa-close:focus {
     outline: none;
 }
-
-/* ===== Flowchart ===== */
-/* liste scrollable : plusieurs flowcharts ouverts ne rallongent plus la page */
 .flowchart-list {
     max-height: 420px;
     overflow-y: auto;
@@ -286,13 +268,18 @@ textarea.form-control {
     color: #495057;
     font-size: 0.75rem;
 }
-/* le textarea des références remplit le bloc restant de la colonne */
 .references-edit {
     flex: 1 1 auto;
-    min-height: 250px;
+    min-height: clamp(200px, 30vh, 350px);
+    max-height: 55vh;
+    resize: vertical;
 }
-
-/* ===== Boutons d'action ===== */
+@media (max-width: 991.98px) {    
+    .references-edit {
+        min-height: 220px;
+        max-height: none;
+    }
+}
 .sop-actions {
     display: flex;
     width: 100%;
@@ -324,12 +311,6 @@ textarea.form-control {
     opacity: 0.6;
     cursor: not-allowed;
 }
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-/* Colonnes empilées (< 992px) : plus besoin de remplir la hauteur */
 @media (max-width: 991.98px) {
     .sop-col > fieldset:last-child {
         flex: 0 0 auto;
@@ -341,8 +322,6 @@ textarea.form-control {
         max-height: 360px;
     }
 }
-
-/* Tablette portrait (< 768px) */
 @media (max-width: 767.98px) {
     .table-scroll {
         max-height: 240px;
@@ -354,14 +333,10 @@ textarea.form-control {
         width: 100%;
     }
 }
-
-/* Mobile (< 576px) */
 @media (max-width: 575.98px) {
     .card-body {
         padding: 0.75rem;
     }
-
-    /* tableaux : défilement horizontal en plus du vertical */
     .table-scroll {
         overflow-x: auto;
     }
@@ -377,10 +352,6 @@ textarea.form-control {
         flex: 1 1 100%;
     }
 }
-
-/* ============================================================
-   LOADER SOP — PAGE ASSOMBRIE + HORLOGE BLANCHE
-   ============================================================ */
 .sop-loading-backdrop {
     position: fixed;
     inset: 0;

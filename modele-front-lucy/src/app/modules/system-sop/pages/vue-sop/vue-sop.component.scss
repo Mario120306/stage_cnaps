@@ -8,38 +8,33 @@
 .table td {
     color: rgb(154, 154, 154);
 }
-legend{
-      font-size: 12px;
-      font-weight: 600;
+legend {
+    font-size: 12px;
+    font-weight: 600;
 }
-.table th{
-  /*font-weight: 600;*/
-  background-color: #e9effc;
-  color: #0f2d67;
-  font-size:15px;
-  font-weight: 700;
+.table th {
+    background-color: #e9effc;
+    color: #0f2d67;
+    font-size: 15px;
+    font-weight: 700;
 }
-
-/* ===== Tableaux scrollables (hauteur adaptée à l'écran) ===== */
 .table-scroll {
-  max-height: clamp(160px, 24vh, 240px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  border: 1px solid #dee2e6;
-  -webkit-overflow-scrolling: touch;
+    max-height: clamp(250px, 40vh, 400px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #dee2e6;
+    -webkit-overflow-scrolling: touch;
 }
 
 .table-scroll .table {
-  margin-bottom: 0;
-  border: none !important;
+    margin-bottom: 0;
+    border: none !important;
 }
-
-/* En-tête figé pendant le scroll */
 .table-scroll .table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background-color: #e9effc;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #e9effc;
 }
 
 .table-scroll::-webkit-scrollbar { width: 6px; }
@@ -47,16 +42,17 @@ legend{
 .table-scroll::-webkit-scrollbar-thumb:hover { background: #5b3ec8; }
 
 .btn-fa-eye {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: #5b3ec8;   /* violet CNAPS, assorti au bouton AJOUTER */
-  font-size: 0.8rem;
-  line-height: 1;
-  outline: none;
-  transition: color 0.15s ease, transform 0.15s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #5b3ec8;
+    font-size: 0.8rem;
+    line-height: 1;
+    outline: none;
+    transition: color 0.15s ease, transform 0.15s ease;
 }
+
 .cnaps-btn-valider {
     background-color: #030a16;
     color: #fff;
@@ -67,147 +63,125 @@ legend{
     border-radius: 5px;
     border: none;
 }
+
 .sop-actions {
-  display: flex;
-  width: 100%;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin-top: 24px;
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
 }
 
 .sop-btn-create,
 .sop-btn-delete,
 .sop-btn-download,
 .sop-btn-cancel {
-  font-weight: 600;
-  font-size: 0.78rem;
-  padding: 10px 22px;
-  border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 10px 22px;
+    border-radius: 5px;
 }
 
-.sop-btn-create {
-  border: none;
-  color: #fff;
-  background-color: #5b3ec8;
-}
+.sop-btn-create { border: none; color: #fff; background-color: #5b3ec8; }
+.sop-btn-delete { border: none; color: #fff; background-color: #dc3545; }
+.sop-btn-download { border: none; color: #fff; background-color: #030a16; }
+.sop-btn-cancel { border: none; color: #fff; background-color: #dc3545; }
 
-.sop-btn-delete {
-  border: none;
-  color: #fff;
-  background-color: #dc3545;
-}
-
-.sop-btn-download {
-  border: none;
-  color: #fff;
-  background-color: #030a16;
-}
-
-.sop-btn-cancel {
-  border: none;
-  color: #fff;
-  background-color: #dc3545;
-}
-
-/* ===== Disposition en 2 colonnes indépendantes ===== */
 .sop-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .sop-col > fieldset {
-  flex: 0 0 auto;   /* hauteur = contenu, pas d'étirement */
-  width: 100%;
+    flex: 0 0 auto;
+    width: 100%;
 }
-
-/* ===== Égaliser la hauteur des 2 colonnes =====
-   le dernier bloc de chaque colonne prend la place restante */
 .sop-col > fieldset:last-child {
-  flex: 1 1 auto;
+    flex: 1 1 auto;
 }
 
 fieldset {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    min-height: 0; 
 }
-
-/* ===== Modale flowchart ===== */
 .flowchart-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1050;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.45);
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.45);
 }
 
 .flowchart-modal {
-  display: flex;
-  flex-direction: column;
-  width: min(1120px, 100%);
-  height: min(760px, calc(100vh - 2rem));
-  max-height: calc(100vh - 2rem);
-  overflow: hidden;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    width: min(1120px, 100%);
+    height: min(760px, calc(100vh - 2rem));
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
 }
 
 .flowchart-modal-header,
 .flowchart-modal-footer {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .flowchart-modal-header h2 {
-  margin: 0;
-  color: #333;
-  font-size: 1.1rem;
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
 }
 
 .flowchart-modal-close {
-  border: 0;
-  background: transparent;
-  color: #555;
-  cursor: pointer;
-  font-size: 1rem;
+    border: 0;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    font-size: 1rem;
 }
 
 .flowchart-modal-content {
-  display: grid;
-  flex: 1 1 auto;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  min-height: 0;
-}
-.detail-modal-footer {
-  justify-content: flex-end;
-  border-top: 1px solid #e5e5e5;
-  border-bottom: 0;
-}
-.flowchart-preview {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  height: 100%;
-  display: flex;
-  overflow: auto;
-  box-sizing: border-box;
-  padding: 0.5rem;
-  border-right: 2px solid #d9e0ec;
-  background: #f8f9fc;
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    min-height: 0;
 }
 
+.detail-modal-footer {
+    justify-content: flex-end;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 0;
+}
+
+.flowchart-preview {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100%;
+    display: flex;
+    overflow: auto;
+    box-sizing: border-box;
+    padding: 0.5rem;
+    border-right: 2px solid #d9e0ec;
+    background: #f8f9fc;
+}
 textarea.form-control {
     border: 1px solid #ced4da;
     border-radius: 4px;
@@ -217,219 +191,209 @@ textarea.form-control {
     background-color: #fff;
     width: 100% !important;
     max-width: 100% !important;
+    line-height: 1.5;
 }
+
 .flowchart-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  object-fit: contain;
-  border: 0;
-  border-radius: 0;
-  background: #fff;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: contain;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
 }
-
-/* le textarea des références remplit le bloc restant de la colonne */
 .references {
-  flex: 1 1 auto;
-  min-height: 200px;
-  height: auto;
-  white-space: pre-wrap;
-  resize: vertical;
+    flex: 1 1 auto;
+    width: 100%;
+    height: clamp(280px, 45vh, 520px);
+    min-height: 280px;
+    white-space: pre-wrap;
+    resize: vertical;
 }
-
 .annexes-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-/* Annexes (images) : scroll aussi */
 .annexes-scroll {
-  max-height: 320px;
-  overflow-y: auto;
+    max-height: 320px;
+    overflow-y: auto;
 }
 
 .annexe-item {
-  flex: 0 1 280px;
-  min-width: 0;
+    flex: 0 1 280px;
+    min-width: 0;
 }
 
 .annexe-title {
-  margin-bottom: 0.5rem;
-  color: #495057;
-  font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-weight: 600;
 }
 
 .annexe-image {
-  display: block;
-  width: 280px;
-  height: 180px;
-  margin-top: 0.5rem;
-  object-fit: contain;
-  border: 1px solid #d9e0ec;
-  border-radius: 4px;
-  background: #fff;
+    display: block;
+    width: 280px;
+    height: 180px;
+    margin-top: 0.5rem;
+    object-fit: contain;
+    border: 1px solid #d9e0ec;
+    border-radius: 4px;
+    background: #fff;
 }
-
-@media (max-width: 767px) {
-  .annexe-item {
-    flex-basis: 100%;
-  }
-
-  .annexe-image {
-    max-width: 100%;
-  }
-}
-
 .flowchart-diagram {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1rem;
 }
 
 .flowchart-terminal,
 .flowchart-node {
-  width: min(100%, 340px);
-  padding: 0.85rem 1rem;
-  border: 1px solid #ccd5e6;
-  border-radius: 6px;
-  background: #fff;
-  color: #495057;
-  font-size: 0.85rem;
-  line-height: 1.45;
-  text-align: center;
+    width: min(100%, 340px);
+    padding: 0.85rem 1rem;
+    border: 1px solid #ccd5e6;
+    border-radius: 6px;
+    background: #fff;
+    color: #495057;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    text-align: center;
 }
 
 .flowchart-terminal {
-  width: 140px;
-  border-radius: 24px;
-  background: #e9effc;
-  color: #0f2d67;
-  font-weight: 700;
+    width: 140px;
+    border-radius: 24px;
+    background: #e9effc;
+    color: #0f2d67;
+    font-weight: 700;
 }
 
 .flowchart-node-active {
-  border-color: #5b3ec8;
-  box-shadow: 0 0 0 2px rgba(91, 62, 200, 0.12);
+    border-color: #5b3ec8;
+    box-shadow: 0 0 0 2px rgba(91, 62, 200, 0.12);
 }
 
 .flowchart-connector {
-  position: relative;
-  width: 1px;
-  height: 28px;
-  background: #9aa8bf;
+    position: relative;
+    width: 1px;
+    height: 28px;
+    background: #9aa8bf;
 }
 
 .flowchart-connector::after {
-  position: absolute;
-  bottom: 0;
-  left: -4px;
-  width: 8px;
-  height: 8px;
-  border-right: 1px solid #9aa8bf;
-  border-bottom: 1px solid #9aa8bf;
-  content: "";
-  transform: rotate(45deg);
+    position: absolute;
+    bottom: 0;
+    left: -4px;
+    width: 8px;
+    height: 8px;
+    border-right: 1px solid #9aa8bf;
+    border-bottom: 1px solid #9aa8bf;
+    content: "";
+    transform: rotate(45deg);
 }
 
 .flowchart-detail-scroll {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .flowchart-detail {
-  padding: 1.75rem;
-  color: #495057;
-  font-size: 0.95rem;
+    padding: 1.75rem;
+    color: #495057;
+    font-size: 0.95rem;
 }
 
 .flowchart-detail p {
-  margin: 0 0 1.25rem;
-  line-height: 1.6;
+    margin: 0 0 1.25rem;
+    line-height: 1.6;
 }
 
 .flowchart-detail .flowchart-detail-label {
-  margin-bottom: 0.35rem;
-  color: #5b3ec8;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.flowchart-detail-header{
-  color: #5b3ec8; 
-}
-.flowchart-modal-footer {
-  justify-content: flex-end;
-  border-top: 1px solid #e5e5e5;
-  border-bottom: 0;
-}
-
-@media (max-width: 767px) {
-  .flowchart-modal {
-    height: min(760px, calc(100vh - 1rem));
-    max-height: calc(100vh - 1rem);
-  }
-
-  .flowchart-modal-content {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(230px, 42%) minmax(0, 1fr);
-  }
-
-  .flowchart-preview {
-    padding: 0.5rem;
-    border-right: 0;
-    border-bottom: 2px solid #d9e0ec;
-  }
-  .flowchart-image {
-    height: 100%;
-  }
-
-  .flowchart-node,
-  .flowchart-terminal {
-    padding: 0.55rem 0.75rem;
+    margin-bottom: 0.35rem;
+    color: #5b3ec8;
     font-size: 0.75rem;
-  }
-
-  .flowchart-terminal {
-    width: 120px;
-  }
-
-  .flowchart-connector {
-    height: 18px;
-  }
-
-  .flowchart-detail {
-    padding: 1.25rem;
-  }
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-/* ===== Mobile : colonnes empilées, plus besoin de remplir la hauteur ===== */
+.flowchart-detail-header {
+    color: #5b3ec8; 
+}
+
+.flowchart-modal-footer {
+    justify-content: flex-end;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 0;
+}
+@media (max-width: 991.98px) {    
+    .references {
+        height: clamp(260px, 50vh, 420px);
+        min-height: 260px;
+        max-height: none;
+    }
+}
 @media (max-width: 767.98px) {
-  .sop-col > fieldset:last-child {
-    flex: 0 0 auto;
-  }
+    .annexe-item {
+        flex-basis: 100%;
+    }
+    .annexe-image {
+        max-width: 100%;
+    }
 
-  .references {
-    min-height: 250px;
-  }
-
-  .table-scroll {
-    max-height: 240px;
-    overflow-x: auto;
-  }
-
-  .sop-actions > button {
-    flex: 1 1 100%;
-  }
+    .flowchart-modal {
+        height: min(760px, calc(100vh - 1rem));
+        max-height: calc(100vh - 1rem);
+    }
+    .flowchart-modal-content {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(230px, 42%) minmax(0, 1fr);
+    }
+    .flowchart-preview {
+        padding: 0.5rem;
+        border-right: 0;
+        border-bottom: 2px solid #d9e0ec;
+    }
+    .flowchart-image {
+        height: 100%;
+    }
+    .flowchart-node,
+    .flowchart-terminal {
+        padding: 0.55rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    .flowchart-terminal {
+        width: 120px;
+    }
+    .flowchart-connector {
+        height: 18px;
+    }
+    .flowchart-detail {
+        padding: 1.25rem;
+    }
+    .sop-col > fieldset:last-child {
+        flex: 0 0 auto;
+    }
+    .table-scroll {
+        max-height: 350px; 
+        overflow-x: auto;
+    }
+    .sop-actions > button {
+        flex: 1 1 100%;
+    }
+    .references {
+        height: clamp(240px, 55vh, 360px);
+        min-height: 240px;
+        resize: vertical;
+    }
 }
-
-/* ===== Animation du modal de confirmation (entrée + sortie) ===== */
 @keyframes sop-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sop-fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes sop-backdrop-in { from { opacity: 0; } to { opacity: 0.5; } }
@@ -438,31 +402,32 @@ textarea.form-control {
 @keyframes sop-slide-out { from { transform: none; } to { transform: translate(0, -50px); } }
 
 .sop-confirm-backdrop {
-  animation: sop-backdrop-in 0.15s linear both;
+    animation: sop-backdrop-in 0.15s linear both;
 }
 .sop-confirm-backdrop.closing {
-  animation: sop-backdrop-out 0.15s linear both;
+    animation: sop-backdrop-out 0.15s linear both;
 }
 .sop-confirm-modal {
-  animation: sop-fade-in 0.15s linear both;
+    animation: sop-fade-in 0.15s linear both;
 }
 .sop-confirm-modal.closing {
-  animation: sop-fade-out 0.15s linear both;
+    animation: sop-fade-out 0.15s linear both;
 }
 .sop-confirm-modal .modal-dialog {
-  animation: sop-slide-in 0.3s ease-out both;
+    animation: sop-slide-in 0.3s ease-out both;
 }
 .sop-confirm-modal.closing .modal-dialog {
-  animation: sop-slide-out 0.15s ease-in both;
+    animation: sop-slide-out 0.15s ease-in both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sop-confirm-backdrop,
-  .sop-confirm-modal,
-  .sop-confirm-modal .modal-dialog {
-    animation: none;
-  }
+    .sop-confirm-backdrop,
+    .sop-confirm-modal,
+    .sop-confirm-modal .modal-dialog {
+        animation: none;
+    }
 }
+
 .close:focus {
     outline: none;
 }
