@@ -139,7 +139,10 @@ export class VueSopComponent implements OnInit {
         if (!piece || (piece.typeMime && !piece.typeMime.startsWith("image/"))) {
             return null;
         }
-        return `${environment.apiUrl}/pieces-jointes/${encodeURIComponent(idPieceJointe!)}/contenu`;
+        const version = this.details?.sop.versionCourante
+            || this.details?.sop.dateModification
+            || "current";
+        return `${environment.apiUrl}/pieces-jointes/${encodeURIComponent(idPieceJointe!)}/contenu?v=${encodeURIComponent(version)}`;
     }
     get referencesText(): string {
         return this.details?.references?.length

@@ -38,7 +38,7 @@
 }
 
 .table-scroll {
-    max-height: clamp(200px, 32vh, 320px);
+    max-height: clamp(400px, 64vh, 640px);
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid #dee2e6;
@@ -169,7 +169,7 @@ label {
     outline: none;
 }
 .flowchart-list {
-    max-height: 420px;
+    max-height: 750px;
     overflow-y: auto;
     padding-right: 2px;
 }
@@ -270,13 +270,29 @@ textarea.form-control {
 }
 .references-edit {
     flex: 1 1 auto;
-    min-height: clamp(200px, 30vh, 350px);
-    max-height: 55vh;
+    min-height: clamp(400px, 60vh, 700px);
+    max-height: 110vh;
     resize: vertical;
+}
+
+input[type="file"].form-control {
+    opacity: 1;
+    position: static;
+    width: 100%;
+    height: calc(2em + 0.8rem + 2px);
+    box-sizing: border-box;
+    padding: 0.5rem 0.7rem;
+}
+
+.annexe-edit {
+    padding: 1rem;
+    border: 1px solid #d9e0ec;
+    border-radius: 6px;
+    background: #fbfcfe;
 }
 @media (max-width: 991.98px) {    
     .references-edit {
-        min-height: 220px;
+        min-height: 400px;
         max-height: none;
     }
 }
@@ -316,7 +332,7 @@ textarea.form-control {
         flex: 0 0 auto;
     }
     .references-edit {
-        min-height: 250px;
+        min-height: 400px;
     }
     .flowchart-list {
         max-height: 360px;
@@ -437,4 +453,27 @@ textarea.form-control {
 @keyframes sop-clock-hour {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hour-hand, .minute-hand { animation: none; }
+}
+@media (max-width: 575.98px) {
+    .table th { font-size: 13px; }
+    .table td { font-size: 0.78rem; }
+    .action-input { height: auto; min-height: 34px; }
+}
+
+@media (max-width: 575.98px) {
+    .flowchart-edit summary {
+        padding: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .flowchart-summary strong { font-size: 0.9rem; }
+}
+
+@media (max-width: 767.98px) {
+    .references-edit {
+        min-height: 280px;
+    }
 }

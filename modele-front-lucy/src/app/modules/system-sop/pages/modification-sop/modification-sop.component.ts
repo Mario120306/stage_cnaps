@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ToastrService } from "ngx-toastr";
 import { Utilisateur } from "../../model/utilisateur.model";
 import { UtilisateurService } from "../../services/utilisateur.service";
-import { SopDetails, SopFlowchartEtape, SopService, SopUpdatePayload } from "../../services/sop.service";
+import { SopDetails, SopFlowchartEtape, SopPieceJointeUpdate, SopService, SopUpdatePayload } from "../../services/sop.service";
 import { AccountService } from "../../services/account.service";
 
 interface EditableFlowchart {
@@ -12,7 +12,19 @@ interface EditableFlowchart {
     titre: string;
     numero: number;
     information: string;
+    idPieceJointe: string | null;
+    nomFichier: string;
+    fichier: File | null;
     etapes: Array<SopFlowchartEtape & { information: string; numero: string }>;
+}
+
+interface EditableAnnexe {
+    idAnnexe: string;
+    titre: string;
+    idPieceJointe: string;
+    nomFichier: string;
+    fichier: File | null;
+    ordre: number;
 }
 
 @Component({
@@ -26,6 +38,7 @@ export class ModificationSopComponent implements OnInit {
     titre = "";
     references = "";
     flowcharts: EditableFlowchart[] = [];
+    annexes: EditableAnnexe[] = [];
     chargement = true;
     sauvegardeEnCours = false;
     rechercheForm = new FormGroup({
@@ -107,9 +120,23 @@ export class ModificationSopComponent implements OnInit {
                         titre,
                         numero: numeroTitre,
                         information: flowchart.information || "",
+                        idPieceJointe: flowchart.idPieceJointe,
+                        nomFichier: this.nomPieceJointe(flowchart.idPieceJointe),
+                        fichier: null,
                         etapes
                     };
                 });
+            this.annexes = this.details.annexes
+                .slice()
+                .sort((a, b) => (a.ordre || 0) - (b.ordre || 0))
+                .map((annexe, index) => ({
+                    idAnnexe: annexe.idAnnexe,
+                    titre: annexe.titre || "",
+                    idPieceJointe: annexe.idPieceJointe || "",
+                    nomFichier: this.nomPieceJointe(annexe.idPieceJointe),
+                    fichier: null,
+                    ordre: index + 1
+                }));
         } catch (error) {
             console.error("Erreur lors du chargement du SOP à modifier", error);
             this.toastr.error("Les données du SOP n'ont pas pu être chargées.", "Modification");
@@ -218,6 +245,30 @@ export class ModificationSopComponent implements OnInit {
         this.details?.glossaire.splice(index, 1);
     }
 
+    selectionnerFichierFlowchart(flowchart: EditableFlowchart, event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const fichier = input.files?.[0] || null;
+        if (!fichier) return;
+        if (!this.estImageValide(fichier)) {
+            input.value = "";
+            return;
+        }
+        flowchart.fichier = fichier;
+        flowchart.nomFichier = fichier.name;
+    }
+
+    selectionnerFichierAnnexe(annexe: EditableAnnexe, event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const fichier = input.files?.[0] || null;
+        if (!fichier) return;
+        if (!this.estImageValide(fichier)) {
+            input.value = "";
+            return;
+        }
+        annexe.fichier = fichier;
+        annexe.nomFichier = fichier.name;
+    }
+
     async enregistrer(): Promise<void> {
         if (!this.idSop || !this.details || this.sauvegardeEnCours) return;
         if (!this.titre.trim()) {
@@ -226,6 +277,26 @@ export class ModificationSopComponent implements OnInit {
         }
         this.sauvegardeEnCours = true;
         try {
+            const piecesJointes: SopPieceJointeUpdate[] = await Promise.all<SopPieceJointeUpdate>([
+                ...this.flowcharts.filter(flowchart => flowchart.fichier && flowchart.idPieceJointe).map(async (flowchart): Promise<SopPieceJointeUpdate> => ({
+                    idPieceJointe: flowchart.idPieceJointe!,
+                    idSop: this.idSop!,
+                    usage: "FLOWCHART" as const,
+                    nomFichier: flowchart.fichier!.name,
+                    typeMime: flowchart.fichier!.type || null,
+                    taille: flowchart.fichier!.size,
+                    contenu: await this.fichierEnBase64(flowchart.fichier!)
+                })),
+                ...this.annexes.filter(annexe => annexe.fichier && annexe.idPieceJointe).map(async (annexe): Promise<SopPieceJointeUpdate> => ({
+                    idPieceJointe: annexe.idPieceJointe,
+                    idSop: this.idSop!,
+                    usage: "ANNEXE" as const,
+                    nomFichier: annexe.fichier!.name,
+                    typeMime: annexe.fichier!.type || null,
+                    taille: annexe.fichier!.size,
+                    contenu: await this.fichierEnBase64(annexe.fichier!)
+                }))
+            ]);
             const payload: SopUpdatePayload = {
                 titre: this.titre.trim(),
                 contacts: this.details.contacts.map((item, index) => ({
@@ -256,7 +327,15 @@ export class ModificationSopComponent implements OnInit {
                         modeNumerotation: (etape.modeNumerotation === "MANUEL" ? "MANUEL" : "AUTO") as "AUTO" | "MANUEL",
                         ordre: index + 1
                     }))
-                ), [])
+                ), []),
+                piecesJointes,
+                annexes: this.annexes.map((annexe, index) => ({
+                    idAnnexe: annexe.idAnnexe,
+                    idSop: this.idSop!,
+                    titre: annexe.titre.trim(),
+                    idPieceJointe: annexe.idPieceJointe,
+                    ordre: index + 1
+                }))
             };
             await this.sopService.update(this.idSop, payload);
             this.toastr.success("Le SOP a été mis à jour et une nouvelle version a été créée.", "Modification");
@@ -271,5 +350,43 @@ export class ModificationSopComponent implements OnInit {
 
     annuler(): void {
         this.router.navigate(["/system-sop/vue-sop"], { queryParams: this.idSop ? { idSop: this.idSop } : {} });
+    }
+
+    private nomPieceJointe(idPieceJointe: string | null): string {
+        return this.details?.piecesJointes.find(piece => piece.idPieceJointe === idPieceJointe)?.nomFichier
+            || "Aucun fichier";
+    }
+
+    private estImageValide(fichier: File): boolean {
+        const typesAcceptes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp", "image/svg+xml", "image/bmp", "application/pdf"];
+        if (!typesAcceptes.includes(fichier.type)) {
+            this.toastr.warning("Formats acceptés : PNG, JPG, GIF, WEBP, SVG, BMP ou PDF.", "Fichier invalide");
+            return false;
+        }
+        if (fichier.size > 5 * 1024 * 1024) {
+            this.toastr.warning("La taille maximale autorisée est de 5 Mo.", "Fichier trop volumineux");
+            return false;
+        }
+        return true;
+    }
+
+    private fichierEnBase64(fichier: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const lecteur = new FileReader();
+            lecteur.onload = () => {
+                if (typeof lecteur.result !== "string") {
+                    reject(new Error(`Impossible de lire le fichier ${fichier.name}.`));
+                    return;
+                }
+                const separateur = lecteur.result.indexOf(",");
+                if (separateur < 0) {
+                    reject(new Error(`Format de fichier illisible : ${fichier.name}.`));
+                    return;
+                }
+                resolve(lecteur.result.slice(separateur + 1));
+            };
+            lecteur.onerror = () => reject(lecteur.error || new Error(`Erreur de lecture du fichier ${fichier.name}.`));
+            lecteur.readAsDataURL(fichier);
+        });
     }
 }

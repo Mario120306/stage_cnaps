@@ -292,6 +292,39 @@ public class SopService {
             referenceRepository.create(new Reference(newId(), idSop, reference.getContenu(), reference.getOrdre()));
         }
 
+        for (PieceJointeDto piece : values(request.getPiecesJointes())) {
+            if (piece.getIdPieceJointe() == null || piece.getIdPieceJointe().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Identifiant manquant pour la pièce jointe.");
+            }
+            PieceJointe existing = pieceJointeRepository.findById(piece.getIdPieceJointe())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Pièce jointe introuvable : " + piece.getIdPieceJointe()));
+            if (!idSop.equals(existing.getIdSop())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La pièce jointe n'appartient pas à ce SOP.");
+            }
+            byte[] contenu = piece.getContenu() == null ? existing.getContenu() : piece.getContenu();
+            Long taille = piece.getTaille() == null && contenu != null ? (long) contenu.length : piece.getTaille();
+            pieceJointeRepository.update(new PieceJointe(existing.getIdPieceJointe(), existing.getIdSop(),
+                    piece.getUsage() == null ? existing.getUsage() : piece.getUsage(),
+                    piece.getNomFichier() == null ? existing.getNomFichier() : piece.getNomFichier(),
+                    piece.getTypeMime() == null ? existing.getTypeMime() : piece.getTypeMime(),
+                    taille, contenu, existing.getAuteurMatricule(), existing.getDateInsert()));
+        }
+
+        for (AnnexeDto annexe : values(request.getAnnexes())) {
+            if (annexe.getIdAnnexe() == null || annexe.getIdAnnexe().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Identifiant manquant pour l'annexe.");
+            }
+            Annexe existing = annexeRepository.findById(annexe.getIdAnnexe())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Annexe introuvable : " + annexe.getIdAnnexe()));
+            if (!idSop.equals(existing.getIdSop())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'annexe n'appartient pas à ce SOP.");
+            }
+            annexeRepository.update(new Annexe(existing.getIdAnnexe(), existing.getIdSop(),
+                    annexe.getTitre(), existing.getIdPieceJointe(), annexe.getOrdre()));
+        }
+
         for (FlowchartDto flowchart : values(request.getFlowcharts())) {
             Flowchart existing = flowchartRepository.findById(flowchart.getIdFlowchart())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,

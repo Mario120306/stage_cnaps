@@ -45,7 +45,7 @@ export interface SopDetails {
         usage: string | null;
         contenu?: string | null;
     }>;
-    annexes: Array<{ titre: string | null; idPieceJointe: string | null; ordre: number | null }>;
+    annexes: Array<{ idAnnexe: string; titre: string | null; idPieceJointe: string | null; ordre: number | null }>;
 }
 
 export type SopPieceJointeCreation = {
@@ -102,7 +102,19 @@ export type SopUpdatePayload = Partial<Sop> & {
     references: Array<{ idReference?: string; contenu: string; ordre: number }>;
     flowcharts: Array<{ idFlowchart: string; information: string }>;
     flowchartEtapes: Array<{ idEtape: string; idFlowchart: string; information: string; niveau: number; modeNumerotation: "AUTO" | "MANUEL"; ordre: number }>;
+    piecesJointes?: Array<{
+        idPieceJointe: string;
+        idSop: string;
+        usage: "FLOWCHART" | "ANNEXE";
+        nomFichier: string;
+        typeMime: string | null;
+        taille: number;
+        contenu: string;
+    }>;
+    annexes?: Array<{ idAnnexe: string; idSop: string; titre: string; idPieceJointe: string; ordre: number }>;
 };
+
+export type SopPieceJointeUpdate = NonNullable<SopUpdatePayload["piecesJointes"]>[number];
 
 @Injectable({ providedIn: "root" })
 export class SopService {
