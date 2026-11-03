@@ -45,10 +45,10 @@ public class DestinataireController {
     }
     private Destinataire toEntity(DestinataireDto d) { 
         return new Destinataire(d.getIdDestinataire(), d.getIdSop(), d.getMatricule(), d.getNom(),
-                                d.getOrganisation(), d.getAction(), d.getDateAction(), d.getOrdre()); 
+                                d.getOrganisation(), d.getFonction(), d.getAction(), d.getDateAction(), d.getOrdre()); 
     }
     private DestinataireDto toDto(Destinataire e) { 
         return new DestinataireDto(e.getIdDestinataire(), e.getIdSop(), e.getMatricule(), e.getNom(),
-        e.getOrganisation(), e.getAction(), e.getDateAction(), e.getOrdre()); 
+        e.getOrganisation(), e.getFonction(), e.getAction(), e.getDateAction(), e.getOrdre()); 
     }
 }

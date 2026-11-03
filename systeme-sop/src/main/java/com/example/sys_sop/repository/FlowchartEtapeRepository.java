@@ -31,9 +31,24 @@ public class FlowchartEtapeRepository {
     public Optional<FlowchartEtape> findById(String id) { 
         return jdbc.query(SELECT + "WHERE id_etape=?", MAPPER, id).stream().findFirst(); 
     }
+    public   List<FlowchartEtape>findByFlowchart(String idFlowchart){
+        return jdbc.query(SELECT + "WHERE id_flowchart=?",MAPPER,idFlowchart);
+    }
     public int create(FlowchartEtape e) { 
         return jdbc.update("INSERT INTO SOP_FLOWCHART_ETAPE (id_etape,id_flowchart,information,niveau,mode_numerotation,ordre) VALUES (?,?,?,?,?,?)", 
                             e.getIdEtape(), e.getIdFlowchart(), e.getInformation(), e.getNiveau(), e.getModeNumerotation(), e.getOrdre()); 
+    }
+    public void batchCreate(List<FlowchartEtape> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_FLOWCHART_ETAPE (id_etape,id_flowchart,information,niveau,mode_numerotation,ordre) VALUES (?,?,?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdEtape());
+                    ps.setString(2, e.getIdFlowchart());
+                    ps.setString(3, e.getInformation());
+                    ps.setObject(4, e.getNiveau());
+                    ps.setString(5, e.getModeNumerotation());
+                    ps.setObject(6, e.getOrdre());
+                });
     }
     public int update(FlowchartEtape e) { 
         return jdbc.update("UPDATE SOP_FLOWCHART_ETAPE SET id_flowchart=?,information=?,niveau=?,mode_numerotation=?,ordre=? WHERE id_etape=?", 

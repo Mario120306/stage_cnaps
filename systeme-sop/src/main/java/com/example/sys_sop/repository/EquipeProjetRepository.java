@@ -33,6 +33,20 @@ public class EquipeProjetRepository {
         return jdbc.update("INSERT INTO SOP_EQUIPE_PROJET (id_membre,id_sop,matricule,nom,fonction,telephone,email,ordre) VALUES (?,?,?,?,?,?,?,?)", e.getIdMembre(), 
                                 e.getIdSop(), e.getMatricule(), e.getNom(), e.getFonction(), e.getTelephone(), e.getEmail(), e.getOrdre()); 
     }
+    public void batchCreate(List<EquipeProjet> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_EQUIPE_PROJET (id_membre,id_sop,matricule,nom,fonction,telephone,email,ordre) VALUES (?,?,?,?,?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdMembre());
+                    ps.setString(2, e.getIdSop());
+                    ps.setString(3, e.getMatricule());
+                    ps.setString(4, e.getNom());
+                    ps.setString(5, e.getFonction());
+                    ps.setString(6, e.getTelephone());
+                    ps.setString(7, e.getEmail());
+                    ps.setObject(8, e.getOrdre());
+                });
+    }
     public int update(EquipeProjet e) { 
         return jdbc.update("UPDATE SOP_EQUIPE_PROJET SET id_sop=?,matricule=?,nom=?,fonction=?,telephone=?,email=?,ordre=? WHERE id_membre=?", e.getIdSop(), e.getMatricule(),
          e.getNom(), e.getFonction(), e.getTelephone(), e.getEmail(), e.getOrdre(), e.getIdMembre()); 

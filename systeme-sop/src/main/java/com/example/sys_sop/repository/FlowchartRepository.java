@@ -33,6 +33,18 @@ public class FlowchartRepository {
         return jdbc.update("INSERT INTO SOP_FLOWCHART (id_flowchart,id_sop,titre,information,ordre,id_piece_jointe) VALUES (?,?,?,?,?,?)", 
                                 e.getIdFlowchart(), e.getIdSop(), e.getTitre(), e.getInformation(), e.getOrdre(), e.getIdPieceJointe()); 
     }
+    public void batchCreate(List<Flowchart> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_FLOWCHART (id_flowchart,id_sop,titre,information,ordre,id_piece_jointe) VALUES (?,?,?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdFlowchart());
+                    ps.setString(2, e.getIdSop());
+                    ps.setString(3, e.getTitre());
+                    ps.setString(4, e.getInformation());
+                    ps.setObject(5, e.getOrdre());
+                    ps.setString(6, e.getIdPieceJointe());
+                });
+    }
     public int update(Flowchart e) { 
         return jdbc.update("UPDATE SOP_FLOWCHART SET id_sop=?,titre=?,information=?,ordre=?,id_piece_jointe=? WHERE id_flowchart=?", 
         e.getIdSop(), e.getTitre(), e.getInformation(), e.getOrdre(), e.getIdPieceJointe(), e.getIdFlowchart()); 

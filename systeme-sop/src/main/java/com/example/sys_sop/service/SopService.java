@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.sys_sop.dto.AnnexeDto;
@@ -38,7 +40,6 @@ import com.example.sys_sop.modele.PieceJointe;
 import com.example.sys_sop.modele.Reference;
 import com.example.sys_sop.modele.Sop;
 import com.example.sys_sop.modele.Version;
-import com.example.sys_sop.modele.Export;
 import com.example.sys_sop.repository.AnnexeRepository;
 import com.example.sys_sop.repository.ContactRepository;
 import com.example.sys_sop.repository.DestinataireRepository;
@@ -50,7 +51,6 @@ import com.example.sys_sop.repository.PieceJointeRepository;
 import com.example.sys_sop.repository.ReferenceRepository;
 import com.example.sys_sop.repository.SopRepository;
 import com.example.sys_sop.repository.VersionRepository;
-import com.example.sys_sop.repository.ExportRepository;
 
 @Service
 public class SopService {
@@ -65,8 +65,7 @@ public class SopService {
     private final AnnexeRepository annexeRepository;
     private final FlowchartRepository flowchartRepository;
     private final FlowchartEtapeRepository flowchartEtapeRepository;
-    private final ExportRepository exportRepository;
-    private final PdfExportService pdfExportService;
+    private final PdfGenerationService pdfGenerationService;
 
     public SopService(
             SopRepository repository,
@@ -80,8 +79,7 @@ public class SopService {
             AnnexeRepository annexeRepository,
             FlowchartRepository flowchartRepository,
             FlowchartEtapeRepository flowchartEtapeRepository,
-            ExportRepository exportRepository,
-            PdfExportService pdfExportService) {
+            PdfGenerationService pdfGenerationService) {
         this.repository = repository;
         this.versionRepository = versionRepository;
         this.contactRepository = contactRepository;
@@ -93,8 +91,7 @@ public class SopService {
         this.annexeRepository = annexeRepository;
         this.flowchartRepository = flowchartRepository;
         this.flowchartEtapeRepository = flowchartEtapeRepository;
-        this.exportRepository = exportRepository;
-        this.pdfExportService = pdfExportService;
+        this.pdfGenerationService = pdfGenerationService;
     }
     public List<Sop> findAll() { 
         return repository.findAll(); 
@@ -112,7 +109,7 @@ public class SopService {
                         .collect(Collectors.toList()),
                 destinataireRepository.findBySop(idSop).stream()
                         .map(e -> new DestinataireDto(e.getIdDestinataire(), e.getIdSop(), e.getMatricule(), e.getNom(),
-                                e.getOrganisation(), e.getAction(), e.getDateAction(), e.getOrdre()))
+                                e.getOrganisation(), e.getFonction(), e.getAction(), e.getDateAction(), e.getOrdre()))
                         .collect(Collectors.toList()),
                 equipeProjetRepository.findBySop(idSop).stream()
                         .map(e -> new EquipeProjetDto(e.getIdMembre(), e.getIdSop(), e.getMatricule(), e.getNom(),
@@ -178,32 +175,31 @@ public class SopService {
                 "STAT001", "N", null, null, null, null, null);
         repository.create(sop);
 
-        String idVersion = Long.toString(versionRepository.countAll() + 1);
+        String idVersion = newId();
         versionRepository.create(new Version(idVersion, numeroSop, "1", null, "Draft version", null, "STAT001"));
 
-        for (ContactDto contact : values(request.getContacts())) {
-            contactRepository.create(new Contact(newId(), numeroSop, contact.getMatricule(),
-                    contact.getEmail(), contact.getOrdre()));
-        }
-        for (DestinataireDto destinataire : values(request.getDestinataires())) {
-            String organisation = destinataire.getOrganisation() == null
-                    || destinataire.getOrganisation().isBlank()
-                    ? "CNaPS" : destinataire.getOrganisation();
-            destinataireRepository.create(new Destinataire(newId(), numeroSop, destinataire.getMatricule(),
-                    destinataire.getNom(), organisation, destinataire.getAction(),
-                    destinataire.getDateAction(), destinataire.getOrdre()));
-        }
-        for (EquipeProjetDto membre : values(request.getEquipeProjet())) {
-            equipeProjetRepository.create(new EquipeProjet(newId(), numeroSop, membre.getMatricule(),
-                    membre.getNom(), membre.getFonction(), membre.getTelephone(), membre.getEmail(), membre.getOrdre()));
-        }
-        for (GlossaireDto terme : values(request.getGlossaire())) {
-            glossaireRepository.create(new Glossaire(newId(), numeroSop, terme.getAcronyme(),
-                    terme.getTerme(), terme.getOrdre()));
-        }
-        for (ReferenceDto reference : values(request.getReferences())) {
-            referenceRepository.create(new Reference(newId(), numeroSop, reference.getContenu(), reference.getOrdre()));
-        }
+        contactRepository.batchCreate(values(request.getContacts()).stream()
+                .map(contact -> new Contact(newId(), numeroSop, contact.getMatricule(),
+                        contact.getEmail(), contact.getOrdre()))
+                .collect(Collectors.toList()));
+        destinataireRepository.batchCreate(values(request.getDestinataires()).stream()
+                .map(destinataire -> new Destinataire(newId(), numeroSop, destinataire.getMatricule(),
+                        destinataire.getNom(), defaultOrganisation(destinataire.getOrganisation()),
+                        destinataire.getFonction(), destinataire.getAction(), destinataire.getDateAction(),
+                        destinataire.getOrdre()))
+                .collect(Collectors.toList()));
+        equipeProjetRepository.batchCreate(values(request.getEquipeProjet()).stream()
+                .map(membre -> new EquipeProjet(newId(), numeroSop, membre.getMatricule(),
+                        membre.getNom(), membre.getFonction(), membre.getTelephone(), membre.getEmail(),
+                        membre.getOrdre()))
+                .collect(Collectors.toList()));
+        glossaireRepository.batchCreate(values(request.getGlossaire()).stream()
+                .map(terme -> new Glossaire(newId(), numeroSop, terme.getAcronyme(),
+                        terme.getTerme(), terme.getOrdre()))
+                .collect(Collectors.toList()));
+        referenceRepository.batchCreate(values(request.getReferences()).stream()
+                .map(reference -> new Reference(newId(), numeroSop, reference.getContenu(), reference.getOrdre()))
+                .collect(Collectors.toList()));
 
         Map<String, String> idsPiecesJointes = new HashMap<>();
         for (PieceJointeDto piece : values(request.getPiecesJointes())) {
@@ -218,33 +214,30 @@ public class SopService {
                     request.getAuteurMatricule(), null));
         }
 
-        for (AnnexeDto annexe : values(request.getAnnexes())) {
-            annexeRepository.create(new Annexe(newId(), numeroSop, annexe.getTitre(),
-                    mappedId(annexe.getIdPieceJointe(), idsPiecesJointes, "annexe"), annexe.getOrdre()));
-        }
+        annexeRepository.batchCreate(values(request.getAnnexes()).stream()
+                .map(annexe -> new Annexe(newId(), numeroSop, annexe.getTitre(),
+                        mappedId(annexe.getIdPieceJointe(), idsPiecesJointes, "annexe"), annexe.getOrdre()))
+                .collect(Collectors.toList()));
 
         Map<String, String> idsFlowcharts = new HashMap<>();
-        for (FlowchartDto flowchart : values(request.getFlowcharts())) {
+        List<Flowchart> flowcharts = values(request.getFlowcharts()).stream().map(flowchart -> {
             String cle = requiredKey(flowchart.getIdFlowchart(), "flowchart");
             String idFlowchart = newId();
             idsFlowcharts.put(cle, idFlowchart);
-            flowchartRepository.create(new Flowchart(idFlowchart, numeroSop, flowchart.getTitre(),
-                    flowchart.getInformation(), flowchart.getOrdre(),
-                    mappedId(flowchart.getIdPieceJointe(), idsPiecesJointes, "flowchart")));
-        }
+            return new Flowchart(idFlowchart, numeroSop, flowchart.getTitre(), flowchart.getInformation(),
+                    flowchart.getOrdre(), mappedId(flowchart.getIdPieceJointe(), idsPiecesJointes, "flowchart"));
+        }).collect(Collectors.toList());
+        flowchartRepository.batchCreate(flowcharts);
 
-        for (FlowchartEtapeDto etape : values(request.getFlowchartEtapes())) {
+        flowchartEtapeRepository.batchCreate(values(request.getFlowchartEtapes()).stream().map(etape -> {
             String idFlowchart = mappedId(etape.getIdFlowchart(), idsFlowcharts, "étape flowchart");
-            String modeNumerotation = etape.getModeNumerotation() == null
-                    ? "AUTO" : etape.getModeNumerotation();
-            flowchartEtapeRepository.create(new FlowchartEtape(newId(), idFlowchart, etape.getInformation(),
-                    etape.getNiveau(), modeNumerotation, etape.getOrdre()));
-        }
+            String modeNumerotation = etape.getModeNumerotation() == null ? "AUTO" : etape.getModeNumerotation();
+            return new FlowchartEtape(newId(), idFlowchart, etape.getInformation(), etape.getNiveau(),
+                    modeNumerotation, etape.getOrdre());
+        }).collect(Collectors.toList()));
 
-        byte[] pdf = pdfExportService.generate(sop);
         String nomFichierPdf = numeroSop +"_"+ sop.getTitre()+"_"+ "CNaPS" + "_v" + sop.getVersionCourante() + ".pdf";
-        exportRepository.create(new Export(newId(), numeroSop, idVersion, "Draft version", 1, null,
-                nomFichierPdf, request.getAuteurMatricule()), pdf);
+        schedulePdfExport(sop, idVersion, nomFichierPdf, request.getAuteurMatricule(), "Draft version");
 
         return repository.findById(numeroSop).orElse(sop);
     }
@@ -265,42 +258,40 @@ public class SopService {
         repository.update(updated);
 
         contactRepository.deleteBySop(idSop);
-        for (ContactDto contact : values(request.getContacts())) {
-            contactRepository.create(new Contact(newId(), idSop, contact.getMatricule(),
-                    contact.getEmail(), contact.getOrdre()));
-        }
+        contactRepository.batchCreate(values(request.getContacts()).stream()
+                .map(contact -> new Contact(newId(), idSop, contact.getMatricule(),
+                        contact.getEmail(), contact.getOrdre()))
+                .collect(Collectors.toList()));
         destinataireRepository.deleteBySop(idSop);
-        for (DestinataireDto destinataire : values(request.getDestinataires())) {
-            String organisation = destinataire.getOrganisation() == null
-                    || destinataire.getOrganisation().isBlank() ? "CNaPS" : destinataire.getOrganisation();
-            destinataireRepository.create(new Destinataire(newId(), idSop, destinataire.getMatricule(),
-                    destinataire.getNom(), organisation, destinataire.getAction(),
-                    destinataire.getDateAction(), destinataire.getOrdre()));
-        }
+        destinataireRepository.batchCreate(values(request.getDestinataires()).stream()
+                .map(destinataire -> new Destinataire(newId(), idSop, destinataire.getMatricule(),
+                        destinataire.getNom(), defaultOrganisation(destinataire.getOrganisation()),
+                        destinataire.getFonction(), destinataire.getAction(), destinataire.getDateAction(),
+                        destinataire.getOrdre()))
+                .collect(Collectors.toList()));
         equipeProjetRepository.deleteBySop(idSop);
-        for (EquipeProjetDto membre : values(request.getEquipeProjet())) {
-            equipeProjetRepository.create(new EquipeProjet(newId(), idSop, membre.getMatricule(),
-                    membre.getNom(), membre.getFonction(), membre.getTelephone(), membre.getEmail(), membre.getOrdre()));
-        }
+        equipeProjetRepository.batchCreate(values(request.getEquipeProjet()).stream()
+                .map(membre -> new EquipeProjet(newId(), idSop, membre.getMatricule(), membre.getNom(),
+                        membre.getFonction(), membre.getTelephone(), membre.getEmail(), membre.getOrdre()))
+                .collect(Collectors.toList()));
         glossaireRepository.deleteBySop(idSop);
-        for (GlossaireDto terme : values(request.getGlossaire())) {
-            glossaireRepository.create(new Glossaire(newId(), idSop, terme.getAcronyme(),
-                    terme.getTerme(), terme.getOrdre()));
-        }
+        glossaireRepository.batchCreate(values(request.getGlossaire()).stream()
+                .map(terme -> new Glossaire(newId(), idSop, terme.getAcronyme(), terme.getTerme(), terme.getOrdre()))
+                .collect(Collectors.toList()));
         referenceRepository.deleteBySop(idSop);
-        for (ReferenceDto reference : values(request.getReferences())) {
-            referenceRepository.create(new Reference(newId(), idSop, reference.getContenu(), reference.getOrdre()));
-        }
+        referenceRepository.batchCreate(values(request.getReferences()).stream()
+                .map(reference -> new Reference(newId(), idSop, reference.getContenu(), reference.getOrdre()))
+                .collect(Collectors.toList()));
 
+        Map<String, PieceJointe> piecesJointesParId = pieceJointeRepository.findBySop(idSop).stream()
+                .collect(Collectors.toMap(PieceJointe::getIdPieceJointe, piece -> piece, (first, second) -> first));
         for (PieceJointeDto piece : values(request.getPiecesJointes())) {
             if (piece.getIdPieceJointe() == null || piece.getIdPieceJointe().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Identifiant manquant pour la pièce jointe.");
             }
-            PieceJointe existing = pieceJointeRepository.findById(piece.getIdPieceJointe())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Pièce jointe introuvable : " + piece.getIdPieceJointe()));
-            if (!idSop.equals(existing.getIdSop())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La pièce jointe n'appartient pas à ce SOP.");
+            PieceJointe existing = piecesJointesParId.get(piece.getIdPieceJointe());
+            if (existing == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pièce jointe introuvable : " + piece.getIdPieceJointe());
             }
             byte[] contenu = piece.getContenu() == null ? existing.getContenu() : piece.getContenu();
             Long taille = piece.getTaille() == null && contenu != null ? (long) contenu.length : piece.getTaille();
@@ -311,47 +302,52 @@ public class SopService {
                     taille, contenu, existing.getAuteurMatricule(), existing.getDateInsert()));
         }
 
+        Map<String, Annexe> annexesParId = annexeRepository.findBySop(idSop).stream()
+                .collect(Collectors.toMap(Annexe::getIdAnnexe, annexe -> annexe, (first, second) -> first));
         for (AnnexeDto annexe : values(request.getAnnexes())) {
             if (annexe.getIdAnnexe() == null || annexe.getIdAnnexe().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Identifiant manquant pour l'annexe.");
             }
-            Annexe existing = annexeRepository.findById(annexe.getIdAnnexe())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Annexe introuvable : " + annexe.getIdAnnexe()));
-            if (!idSop.equals(existing.getIdSop())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'annexe n'appartient pas à ce SOP.");
+            Annexe existing = annexesParId.get(annexe.getIdAnnexe());
+            if (existing == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Annexe introuvable : " + annexe.getIdAnnexe());
             }
             annexeRepository.update(new Annexe(existing.getIdAnnexe(), existing.getIdSop(),
                     annexe.getTitre(), existing.getIdPieceJointe(), annexe.getOrdre()));
         }
 
+        Map<String, Flowchart> flowchartsParId = flowchartRepository.findBySop(idSop).stream()
+                .collect(Collectors.toMap(Flowchart::getIdFlowchart, flowchart -> flowchart, (first, second) -> first));
         for (FlowchartDto flowchart : values(request.getFlowcharts())) {
-            Flowchart existing = flowchartRepository.findById(flowchart.getIdFlowchart())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Flowchart introuvable : " + flowchart.getIdFlowchart()));
+            Flowchart existing = flowchartsParId.get(flowchart.getIdFlowchart());
+            if (existing == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Flowchart introuvable : " + flowchart.getIdFlowchart());
+            }
             flowchartRepository.update(new Flowchart(existing.getIdFlowchart(), existing.getIdSop(),
                     existing.getTitre(), flowchart.getInformation(), existing.getOrdre(), existing.getIdPieceJointe()));
         }
+        Map<String, FlowchartEtape> etapesParId = flowchartEtapeRepository.findBySop(idSop).stream()
+                .collect(Collectors.toMap(FlowchartEtape::getIdEtape, etape -> etape, (first, second) -> first));
         for (FlowchartEtapeDto etape : values(request.getFlowchartEtapes())) {
             if (etape.getIdEtape() == null || etape.getIdEtape().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Une étape existante du flowchart doit conserver son identifiant.");
             }
-            FlowchartEtape existing = flowchartEtapeRepository.findById(etape.getIdEtape())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Étape de flowchart introuvable : " + etape.getIdEtape()));
+            FlowchartEtape existing = etapesParId.get(etape.getIdEtape());
+            if (existing == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Étape de flowchart introuvable : " + etape.getIdEtape());
+            }
             flowchartEtapeRepository.update(new FlowchartEtape(existing.getIdEtape(), existing.getIdFlowchart(),
                     etape.getInformation(), existing.getNiveau(), existing.getModeNumerotation(), existing.getOrdre()));
         }
 
-        String idVersion = Long.toString(versionRepository.countAll() + 1);
+        String idVersion = newId();
         versionRepository.create(new Version(idVersion, idSop, String.valueOf(nextVersion), null,
                 "Draft Version", current.getAuteurMatricule(), current.getCodeStatut()));
-        byte[] pdf = pdfExportService.generate(updated);
         String nomFichierPdf = updated.getNumeroSop() + "_" + updated.getTitre()
                 + "_CNaPS_v" + updated.getVersionCourante() + ".pdf";
-        exportRepository.create(new Export(newId(), idSop, idVersion, "Draft Version", 1, null,
-                nomFichierPdf, current.getAuteurMatricule()), pdf);
+        schedulePdfExport(updated, idVersion, nomFichierPdf, current.getAuteurMatricule(), "Draft Version");
         return updated;
     }
     public boolean update(Sop entity) { 
@@ -363,6 +359,22 @@ public class SopService {
 
     private static String newId() {
         return UUID.randomUUID().toString();
+    }
+
+    private void schedulePdfExport(Sop sop, String idVersion, String fileName, String author, String label) {
+        String idExport = newId();
+        Runnable task = () -> pdfGenerationService.generateAndStore(
+                sop, idVersion, idExport, fileName, author, label);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    task.run();
+                }
+            });
+        } else {
+            task.run();
+        }
     }
 
     private SopDto toDto(Sop e) {
@@ -377,6 +389,10 @@ public class SopService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Identifiant manquant pour " + type + ".");
         }
         return key;
+    }
+
+    private static String defaultOrganisation(String organisation) {
+        return organisation == null || organisation.isBlank() ? "CNaPS" : organisation;
     }
 
     private static String mappedId(String key, Map<String, String> ids, String type) {

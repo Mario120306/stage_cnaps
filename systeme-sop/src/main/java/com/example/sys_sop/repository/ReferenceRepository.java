@@ -44,6 +44,16 @@ public class ReferenceRepository {
             ps.setObject(4, e.getOrdre());
         });
     }
+    public void batchCreate(List<Reference> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_REFERENCE (id_reference,id_sop,contenu,ordre) VALUES (?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdReference());
+                    ps.setString(2, e.getIdSop());
+                    ps.setString(3, e.getContenu());
+                    ps.setObject(4, e.getOrdre());
+                });
+    }
 
     public int update(Reference e) {
         String sql = "UPDATE SOP_REFERENCE SET id_sop=?,contenu=?,ordre=? WHERE id_reference=?";

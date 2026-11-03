@@ -33,6 +33,17 @@ public class GlossaireRepository {
         return jdbc.update("INSERT INTO SOP_GLOSSAIRE (id_glossaire,id_sop,acronyme,terme,ordre) VALUES (?,?,?,?,?)", e.getIdGlossaire(), 
                                 e.getIdSop(), e.getAcronyme(), e.getTerme(), e.getOrdre()); 
     }
+    public void batchCreate(List<Glossaire> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_GLOSSAIRE (id_glossaire,id_sop,acronyme,terme,ordre) VALUES (?,?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdGlossaire());
+                    ps.setString(2, e.getIdSop());
+                    ps.setString(3, e.getAcronyme());
+                    ps.setString(4, e.getTerme());
+                    ps.setObject(5, e.getOrdre());
+                });
+    }
     public int update(Glossaire e) { 
         return jdbc.update("UPDATE SOP_GLOSSAIRE SET id_sop=?,acronyme=?,terme=?,ordre=? WHERE id_glossaire=?", e.getIdSop(), e.getAcronyme(),
          e.getTerme(), e.getOrdre(), e.getIdGlossaire());

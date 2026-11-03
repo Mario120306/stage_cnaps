@@ -33,6 +33,17 @@ public class AnnexeRepository {
         return jdbc.update("INSERT INTO SOP_ANNEXE (id_annexe,id_sop,titre,id_piece_jointe,ordre) VALUES (?,?,?,?,?)", 
                             e.getIdAnnexe(), e.getIdSop(), e.getTitre(), e.getIdPieceJointe(), e.getOrdre()); 
     }
+    public void batchCreate(List<Annexe> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_ANNEXE (id_annexe,id_sop,titre,id_piece_jointe,ordre) VALUES (?,?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdAnnexe());
+                    ps.setString(2, e.getIdSop());
+                    ps.setString(3, e.getTitre());
+                    ps.setString(4, e.getIdPieceJointe());
+                    ps.setObject(5, e.getOrdre());
+                });
+    }
     public int update(Annexe e) { 
         return jdbc.update("UPDATE SOP_ANNEXE SET id_sop=?,titre=?,id_piece_jointe=?,ordre=? WHERE id_annexe=?", 
                             e.getIdSop(), e.getTitre(), e.getIdPieceJointe(), e.getOrdre(), e.getIdAnnexe()); 

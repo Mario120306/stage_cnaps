@@ -8,9 +8,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -31,7 +32,7 @@ import com.example.sys_sop.modele.Glossaire;
 import com.example.sys_sop.modele.PieceJointe;
 import com.example.sys_sop.modele.Reference;
 import com.example.sys_sop.modele.Sop;
-import com.example.sys_sop.modele.Utilisateur;
+import com.example.sys_sop.modele.TextStatique;
 import com.example.sys_sop.modele.Version;
 import com.example.sys_sop.repository.AnnexeRepository;
 import com.example.sys_sop.repository.ContactRepository;
@@ -43,7 +44,6 @@ import com.example.sys_sop.repository.GlossaireRepository;
 import com.example.sys_sop.repository.PieceJointeRepository;
 import com.example.sys_sop.repository.ReferenceRepository;
 import com.example.sys_sop.repository.ServiceDrhRepository;
-import com.example.sys_sop.repository.UtilisateurRepository;
 import com.example.sys_sop.repository.VersionRepository;
 
 @Service
@@ -154,15 +154,14 @@ public class PdfExportService {
     private final AnnexeRepository annexeRepository;
     private final PieceJointeRepository pieceJointeRepository;
     private final ServiceDrhRepository serviceDrhRepository;
-    private final UtilisateurRepository utilisateurRepository;
+    private final ThreadLocal<ExportData> exportData = new ThreadLocal<>();
 
     public PdfExportService(TextStatiqueService textStatiqueService, VersionRepository versionRepository,
             ContactRepository contactRepository, DestinataireRepository destinataireRepository,
             EquipeProjetRepository equipeRepository, GlossaireRepository glossaireRepository,
             ReferenceRepository referenceRepository, FlowchartRepository flowchartRepository,
             FlowchartEtapeRepository etapeRepository, AnnexeRepository annexeRepository,
-            PieceJointeRepository pieceJointeRepository, ServiceDrhRepository serviceDrhRepository,
-            UtilisateurRepository utilisateurRepository) {
+            PieceJointeRepository pieceJointeRepository, ServiceDrhRepository serviceDrhRepository) {
         this.textStatiqueService = textStatiqueService;
         this.versionRepository = versionRepository;
         this.contactRepository = contactRepository;
@@ -175,7 +174,36 @@ public class PdfExportService {
         this.annexeRepository = annexeRepository;
         this.pieceJointeRepository = pieceJointeRepository;
         this.serviceDrhRepository = serviceDrhRepository;
-        this.utilisateurRepository = utilisateurRepository;
+    }
+
+    private static final class ExportData {
+        private final Map<String, String> textes;
+        private final List<Contact> contacts;
+        private final List<Version> versions;
+        private final List<Destinataire> destinataires;
+        private final List<EquipeProjet> equipe;
+        private final List<Glossaire> glossaire;
+        private final List<Reference> references;
+        private final List<Flowchart> flowcharts;
+        private final Map<String, List<FlowchartEtape>> etapes;
+        private final List<Annexe> annexes;
+        private final Map<String, PieceJointe> piecesJointes = new HashMap<>();
+
+        private ExportData(Map<String, String> textes, List<Contact> contacts, List<Version> versions,
+                List<Destinataire> destinataires, List<EquipeProjet> equipe, List<Glossaire> glossaire,
+                List<Reference> references, List<Flowchart> flowcharts,
+                Map<String, List<FlowchartEtape>> etapes, List<Annexe> annexes) {
+            this.textes = textes;
+            this.contacts = contacts;
+            this.versions = versions;
+            this.destinataires = destinataires;
+            this.equipe = equipe;
+            this.glossaire = glossaire;
+            this.references = references;
+            this.flowcharts = flowcharts;
+            this.etapes = etapes;
+            this.annexes = annexes;
+        }
     }
 
     // ================= STRUCTURES INTERNES =================
@@ -271,6 +299,7 @@ public class PdfExportService {
 
     // ================= GÉNÉRATION =================
     public byte[] generate(Sop sop) {
+        exportData.set(loadData(sop));
         try {
             Built built = build(sop, 1);
             if (built.tocPagesNeeded > 1) {
@@ -279,6 +308,8 @@ public class PdfExportService {
             return built.bytes;
         } catch (IOException ex) {
             throw new IllegalStateException("Impossible de générer le PDF du SOP " + sop.getIdSop(), ex);
+        } finally {
+            exportData.remove();
         }
     }
 
@@ -398,23 +429,13 @@ public class PdfExportService {
         float[] ratios = {220f / 704, 170f / 704, 155f / 704, 159f / 704}; // total = 704
         boolean[] center = {false, false, true, false};
         String organisation = staticTextOr(TXT_ORGANISATION, ORGANISATION_DEFAUT);
-        Map<String, Utilisateur> utilisateurs = utilisateurRepository.findAll().stream()
-                .filter(u -> notBlank(u.getMatricule()))
-                .collect(Collectors.toMap(u -> u.getMatricule().trim(), u -> u,
-                        (first, second) -> first));
         List<String[]> rows = destinataires(sop).stream().map(d -> new String[] {
                 value(d.getNom(), d.getMatricule(), ""),
-                fonctionDestinataire(d, utilisateurs),
+                value(d.getFonction(), ""),
                 organisation,
                 value(d.getAction(), "")
         }).collect(Collectors.toList());
         drawTable(ctx, headers, ratios, true, center, rows);
-    }
-
-    private String fonctionDestinataire(Destinataire destinataire, Map<String, Utilisateur> utilisateurs) {
-        if (!notBlank(destinataire.getMatricule())) return "";
-        Utilisateur utilisateur = utilisateurs.get(destinataire.getMatricule().trim());
-        return utilisateur == null ? "" : value(utilisateur.getLibelleFonction(), "");
     }
 
     private void drawEquipe(PageContext ctx, Sop sop) throws IOException {
@@ -558,7 +579,11 @@ public class PdfExportService {
     /** Image à la largeur du contenu, réduite pour tenir dans la page (jamais coupée). */
     private void drawAttachmentImage(PageContext ctx, String id) throws IOException {
         if (!notBlank(id)) return;
-        PieceJointe attachment = pieceJointeRepository.findById(id).orElse(null);
+        ExportData data = currentData();
+        if (!data.piecesJointes.containsKey(id)) {
+            data.piecesJointes.put(id, pieceJointeRepository.findById(id).orElse(null));
+        }
+        PieceJointe attachment = data.piecesJointes.get(id);
         if (attachment == null || attachment.getContenu() == null || !isImage(attachment.getTypeMime())) return;
         PDImageXObject image = PDImageXObject.createFromByteArray(ctx.document, attachment.getContenu(),
                 value(attachment.getNomFichier(), "image"));
@@ -956,9 +981,45 @@ public class PdfExportService {
     }
 
     // ================= DONNÉES =================
+    private ExportData currentData() {
+        ExportData data = exportData.get();
+        if (data == null) {
+            throw new IllegalStateException("Données d'export non initialisées.");
+        }
+        return data;
+    }
+
+    private ExportData loadData(Sop sop) {
+        Map<String, String> textes = new HashMap<>();
+        for (TextStatique text : textStatiqueService.findAll()) {
+            textes.put(text.getCodeText(), text.getContenu());
+        }
+
+        List<FlowchartEtape> toutesLesEtapes = etapeRepository.findBySop(sop.getIdSop());
+        Map<String, List<FlowchartEtape>> etapes = new HashMap<>();
+        for (FlowchartEtape etape : toutesLesEtapes) {
+            etapes.computeIfAbsent(etape.getIdFlowchart(), key -> new ArrayList<>()).add(etape);
+        }
+
+        return new ExportData(
+                textes,
+                contactRepository.findBySop(sop.getIdSop()),
+                versionRepository.findBySop(sop.getIdSop()),
+                destinataireRepository.findBySop(sop.getIdSop()),
+                equipeRepository.findBySop(sop.getIdSop()),
+                glossaireRepository.findBySop(sop.getIdSop()),
+                referenceRepository.findBySop(sop.getIdSop()),
+                flowchartRepository.findBySop(sop.getIdSop()),
+                etapes,
+                annexeRepository.findBySop(sop.getIdSop()));
+    }
+
     private String staticText(String code) {
-        String content = textStatiqueService.findById(code).getContenu();
-        return content == null ? "" : fix(content.replaceAll("\\s+", " ").trim());
+        String content = currentData().textes.get(code);
+        if (content == null) {
+            throw new IllegalStateException("Text statique introuvable :" + code);
+        }
+        return fix(content.replaceAll("\\s+", " ").trim());
     }
 
     /** Texte statique optionnel : si le code n'existe pas en base, on utilise la valeur par défaut. */
@@ -972,32 +1033,32 @@ public class PdfExportService {
     }
 
     private List<Contact> contacts(Sop sop) {
-        return contactRepository.findAll().stream().filter(c -> sop.getIdSop().equals(c.getIdSop())).collect(Collectors.toList());
+        return currentData().contacts;
     }
     private List<Version> versions(Sop sop) {
-        return versionRepository.findAll().stream().filter(v -> sop.getIdSop().equals(v.getIdSop())).collect(Collectors.toList());
+        return currentData().versions;
     }
     private List<Destinataire> destinataires(Sop sop) {
-        return destinataireRepository.findAll().stream().filter(d -> sop.getIdSop().equals(d.getIdSop())).collect(Collectors.toList());
+        return currentData().destinataires;
     }
 
     private List<EquipeProjet> equipe(Sop sop) {
-        return equipeRepository.findAll().stream().filter(e -> sop.getIdSop().equals(e.getIdSop())).collect(Collectors.toList());
+        return currentData().equipe;
     }
     private List<Glossaire> glossaire(Sop sop) {
-        return glossaireRepository.findAll().stream().filter(g -> sop.getIdSop().equals(g.getIdSop())).collect(Collectors.toList());
+        return currentData().glossaire;
     }
     private List<Reference> references(Sop sop) {
-        return referenceRepository.findAll().stream().filter(r -> sop.getIdSop().equals(r.getIdSop())).collect(Collectors.toList());
+        return currentData().references;
     }
     private List<Flowchart> flowcharts(Sop sop) {
-        return flowchartRepository.findAll().stream().filter(f -> sop.getIdSop().equals(f.getIdSop())).collect(Collectors.toList());
+        return currentData().flowcharts;
     }
     private List<FlowchartEtape> etapes(String idFlowchart) {
-        return etapeRepository.findAll().stream().filter(e -> idFlowchart.equals(e.getIdFlowchart())).collect(Collectors.toList());
+        return currentData().etapes.getOrDefault(idFlowchart, Collections.emptyList());
     }
     private List<Annexe> annexes(Sop sop) {
-        return annexeRepository.findAll().stream().filter(a -> sop.getIdSop().equals(a.getIdSop())).collect(Collectors.toList());
+        return currentData().annexes;
     }
 
     private String serviceLabel(Sop sop) {
@@ -1029,7 +1090,7 @@ public class PdfExportService {
 
     /**
      * Rustine : répare le mojibake CP850 lu en windows-1252 (é -> ‚, è -> Š, à -> …).
-     * Ne s'applique que si la chaîne contient ces marqueurs et aucun accent correct.
+     * Ne s'applique que si la chaîne contient ces mar queurs et aucun accent correct.
      * À supprimer une fois les textes ré-insérés en UTF-8.
      */
     private static String fix(String s) {

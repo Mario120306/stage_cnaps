@@ -31,7 +31,7 @@ export interface SopDetails {
     sop: Sop;
     createur: boolean;
     contacts: Array<{ idContact?: string; matricule: string | null; email: string | null; ordre: number | null }>;
-    destinataires: Array<{ idDestinataire?: string; nom: string | null; organisation: string | null; action: string | null; matricule: string | null; ordre: number | null }>;
+    destinataires: Array<{ idDestinataire?: string; nom: string | null; organisation: string | null; fonction: string | null; action: string | null; matricule: string | null; ordre: number | null }>;
     equipeProjet: Array<{ idMembre?: string; nom: string | null; fonction: string | null; telephone: string | null; email: string | null; matricule?: string | null; ordre: number | null }>;
     glossaire: Array<{ idGlossaire?: string; acronyme: string | null; terme: string | null; ordre: number | null }>;
     references: Array<{ idReference?: string; contenu: string | null; ordre: number | null }>;
@@ -63,6 +63,7 @@ export type SopCreationPayload = Partial<Sop> & {
         matricule: string;
         nom: string;
         organisation: string;
+        fonction: string;
         action: string;
         ordre: number;
     }>;
@@ -96,7 +97,7 @@ export type SopCreationPayload = Partial<Sop> & {
 
 export type SopUpdatePayload = Partial<Sop> & {
     contacts: Array<{ idContact?: string; matricule: string; email: string; ordre: number }>;
-    destinataires: Array<{ idDestinataire?: string; matricule: string; nom: string; organisation: string; action: string; ordre: number }>;
+    destinataires: Array<{ idDestinataire?: string; matricule: string; nom: string; organisation: string; fonction: string; action: string; ordre: number }>;
     equipeProjet: Array<{ idMembre?: string; matricule: string; nom: string; fonction: string; telephone: string; email: string; ordre: number }>;
     glossaire: Array<{ idGlossaire?: string; acronyme: string; terme: string; ordre: number }>;
     references: Array<{ idReference?: string; contenu: string; ordre: number }>;

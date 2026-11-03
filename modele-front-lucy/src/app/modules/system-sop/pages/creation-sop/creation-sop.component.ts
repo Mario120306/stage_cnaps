@@ -58,6 +58,7 @@ export class CreationSopComponent implements OnInit {
     destinataires: { agent: Utilisateur; action: string }[] = [];
     destinatairesSuggereesBackend: Utilisateur[] = [];
     private rechercheDestinataireId = 0;
+    private rechercheDestinataireTimer: ReturnType<typeof setTimeout> | null = null;
 
     // ---------- Équipe de projet ----------
     equipeProjetValides=false;
@@ -65,6 +66,7 @@ export class CreationSopComponent implements OnInit {
     equipeProjet:Utilisateur[]=[];
     equipeSuggereesBackend: Utilisateur[] = [];
     private rechercheEquipeId = 0;
+    private rechercheEquipeTimer: ReturnType<typeof setTimeout> | null = null;
 
     // ---------- Glossaire ----------
     glossaireValides=false;
@@ -234,6 +236,20 @@ export class CreationSopComponent implements OnInit {
     }
 
     async rechercherDestinataire(matricule: string): Promise<void> {
+        if (this.rechercheDestinataireTimer) {
+            clearTimeout(this.rechercheDestinataireTimer);
+        }
+        const recherche = matricule.trim();
+        if (!recherche || this.destinatairesValides) {
+            this.destinatairesSuggereesBackend = [];
+            return;
+        }
+        this.rechercheDestinataireTimer = setTimeout(() => {
+            void this.chargerDestinataire(recherche);
+        }, 300);
+    }
+
+    private async chargerDestinataire(matricule: string): Promise<void> {
         const recherche = matricule.trim();
         const rechercheId = ++this.rechercheDestinataireId;
         if (!recherche || this.destinatairesValides) {
@@ -254,6 +270,20 @@ export class CreationSopComponent implements OnInit {
     }
 
     async rechercherEquipeParMatricule(matricule: string): Promise<void> {
+        if (this.rechercheEquipeTimer) {
+            clearTimeout(this.rechercheEquipeTimer);
+        }
+        const recherche = matricule.trim();
+        if (!recherche) {
+            this.equipeSuggereesBackend = [];
+            return;
+        }
+        this.rechercheEquipeTimer = setTimeout(() => {
+            void this.chargerEquipeParMatricule(recherche);
+        }, 300);
+    }
+
+    private async chargerEquipeParMatricule(matricule: string): Promise<void> {
         const recherche = matricule.trim();
         const rechercheId = ++this.rechercheEquipeId;
         if (!recherche) {
@@ -800,6 +830,7 @@ export class CreationSopComponent implements OnInit {
                     matricule: agent.matricule,
                     nom: `${agent.nom} ${agent.prenoms}`.trim(),
                     organisation: agent.libelleService || "CNaPS",
+                    fonction: agent.libelleFonction || "",
                     action,
                     ordre: index + 1
                 })),

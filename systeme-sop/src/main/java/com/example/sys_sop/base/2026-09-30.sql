@@ -89,6 +89,7 @@ CREATE TABLE SOP_DESTINATAIRE(
     matricule       VARCHAR2(10),
     nom             VARCHAR2(50),
     organisation    VARCHAR2(100),
+    fonction        VARCHAR2(50),
     action          VARCHAR2(50),
     date_action     DATE,
     ordre           NUMBER(3),

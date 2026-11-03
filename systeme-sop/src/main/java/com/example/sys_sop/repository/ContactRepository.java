@@ -32,6 +32,17 @@ public class ContactRepository {
         return jdbc.update("INSERT INTO SOP_CONTACT (id_contact,id_sop,matricule,email,ordre) VALUES (?,?,?,?,?)", 
                                 e.getIdContact(), e.getIdSop(), e.getMatricule(), e.getEmail(), e.getOrdre()); 
     }
+    public void batchCreate(List<Contact> entities) {
+        if (entities.isEmpty()) return;
+        jdbc.batchUpdate("INSERT INTO SOP_CONTACT (id_contact,id_sop,matricule,email,ordre) VALUES (?,?,?,?,?)",
+                entities, entities.size(), (ps, e) -> {
+                    ps.setString(1, e.getIdContact());
+                    ps.setString(2, e.getIdSop());
+                    ps.setString(3, e.getMatricule());
+                    ps.setString(4, e.getEmail());
+                    ps.setObject(5, e.getOrdre());
+                });
+    }
     public int update(Contact e) { 
         return jdbc.update("UPDATE SOP_CONTACT SET id_sop=?,matricule=?,email=?,ordre=? WHERE id_contact=?", 
                                 e.getIdSop(), e.getMatricule(), e.getEmail(), e.getOrdre(), e.getIdContact()); }

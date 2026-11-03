@@ -52,7 +52,9 @@ export class ModificationSopComponent implements OnInit {
     equipeSuggeree: Utilisateur[] = [];
     private rechercheContactId = 0;
     private rechercheDestinataireId = 0;
+    private rechercheDestinataireTimer: ReturnType<typeof setTimeout> | null = null;
     private rechercheEquipeId = 0;
+    private rechercheEquipeTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(
         private route: ActivatedRoute,
@@ -175,6 +177,20 @@ export class ModificationSopComponent implements OnInit {
     }
 
     async rechercherDestinataire(matricule: string): Promise<void> {
+        if (this.rechercheDestinataireTimer) {
+            clearTimeout(this.rechercheDestinataireTimer);
+        }
+        const recherche = matricule.trim();
+        if (!recherche) {
+            this.destinatairesSuggerees = [];
+            return;
+        }
+        this.rechercheDestinataireTimer = setTimeout(() => {
+            void this.chargerDestinataire(recherche);
+        }, 300);
+    }
+
+    private async chargerDestinataire(matricule: string): Promise<void> {
         const id = ++this.rechercheDestinataireId;
         if (!matricule.trim()) {
             this.destinatairesSuggerees = [];
@@ -194,7 +210,8 @@ export class ModificationSopComponent implements OnInit {
             item.matricule?.toLowerCase() === agent.matricule.toLowerCase())) return;
         this.details.destinataires.push({
             matricule: agent.matricule, nom: `${agent.nom} ${agent.prenoms}`.trim(),
-            organisation: agent.libelleService || "CNaPS", action: this.actionDestinataire,
+            organisation: agent.libelleService || "CNaPS", fonction: agent.libelleFonction || "",
+            action: this.actionDestinataire,
             ordre: this.details.destinataires.length + 1
         });
         this.rechercheForm.controls.destinataire.setValue("");
@@ -207,6 +224,20 @@ export class ModificationSopComponent implements OnInit {
     }
 
     async rechercherEquipeParMatricule(matricule: string): Promise<void> {
+        if (this.rechercheEquipeTimer) {
+            clearTimeout(this.rechercheEquipeTimer);
+        }
+        const recherche = matricule.trim();
+        if (!recherche) {
+            this.equipeSuggeree = [];
+            return;
+        }
+        this.rechercheEquipeTimer = setTimeout(() => {
+            void this.chargerEquipeParMatricule(recherche);
+        }, 300);
+    }
+
+    private async chargerEquipeParMatricule(matricule: string): Promise<void> {
         const id = ++this.rechercheEquipeId;
         if (!matricule.trim()) {
             this.equipeSuggeree = [];
@@ -304,7 +335,8 @@ export class ModificationSopComponent implements OnInit {
                 })),
                 destinataires: this.details.destinataires.map((item, index) => ({
                     idDestinataire: item.idDestinataire, matricule: item.matricule || "", nom: item.nom || "",
-                    organisation: item.organisation || "CNaPS", action: item.action || "", ordre: index + 1
+                    organisation: item.organisation || "CNaPS", fonction: item.fonction || "",
+                    action: item.action || "", ordre: index + 1
                 })),
                 equipeProjet: this.details.equipeProjet.map((item, index) => ({
                     idMembre: item.idMembre, matricule: item.matricule || "", nom: item.nom || "",
