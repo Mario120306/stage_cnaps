@@ -46,10 +46,13 @@ export class ModificationSopComponent implements OnInit {
         destinataire: new FormControl(""),
         equipe: new FormControl("")
     });
-    contactsSuggerees: Utilisateur[] = [];
+    /*contactsSuggerees: Utilisateur[] = [];
     destinatairesSuggerees: Utilisateur[] = [];
+    equipeSuggeree: Utilisateur[] = [];*/
+    private contactsSuggereesBackend: Utilisateur[]=[];
+    private destinatairesSuggereesBackend: Utilisateur[]=[];
+    private equipeSuggereesBackend: Utilisateur[]=[];
     actionDestinataire = "Approbation final";
-    equipeSuggeree: Utilisateur[] = [];
     private rechercheContactId = 0;
     private rechercheDestinataireId = 0;
     private rechercheDestinataireTimer: ReturnType<typeof setTimeout> | null = null;
@@ -146,19 +149,62 @@ export class ModificationSopComponent implements OnInit {
             this.chargement = false;
         }
     }
+    get contactsSuggerees(): Utilisateur[]{
+        if(!this.details) return[];
+        const recherche =(this.rechercheForm.controls.contact.value || "").trim().toLocaleLowerCase();
+        if(!recherche) return[];
+        
+        return this.contactsSuggereesBackend
+                .filter(agent =>
+                    agent.mail && 
+                    !this.details!.contacts.some(
+                        contact=> contact.matricule?.toLocaleLowerCase()===agent.matricule.toLocaleLowerCase()
+                    ) &&
+                    `${agent.mail} ${agent.nom} ${agent.prenoms}`.toLocaleLowerCase().includes(recherche)
+                )
+                .slice(0,8);
+    }
+    get destinatairesSuggerees(): Utilisateur[] {
+        if(!this.details) return[];
+        const recherche =(this.rechercheForm.controls.destinataire.value || "").trim().toLocaleLowerCase();
+        
+        if(!recherche) return[];
 
+        return this.destinatairesSuggereesBackend
+                .filter(agent=>
+                    agent.matricule && 
+                    !this.details!.destinataires.some(
+                        item => item.matricule?.toLocaleLowerCase()===agent.matricule.toLocaleLowerCase()
+                    ) &&
+                    agent.matricule.toLocaleLowerCase().includes(recherche)
+                )
+                .slice(0,8);
+    }
+    get equipeSuggeree(): Utilisateur[] {
+        if(!this.details) return[];
+        const recherche =(this.rechercheForm.controls.equipe.value || "").trim().toLocaleLowerCase();
+        
+        if(!recherche) return [];
+        return this.equipeSuggereesBackend
+                .filter(agent => agent.matricule && !this.details!.equipeProjet.some(
+                    membre=> membre.matricule?.toLocaleLowerCase()===agent.matricule.toLocaleLowerCase()
+                ) &&
+                    `${agent.matricule} ${agent.nom} ${agent.prenoms} ${agent.mail}`.toLocaleLowerCase().includes(recherche)
+            )
+            .slice(0,8);
+    }
     async rechercherContact(email: string): Promise<void> {
         const id = ++this.rechercheContactId;
         if (!email.trim()) {
-            this.contactsSuggerees = [];
+            this.contactsSuggereesBackend= [];
             return;
         }
         try {
             const resultats = await this.utilisateurService.searchByMail(email.trim());
-            if (id === this.rechercheContactId) this.contactsSuggerees = resultats;
+            if (id === this.rechercheContactId) this.contactsSuggereesBackend = resultats;
         } catch (error) {
             console.error("Erreur lors de la recherche des contacts", error);
-            this.contactsSuggerees = [];
+            this.contactsSuggereesBackend = [];
         }
     }
 
@@ -169,7 +215,7 @@ export class ModificationSopComponent implements OnInit {
             matricule: agent.matricule, email: agent.mail, ordre: this.details.contacts.length + 1
         });
         this.rechercheForm.controls.contact.setValue("");
-        this.contactsSuggerees = [];
+        this.contactsSuggereesBackend = [];
     }
 
     retirerContact(index: number): void {
@@ -182,7 +228,7 @@ export class ModificationSopComponent implements OnInit {
         }
         const recherche = matricule.trim();
         if (!recherche) {
-            this.destinatairesSuggerees = [];
+            this.destinatairesSuggereesBackend = [];
             return;
         }
         this.rechercheDestinataireTimer = setTimeout(() => {
@@ -193,15 +239,15 @@ export class ModificationSopComponent implements OnInit {
     private async chargerDestinataire(matricule: string): Promise<void> {
         const id = ++this.rechercheDestinataireId;
         if (!matricule.trim()) {
-            this.destinatairesSuggerees = [];
+            this.destinatairesSuggereesBackend = [];
             return;
         }
         try {
             const resultats = await this.utilisateurService.searchByMatricule(matricule.trim());
-            if (id === this.rechercheDestinataireId) this.destinatairesSuggerees = resultats;
+            if (id === this.rechercheDestinataireId) this.destinatairesSuggereesBackend = resultats;
         } catch (error) {
             console.error("Erreur lors de la recherche des destinataires", error);
-            this.destinatairesSuggerees = [];
+            this.destinatairesSuggereesBackend = [];
         }
     }
 
@@ -215,7 +261,7 @@ export class ModificationSopComponent implements OnInit {
             ordre: this.details.destinataires.length + 1
         });
         this.rechercheForm.controls.destinataire.setValue("");
-        this.destinatairesSuggerees = [];
+        this.destinatairesSuggereesBackend = [];
         this.actionDestinataire = "Approbation final";
     }
 
@@ -229,7 +275,7 @@ export class ModificationSopComponent implements OnInit {
         }
         const recherche = matricule.trim();
         if (!recherche) {
-            this.equipeSuggeree = [];
+            this.equipeSuggereesBackend = [];
             return;
         }
         this.rechercheEquipeTimer = setTimeout(() => {
@@ -240,15 +286,15 @@ export class ModificationSopComponent implements OnInit {
     private async chargerEquipeParMatricule(matricule: string): Promise<void> {
         const id = ++this.rechercheEquipeId;
         if (!matricule.trim()) {
-            this.equipeSuggeree = [];
+            this.equipeSuggereesBackend = [];
             return;
         }
         try {
             const resultats = await this.utilisateurService.searchByMatricule(matricule.trim());
-            if (id === this.rechercheEquipeId) this.equipeSuggeree = resultats;
+            if (id === this.rechercheEquipeId) this.equipeSuggereesBackend = resultats;
         } catch (error) {
             console.error("Erreur lors de la recherche de l'équipe", error);
-            this.equipeSuggeree = [];
+            this.equipeSuggereesBackend = [];
         }
     }
 
@@ -261,7 +307,7 @@ export class ModificationSopComponent implements OnInit {
             email: agent.mail || "", ordre: this.details.equipeProjet.length + 1
         });
         this.rechercheForm.controls.equipe.setValue("");
-        this.equipeSuggeree = [];
+        this.equipeSuggereesBackend = [];
     }
 
     retirerMembre(index: number): void {
