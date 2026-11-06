@@ -19,7 +19,16 @@ import com.example.sys_sop.repository.NotificationRepository;
 
 @Service
 public class NotificationService {
+
+    private static final String COMPLEMENT_NOUVEAU_SOP =
+            " Merci d'en prendre connaissance et de me signaler toute difficulté éventuelle avant sa mise en application.";
+    private static final String COMPLEMENT_AJOUT =
+            " Merci de vérifier que cette procédure est compatible avec les pratiques actuelles de votre équipe et de signaler toute difficulté d'interprétation.";
+    private static final String COMPLEMENT_RETRAIT =
+            " Merci de ne plus vous référer à cette procédure à compter de la date de retrait et de signaler toute question éventuelle.";
+
     private final NotificationRepository repository;
+
     public NotificationService(NotificationRepository repository) { this.repository = repository; }
 
     public List<NotificationDto> findByMatricule(String matricule) {
@@ -39,12 +48,14 @@ public class NotificationService {
         validate(matricule);
         if (repository.delete(id, matricule.trim()) == 0) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
+
     public void notifyNewSop(String idSop, String numero, String titre, List<Destinataire> destinataires,
             List<Contact> contacts, List<EquipeProjet> equipe) {
         LinkedHashMap<String, Set<String>> recipients = recipients(destinataires, contacts, equipe);
         repository.create(recipients.entrySet().stream().map(x -> new Notification(UUID.randomUUID().toString(),
                 idSop, x.getKey(), String.join(",", x.getValue()), "Nouveau SOP disponible",
-                "La procédure " + numero + " - " + titre + " vous concerne.", null, "N", null))
+                "La procédure " + numero + " - " + titre + " vous concerne." + COMPLEMENT_NOUVEAU_SOP,
+                null, "N", null))
                 .collect(Collectors.toList()));
     }
 
@@ -55,11 +66,11 @@ public class NotificationService {
         LinkedHashMap<String, Set<String>> newRecipients = recipients(newDestinataires, newContacts, newEquipe);
         List<Notification> notifications = newRecipients.entrySet().stream()
                 .flatMap(entry -> difference(idSop, entry, oldRecipients.get(entry.getKey()), "Ajout dans un SOP",
-                        "Vous avez été ajouté au SOP " + numero + " - " + titre + " comme %s.").stream())
+                        "Vous avez été ajouté au SOP " + numero + " - " + titre + " comme %s." + COMPLEMENT_AJOUT).stream())
                 .collect(Collectors.toList());
         notifications.addAll(oldRecipients.entrySet().stream()
                 .flatMap(entry -> difference(idSop, entry, newRecipients.get(entry.getKey()), "Retrait d'un SOP",
-                        "Vous avez été retiré du SOP " + numero + " - " + titre + " comme %s.").stream())
+                        "Vous avez été retiré du SOP " + numero + " - " + titre + " comme %s." + COMPLEMENT_RETRAIT).stream())
                 .collect(Collectors.toList()));
         repository.create(notifications);
     }
