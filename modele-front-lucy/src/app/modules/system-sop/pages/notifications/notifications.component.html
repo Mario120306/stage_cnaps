@@ -1,0 +1,47 @@
+<div class="main-content">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <fieldset>
+            <legend>
+              <i class="fa fa-bell pr-2"></i> NOTIFICATIONS
+            </legend>
+            <fieldset>
+              <legend>
+                <i class="fa fa-list pr-2"></i> LISTE DES NOTIFICATIONS
+              </legend>
+              <div *ngIf="loading" class="notification-empty">
+                Chargement...
+              </div>
+              <div *ngIf="!loading && !notifications.length" class="notification-empty">
+                Aucune notification
+              </div>
+              <div class="notification-list" *ngIf="!loading && notifications.length">
+                <div *ngFor="let notification of notifications" class="notification-card"
+                  [class.unread]="notification.vue === 'N'" (click)="open(notification)">
+                  <div class="notification-icon">
+                    <i class="fa fa-bell"></i>
+                  </div>
+                  <div class="notification-content">
+                    <strong>{{ notification.titre }}</strong>
+                    <span>{{ notification.message }}</span>
+                    <small>
+                      {{ roleLabel(notification.typeDestinataire) }}
+                      <span class="notification-separator">•</span>
+                      {{ notification.dateCreation | date:'dd/MM/yyyy HH:mm' }}
+                    </small>
+                  </div>
+                  <button type="button" class="notification-delete" title="Supprimer"
+                    (click)="remove(notification, $event)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

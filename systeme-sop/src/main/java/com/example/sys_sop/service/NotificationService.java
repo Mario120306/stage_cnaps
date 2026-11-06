@@ -1,0 +1,67 @@
+package com.example.sys_sop.service;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import com.example.sys_sop.dto.NotificationDto;
+import com.example.sys_sop.modele.Contact;
+import com.example.sys_sop.modele.Destinataire;
+import com.example.sys_sop.modele.EquipeProjet;
+import com.example.sys_sop.modele.Notification;
+import com.example.sys_sop.repository.NotificationRepository;
+
+@Service
+public class NotificationService {
+    private final NotificationRepository repository;
+    public NotificationService(NotificationRepository repository) { this.repository = repository; }
+
+    public List<NotificationDto> findByMatricule(String matricule) {
+        validate(matricule);
+        return repository.findByMatricule(matricule.trim()).stream().map(this::toDto).collect(Collectors.toList());
+    }
+    public int countUnread(String matricule) { validate(matricule); return repository.countUnread(matricule.trim()); }
+    public void markRead(String id, String matricule) {
+        validate(matricule);
+        if (repository.markRead(id, matricule.trim()) == 0) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+    public void markAllRead(String matricule) {
+        validate(matricule);
+        repository.markAllRead(matricule.trim());
+    }
+    public void delete(String id, String matricule) {
+        validate(matricule);
+        if (repository.delete(id, matricule.trim()) == 0) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+    public void notifyNewSop(String idSop, String numero, String titre, List<Destinataire> destinataires,
+            List<Contact> contacts, List<EquipeProjet> equipe) {
+        LinkedHashMap<String, Set<String>> recipients = new LinkedHashMap<>();
+        destinataires.stream().filter(x -> valid(x.getMatricule()))
+                .forEach(x -> addRole(recipients, x.getMatricule(), "DESTINATAIRE"));
+        contacts.stream().filter(x -> valid(x.getMatricule()))
+                .forEach(x -> addRole(recipients, x.getMatricule(), "CONTACT_COMMENTAIRE"));
+        equipe.stream().filter(x -> valid(x.getMatricule()))
+                .forEach(x -> addRole(recipients, x.getMatricule(), "EQUIPE_PROJET"));
+        repository.create(recipients.entrySet().stream().map(x -> new Notification(UUID.randomUUID().toString(),
+                idSop, x.getKey(), String.join(",", x.getValue()), "Nouveau SOP disponible",
+                "La procédure " + numero + " - " + titre + " vous concerne.", null, "N", null))
+                .collect(Collectors.toList()));
+    }
+    private void addRole(Map<String, Set<String>> recipients, String matricule, String role) {
+        recipients.computeIfAbsent(matricule.trim(), key -> new LinkedHashSet<>()).add(role);
+    }
+    private boolean valid(String value) { return value != null && !value.isBlank(); }
+    private void validate(String value) {
+        if (!valid(value)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le matricule est obligatoire.");
+    }
+    private NotificationDto toDto(Notification n) {
+        return new NotificationDto(n.getIdNotification(), n.getIdSop(), n.getMatricule(),
+                n.getTypeDestinataire(), n.getTitre(), n.getMessage(), n.getDateCreation(), n.getVue(), n.getDateVue());
+    }
+}

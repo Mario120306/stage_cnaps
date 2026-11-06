@@ -66,6 +66,7 @@ public class SopService {
     private final FlowchartRepository flowchartRepository;
     private final FlowchartEtapeRepository flowchartEtapeRepository;
     private final PdfGenerationService pdfGenerationService;
+    private final NotificationService notificationService;
 
     public SopService(
             SopRepository repository,
@@ -79,7 +80,8 @@ public class SopService {
             AnnexeRepository annexeRepository,
             FlowchartRepository flowchartRepository,
             FlowchartEtapeRepository flowchartEtapeRepository,
-            PdfGenerationService pdfGenerationService) {
+            PdfGenerationService pdfGenerationService,
+            NotificationService notificationService) {
         this.repository = repository;
         this.versionRepository = versionRepository;
         this.contactRepository = contactRepository;
@@ -92,6 +94,7 @@ public class SopService {
         this.flowchartRepository = flowchartRepository;
         this.flowchartEtapeRepository = flowchartEtapeRepository;
         this.pdfGenerationService = pdfGenerationService;
+        this.notificationService = notificationService;
     }
     public List<Sop> findAll() { 
         return repository.findAll(); 
@@ -193,6 +196,10 @@ public class SopService {
                         membre.getNom(), membre.getFonction(), membre.getTelephone(), membre.getEmail(),
                         membre.getOrdre()))
                 .collect(Collectors.toList()));
+        notificationService.notifyNewSop(numeroSop, numeroSop, sop.getTitre(),
+                destinataireRepository.findBySop(numeroSop),
+                contactRepository.findBySop(numeroSop),
+                equipeProjetRepository.findBySop(numeroSop));
         glossaireRepository.batchCreate(values(request.getGlossaire()).stream()
                 .map(terme -> new Glossaire(newId(), numeroSop, terme.getAcronyme(),
                         terme.getTerme(), terme.getOrdre()))

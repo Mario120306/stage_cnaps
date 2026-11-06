@@ -1,5 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { interval, Subscription } from 'rxjs';
+import { AccountService } from '../../services/account.service';
+import { NotificationService } from '../../services/notification.service';
 
 declare interface RouteInfo {
   path: string;
@@ -27,10 +30,13 @@ export const ROUTES: RouteInfo[] = [
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnDestroy, OnInit {
   menuItems: any[] = [];
   config: any;
-  constructor(private httpClient: HttpClient) {}
+  unreadNotifications = 0;
+  private notificationSubscription?: Subscription;
+  private notificationPollingSubscription?: Subscription;
+  constructor(private httpClient: HttpClient, private account: AccountService, private notificationService: NotificationService) {}
 
   ngOnInit() {
     const headers = new HttpHeaders()
@@ -43,5 +49,28 @@ export class SidebarComponent implements OnInit {
         this.config = config;
       });
     this.menuItems = ROUTES.filter((menuItem) => menuItem);
+    this.notificationSubscription = this.notificationService.unreadCount$.subscribe(
+      count => this.unreadNotifications = count
+    );
+    /*const matricule = this.account.getMatricule();*/
+    const matricule ="000001";
+    if (matricule) {
+      this.refreshUnreadCount(matricule);
+      this.notificationPollingSubscription = interval(30000).subscribe(() => {
+        this.refreshUnreadCount(matricule);
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.notificationSubscription?.unsubscribe();
+    this.notificationPollingSubscription?.unsubscribe();
+  }
+
+  private refreshUnreadCount(matricule: string): void {
+    this.notificationService.countUnread(matricule).subscribe({
+      next: count => this.notificationService.setUnreadCount(count),
+      error: error => console.error('Erreur compteur notifications', error),
+    });
   }
 }

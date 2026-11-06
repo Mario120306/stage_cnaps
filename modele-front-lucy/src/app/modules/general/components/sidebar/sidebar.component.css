@@ -2,7 +2,64 @@
     transform: scale(1.02) !important;
     transition: transform .5s ease !important;
 } */
-.logo-img:hover{
-    transform: scale(1.1) !important;
-    transition: transform .5s ease !important;
+.logo-img:hover {
+  transform: scale(1.1) !important;
+  transition: transform .5s ease !important;
+}
+
+/* ===== Notifications : wrapper icône + badge ===== */
+
+/* Le wrapper reprend exactement le comportement des icônes du template */
+.sidebar .nav li > a .notification-icon-wrapper,
+.sidebar-wrapper .nav li > a .notification-icon-wrapper {
+  position: relative;
+  float: left;              /* comme les autres <i> du template */
+  width: 30px;              /* même largeur que .now-ui-icons du template */
+  margin-right: 15px;
+  text-align: center;
+  line-height: 1;
+}
+
+.notification-icon-wrapper .now-ui-icons {
+  float: none;              /* le wrapper gère le float */
+  margin: 0;
+  width: auto;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Badge : sorti du flux, n'impacte plus la hauteur du lien */
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #e53935;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;        /* = height → texte centré verticalement */
+  text-align: center;
+  box-shadow: 0 0 0 2px #103373;  /* liseré couleur sidebar : effet "découpé" */
+  pointer-events: none;
+  animation: badge-pop .25s ease-out;
+}
+
+/* Item actif (fond blanc) : le liseré prend la couleur du fond */
+.nav-item.active .notification-badge {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+@keyframes badge-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.sidebar-wrapper,
+.sidebar-wrapper .nav {
+  overflow: visible;
 }

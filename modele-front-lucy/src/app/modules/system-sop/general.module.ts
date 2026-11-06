@@ -9,9 +9,10 @@ import { ListeSopComponent } from './pages/liste-sop/liste-sop.component';
 import { CreationSopComponent } from './pages/creation-sop/creation-sop.component';
 import { VueSopComponent } from './pages/vue-sop/vue-sop.component';
 import { ModificationSopComponent } from './pages/modification-sop/modification-sop.component';
+import { NotificationsComponent } from './pages/notifications/notifications.component';
 
 @NgModule({
-	declarations: [GeneralComponent, ListeSopComponent, CreationSopComponent, VueSopComponent, ModificationSopComponent],
+	declarations: [GeneralComponent, ListeSopComponent, CreationSopComponent, VueSopComponent, ModificationSopComponent, NotificationsComponent],
 	imports: [CommonModule, FormsModule, ReactiveFormsModule, GeneralRoutingModule],
 })
 export class GeneralModule {}

@@ -132,6 +132,25 @@ CREATE TABLE SOP_REFERENCE(
         REFERENCES SOP(id_sop) ON DELETE CASCADE
 );
 
+-- Notifications personnelles des utilisateurs lies a un SOP.
+-- VUE = N : non lue, VUE = O : lue.
+CREATE TABLE SOP_NOTIFICATION(
+    id_notification     VARCHAR2(50) PRIMARY KEY,
+    id_sop              VARCHAR2(50) NOT NULL,
+    matricule           VARCHAR2(10) NOT NULL,
+    type_destinataire   VARCHAR2(100) NOT NULL,
+    titre               VARCHAR2(150) NOT NULL,
+    message             VARCHAR2(500) NOT NULL,
+    date_creation       DATE DEFAULT SYSDATE NOT NULL,
+    vue                 CHAR(1) DEFAULT 'N' NOT NULL CHECK (vue IN ('O', 'N')),
+    date_vue            DATE,
+    CONSTRAINT fk_notification_sop FOREIGN KEY (id_sop)
+        REFERENCES SOP(id_sop) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_notification_matricule
+    ON SOP_NOTIFICATION(matricule, vue, date_creation);
+
 -- Table PIECE JOINTE (gestion des fichiers physiques)
 CREATE TABLE SOP_PIECE_JOINTE(
     id_piece_jointe     VARCHAR2(50) PRIMARY KEY,

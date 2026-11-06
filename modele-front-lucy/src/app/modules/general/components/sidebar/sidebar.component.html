@@ -18,5 +18,16 @@
         <p>{{ menuItem.title }}</p>
       </a>
     </li>
+    <li routerLinkActive="active" class="nav-item">
+      <a routerLink="/system-sop/notifications" style="font-weight: bold; font-size: 0.8em">
+        <span class="notification-icon-wrapper">
+          <i class="now-ui-icons ui-1_bell-53"></i>
+          <span class="notification-badge" *ngIf="unreadNotifications > 0">
+            {{ unreadNotifications > 99 ? '99+' : unreadNotifications }}
+          </span>
+        </span>
+        <p>NOTIFICATIONS</p>
+      </a>
+    </li>
   </ul>
 </div>
