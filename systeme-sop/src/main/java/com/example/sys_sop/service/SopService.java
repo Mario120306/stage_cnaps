@@ -264,6 +264,9 @@ public class SopService {
                 current.getLibelleService(), current.getLibelleDirection());
         repository.update(updated);
 
+        List<Contact> oldContacts = contactRepository.findBySop(idSop);
+        List<Destinataire> oldDestinataires = destinataireRepository.findBySop(idSop);
+        List<EquipeProjet> oldEquipe = equipeProjetRepository.findBySop(idSop);
         contactRepository.deleteBySop(idSop);
         contactRepository.batchCreate(values(request.getContacts()).stream()
                 .map(contact -> new Contact(newId(), idSop, contact.getMatricule(),
@@ -281,6 +284,11 @@ public class SopService {
                 .map(membre -> new EquipeProjet(newId(), idSop, membre.getMatricule(), membre.getNom(),
                         membre.getFonction(), membre.getTelephone(), membre.getEmail(), membre.getOrdre()))
                 .collect(Collectors.toList()));
+        List<Contact> newContacts = contactRepository.findBySop(idSop);
+        List<Destinataire> newDestinataires = destinataireRepository.findBySop(idSop);
+        List<EquipeProjet> newEquipe = equipeProjetRepository.findBySop(idSop);
+        notificationService.notifySopUpdate(idSop, updated.getNumeroSop(), updated.getTitre(),
+                oldDestinataires, oldContacts, oldEquipe, newDestinataires, newContacts, newEquipe);
         glossaireRepository.deleteBySop(idSop);
         glossaireRepository.batchCreate(values(request.getGlossaire()).stream()
                 .map(terme -> new Glossaire(newId(), idSop, terme.getAcronyme(), terme.getTerme(), terme.getOrdre()))

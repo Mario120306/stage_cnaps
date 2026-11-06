@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
-import { AccountService } from '../../services/account.service';
+import { AccountService } from '../../../system-sop/services/account.service';
 import { NotificationService } from '../../services/notification.service';
 
 declare interface RouteInfo {
@@ -52,8 +52,7 @@ export class SidebarComponent implements OnDestroy, OnInit {
     this.notificationSubscription = this.notificationService.unreadCount$.subscribe(
       count => this.unreadNotifications = count
     );
-    /*const matricule = this.account.getMatricule();*/
-    const matricule ="000001";
+    const matricule = this.account.getMatricule();
     if (matricule) {
       this.refreshUnreadCount(matricule);
       this.notificationPollingSubscription = interval(30000).subscribe(() => {

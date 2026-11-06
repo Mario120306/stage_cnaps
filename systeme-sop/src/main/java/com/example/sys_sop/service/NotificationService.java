@@ -41,6 +41,43 @@ public class NotificationService {
     }
     public void notifyNewSop(String idSop, String numero, String titre, List<Destinataire> destinataires,
             List<Contact> contacts, List<EquipeProjet> equipe) {
+        LinkedHashMap<String, Set<String>> recipients = recipients(destinataires, contacts, equipe);
+        repository.create(recipients.entrySet().stream().map(x -> new Notification(UUID.randomUUID().toString(),
+                idSop, x.getKey(), String.join(",", x.getValue()), "Nouveau SOP disponible",
+                "La procédure " + numero + " - " + titre + " vous concerne.", null, "N", null))
+                .collect(Collectors.toList()));
+    }
+
+    public void notifySopUpdate(String idSop, String numero, String titre,
+            List<Destinataire> oldDestinataires, List<Contact> oldContacts, List<EquipeProjet> oldEquipe,
+            List<Destinataire> newDestinataires, List<Contact> newContacts, List<EquipeProjet> newEquipe) {
+        LinkedHashMap<String, Set<String>> oldRecipients = recipients(oldDestinataires, oldContacts, oldEquipe);
+        LinkedHashMap<String, Set<String>> newRecipients = recipients(newDestinataires, newContacts, newEquipe);
+        List<Notification> notifications = newRecipients.entrySet().stream()
+                .flatMap(entry -> difference(idSop, entry, oldRecipients.get(entry.getKey()), "Ajout dans un SOP",
+                        "Vous avez été ajouté au SOP " + numero + " - " + titre + " comme %s.").stream())
+                .collect(Collectors.toList());
+        notifications.addAll(oldRecipients.entrySet().stream()
+                .flatMap(entry -> difference(idSop, entry, newRecipients.get(entry.getKey()), "Retrait d'un SOP",
+                        "Vous avez été retiré du SOP " + numero + " - " + titre + " comme %s.").stream())
+                .collect(Collectors.toList()));
+        repository.create(notifications);
+    }
+
+    private List<Notification> difference(String idSop, Map.Entry<String, Set<String>> entry, Set<String> otherRoles,
+            String title, String messageTemplate) {
+        Set<String> changedRoles = new LinkedHashSet<>(entry.getValue());
+        if (otherRoles != null) {
+            changedRoles.removeAll(otherRoles);
+        }
+        return changedRoles.stream()
+                .map(role -> new Notification(UUID.randomUUID().toString(), idSop, entry.getKey(), role, title,
+                        String.format(messageTemplate, roleLabel(role)), null, "N", null))
+                .collect(Collectors.toList());
+    }
+
+    private LinkedHashMap<String, Set<String>> recipients(List<Destinataire> destinataires,
+            List<Contact> contacts, List<EquipeProjet> equipe) {
         LinkedHashMap<String, Set<String>> recipients = new LinkedHashMap<>();
         destinataires.stream().filter(x -> valid(x.getMatricule()))
                 .forEach(x -> addRole(recipients, x.getMatricule(), "DESTINATAIRE"));
@@ -48,10 +85,13 @@ public class NotificationService {
                 .forEach(x -> addRole(recipients, x.getMatricule(), "CONTACT_COMMENTAIRE"));
         equipe.stream().filter(x -> valid(x.getMatricule()))
                 .forEach(x -> addRole(recipients, x.getMatricule(), "EQUIPE_PROJET"));
-        repository.create(recipients.entrySet().stream().map(x -> new Notification(UUID.randomUUID().toString(),
-                idSop, x.getKey(), String.join(",", x.getValue()), "Nouveau SOP disponible",
-                "La procédure " + numero + " - " + titre + " vous concerne.", null, "N", null))
-                .collect(Collectors.toList()));
+        return recipients;
+    }
+
+    private String roleLabel(String role) {
+        if ("CONTACT_COMMENTAIRE".equals(role)) return "commentataire";
+        if ("EQUIPE_PROJET".equals(role)) return "équipe de projet";
+        return "destinataire";
     }
     private void addRole(Map<String, Set<String>> recipients, String matricule, String role) {
         recipients.computeIfAbsent(matricule.trim(), key -> new LinkedHashSet<>()).add(role);

@@ -46,12 +46,15 @@ export class AccountService {
     }
     return null;
   }
-  getMatricule() {
+  /*getMatricule() {
     let session = sessionStorage.getItem('user');
     if (session != null) {
       return this.decodeUserInfo(session).matricule;
     }
     return null;
+  }*/
+  getMatricule(){
+    return "000001";
   }
   getUserInfoInToken() {
     let session = sessionStorage.getItem('user');

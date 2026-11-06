@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Notification } from '../../../general/model/notification';
 import { NotificationService } from '../../../general/services/notification.service';
-import { AccountService } from '../../../general/services/account.service';
+import { AccountService } from '../../services/account.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -21,8 +21,7 @@ export class NotificationsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const matricule ="000001";
-    /*const matricule = this.account.getMatricule();*/
+    const matricule = this.account.getMatricule();
     if (!matricule) return;
 
     this.service.markAllRead(matricule).subscribe({
@@ -68,8 +67,7 @@ export class NotificationsComponent implements OnInit {
   }
   remove(notification: Notification, event: Event): void {
     event.stopPropagation();
-    /*const matricule = this.account.getMatricule();*/
-    const matricule="000001";
+    const matricule = this.account.getMatricule(); 
     if (!matricule) return;
     this.service.remove(notification.idNotification, matricule).subscribe({
       next: () => {

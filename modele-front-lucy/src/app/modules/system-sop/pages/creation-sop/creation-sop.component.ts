@@ -789,12 +789,11 @@ export class CreationSopComponent implements OnInit {
         }
 
         // Matricule : celui de l'utilisateur connecté (token)
-        /*const matricule = this.accountService.getMatricule();
+        const matricule = this.accountService.getMatricule();
         if (typeof matricule !== "string" || !matricule.trim()) {
             this.toastr.error("Impossible d'identifier l'utilisateur connecté.", "Création du SOP");
             return;
-        }*/
-        const matricule="000001";
+        }
         this.soumissionEnCours = true;
         try {
             const piecesJointes: SopPieceJointeCreation[] = await Promise.all<SopPieceJointeCreation>([
