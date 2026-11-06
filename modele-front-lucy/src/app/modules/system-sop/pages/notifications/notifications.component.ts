@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Notification } from '../../../general/model/notification';
-import { NotificationService } from '../../../general/services/notification.service';
+import { NotificationService } from '../../services/notification.service';
 import { AccountService } from '../../services/account.service';
 import { ToastrService } from 'ngx-toastr';
 

@@ -6,6 +6,7 @@ import { Utilisateur } from "../../model/utilisateur.model";
 import { UtilisateurService } from "../../services/utilisateur.service";
 import { SopDetails, SopFlowchartEtape, SopPieceJointeUpdate, SopService, SopUpdatePayload } from "../../services/sop.service";
 import { AccountService } from "../../services/account.service";
+import { NotificationService } from "../../services/notification.service";
 
 interface EditableFlowchart {
     idFlowchart: string;
@@ -65,7 +66,8 @@ export class ModificationSopComponent implements OnInit {
         private sopService: SopService,
         private utilisateurService: UtilisateurService,
         private toastr: ToastrService,
-        private accountService: AccountService
+        private accountService: AccountService,
+        private notificationService: NotificationService
     ) {}
 
     async ngOnInit(): Promise<void> {
@@ -416,6 +418,10 @@ export class ModificationSopComponent implements OnInit {
                 }))
             };
             await this.sopService.update(this.idSop, payload);
+            const matricule = this.accountService.getMatricule();
+            if (matricule) {
+                this.notificationService.refreshUnreadCount(matricule);
+            }
             this.toastr.success("Le SOP a été mis à jour et une nouvelle version a été créée.", "Modification");
             this.router.navigate(["/system-sop/vue-sop"], { queryParams: { idSop: this.idSop } });
         } catch (error) {

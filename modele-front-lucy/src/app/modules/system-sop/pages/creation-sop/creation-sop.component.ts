@@ -11,6 +11,7 @@ import { DetailFlowchart, DetailFlowchartAffiche } from "../../model/detail-flow
 import { AnnexeDraft } from "../../model/annexe.model";
 import { Service as ServiceModel } from "../../model/service.model";
 import { ServiceService } from "../../services/service.service";
+import { NotificationService } from "../../services/notification.service";
 
 
 @Component({
@@ -124,6 +125,7 @@ export class CreationSopComponent implements OnInit {
         private accountService: AccountService,
         private sopService: SopService,
         private serviceService: ServiceService,
+        private notificationService: NotificationService,
         private router: Router,
     ) {}
 
@@ -870,6 +872,7 @@ export class CreationSopComponent implements OnInit {
             };
 
             await this.sopService.create(payload);
+            this.notificationService.refreshUnreadCount(matricule);
             this.soumissionTerminee = true;
             this.toastr.success('Le SOP a été créé avec succès.', 'Création du SOP');
             this.router.navigate(['/system-sop/liste-sop']);

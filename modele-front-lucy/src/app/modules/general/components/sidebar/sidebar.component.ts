@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
 import { AccountService } from '../../../system-sop/services/account.service';
-import { NotificationService } from '../../services/notification.service';
+import { NotificationService } from '../../../system-sop/services/notification.service';
 
 declare interface RouteInfo {
   path: string;
@@ -54,9 +54,9 @@ export class SidebarComponent implements OnDestroy, OnInit {
     );
     const matricule = this.account.getMatricule();
     if (matricule) {
-      this.refreshUnreadCount(matricule);
+      this.notificationService.refreshUnreadCount(matricule);
       this.notificationPollingSubscription = interval(30000).subscribe(() => {
-        this.refreshUnreadCount(matricule);
+        this.notificationService.refreshUnreadCount(matricule);
       });
     }
   }
@@ -66,10 +66,4 @@ export class SidebarComponent implements OnDestroy, OnInit {
     this.notificationPollingSubscription?.unsubscribe();
   }
 
-  private refreshUnreadCount(matricule: string): void {
-    this.notificationService.countUnread(matricule).subscribe({
-      next: count => this.notificationService.setUnreadCount(count),
-      error: error => console.error('Erreur compteur notifications', error),
-    });
-  }
 }

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { Notification } from '../model/notification';
+import { Notification } from '../model/notification.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -16,6 +16,12 @@ export class NotificationService {
   }
   countUnread(matricule: string): Observable<number> {
     return this.http.get<number>(`${this.url}/count`, { params: new HttpParams().set('matricule', matricule) });
+  }
+  refreshUnreadCount(matricule: string): void {
+    this.countUnread(matricule).subscribe({
+      next: count => this.setUnreadCount(count),
+      error: error => console.error('Erreur compteur notifications', error),
+    });
   }
   setUnreadCount(count: number): void {
     this.unreadSubject.next(Math.max(0, count));
