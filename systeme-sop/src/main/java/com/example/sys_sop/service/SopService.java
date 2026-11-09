@@ -343,25 +343,19 @@ public class SopService {
         }
         Map<String, FlowchartEtape> etapesParId = flowchartEtapeRepository.findBySop(idSop).stream()
                 .collect(Collectors.toMap(FlowchartEtape::getIdEtape, etape -> etape, (first, second) -> first));
-        List<FlowchartEtapeDto> etapesRequest = values(request.getFlowchartEtapes());
-        List<FlowchartEtape> etapes = etapesRequest.stream().map(etape -> {
-            Flowchart flowchart = flowchartsParId.get(etape.getIdFlowchart());
-            if (flowchart == null) {
+        for (FlowchartEtapeDto etape : values(request.getFlowchartEtapes())) {
+            if (etape.getIdEtape() == null || etape.getIdEtape().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Flowchart introuvable pour l'étape : " + etape.getIdFlowchart());
+                        "Une étape existante du flowchart doit conserver son identifiant.");
             }
-            String idEtape = etape.getIdEtape();
-            if (idEtape == null || idEtape.isBlank()) {
-                idEtape = newId();
-            } else if (!etapesParId.containsKey(idEtape)) {
+            FlowchartEtape existing = etapesParId.get(etape.getIdEtape());
+            if (existing == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Étape de flowchart introuvable : " + idEtape);
+                        "Étape de flowchart introuvable : " + etape.getIdEtape());
             }
-            return new FlowchartEtape(idEtape, etape.getIdFlowchart(), etape.getInformation(),
-                    etape.getNiveau(), etape.getModeNumerotation(), etape.getOrdre());
-        }).collect(Collectors.toList());
-        flowchartEtapeRepository.deleteBySop(idSop);
-        flowchartEtapeRepository.batchCreate(etapes);
+            flowchartEtapeRepository.update(new FlowchartEtape(existing.getIdEtape(), existing.getIdFlowchart(),
+                    etape.getInformation(), existing.getNiveau(), existing.getModeNumerotation(), existing.getOrdre()));
+        }
 
         String idVersion = newId();
         versionRepository.create(new Version(idVersion, idSop, String.valueOf(nextVersion), null,

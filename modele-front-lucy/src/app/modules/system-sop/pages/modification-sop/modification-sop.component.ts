@@ -42,10 +42,6 @@ export class ModificationSopComponent implements OnInit {
     annexes: EditableAnnexe[] = [];
     chargement = true;
     sauvegardeEnCours = false;
-    insertionFlowchartId: string | null = null;
-    insertionApresIndex: number | null = null;
-    insertionInformation = "";
-    insertionNiveau = 1;
     rechercheForm = new FormGroup({
         contact: new FormControl(""),
         destinataire: new FormControl(""),
@@ -81,7 +77,6 @@ export class ModificationSopComponent implements OnInit {
             this.toastr.error("Aucun SOP sélectionné.", "Modification");
             return;
         }
-
         try {
             this.details = await this.sopService.getDetails(this.idSop,this.accountService.getMatricule());
             if (!this.details.createur) {
@@ -115,7 +110,6 @@ export class ModificationSopComponent implements OnInit {
                                     compteurs[index] = 1;
                                 }
                             }
-
                             compteurs[profondeur]++;
                             for (let index = profondeur + 1; index < compteurs.length; index++) {
                                 compteurs[index] = 0;
@@ -157,68 +151,6 @@ export class ModificationSopComponent implements OnInit {
             this.chargement = false;
         }
     }
-    preparerInsertion(flowchart: EditableFlowchart, index: number): void {
-        this.insertionFlowchartId = flowchart.idFlowchart;
-        this.insertionApresIndex = index;
-        this.insertionInformation = "";
-        this.insertionNiveau = 1;
-    }
-
-    annulerInsertion(): void {
-        this.insertionFlowchartId = null;
-        this.insertionApresIndex = null;
-        this.insertionInformation = "";
-        this.insertionNiveau = 1;
-    }
-
-    insererEtape(flowchart: EditableFlowchart): void {
-        const information = this.insertionInformation.trim();
-        if (this.insertionApresIndex === null || !information) {
-            this.toastr.warning("Saisissez les informations de la nouvelle étape.", "Information manquante");
-            return;
-        }
-
-        const nouvelleEtape = {
-            idEtape: "",
-            idFlowchart: flowchart.idFlowchart,
-            information,
-            niveau: this.insertionNiveau,
-            modeNumerotation: "AUTO",
-            ordre: 0,
-            numero: ""
-        } as SopFlowchartEtape & { information: string; numero: string };
-        flowchart.etapes.splice(this.insertionApresIndex + 1, 0, nouvelleEtape);
-        flowchart.etapes.forEach((etape, index) => etape.ordre = index + 1);
-        this.recalculerNumerotation();
-        this.annulerInsertion();
-    }
-
-    private recalculerNumerotation(): void {
-        let numeroTitre = 0;
-        const compteurs = [0, 0, 0, 0];
-        this.flowcharts.forEach(flowchart => {
-            if (flowchart.titre.trim()) {
-                numeroTitre++;
-                compteurs.fill(0);
-            } else if (numeroTitre === 0) {
-                numeroTitre = 1;
-            }
-            flowchart.etapes.forEach(etape => {
-                const profondeur = Math.max(0, Math.min(compteurs.length - 1, (etape.niveau || 1) - 1));
-                for (let index = 0; index < profondeur; index++) {
-                    if (compteurs[index] === 0) {
-                        compteurs[index] = 1;
-                    }
-                }
-                compteurs[profondeur]++;
-                for (let index = profondeur + 1; index < compteurs.length; index++) {
-                    compteurs[index] = 0;
-                }
-                etape.numero = [numeroTitre, ...compteurs.slice(0, profondeur + 1)].join(".");
-            });
-        });
-    }
-
     get contactsSuggerees(): Utilisateur[]{
         if(!this.details) return[];
         const recherche =(this.rechercheForm.controls.contact.value || "").trim().toLocaleLowerCase();
