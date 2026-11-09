@@ -205,10 +205,9 @@ textarea.form-control {
     background: #fff;
 }
 .references {
-    flex: 1 1 auto;
     width: 100%;
-    height: clamp(280px, 45vh, 520px);
-    min-height: 280px;
+    min-height: clamp(400px, 60vh, 700px);
+    max-height: 110vh;
     white-space: pre-wrap;
     resize: vertical;
 }
@@ -335,9 +334,7 @@ textarea.form-control {
 }
 @media (max-width: 991.98px) {    
     .references {
-        height: clamp(260px, 50vh, 420px);
-        min-height: 260px;
-        max-height: none;
+        min-height: 400px;
     }
 }
 @media (max-width: 767.98px) {
@@ -389,9 +386,7 @@ textarea.form-control {
         flex: 1 1 100%;
     }
     .references {
-        height: clamp(240px, 55vh, 360px);
-        min-height: 240px;
-        resize: vertical;
+        min-height: 280px;
     }
 }
 @keyframes sop-fade-in { from { opacity: 0; } to { opacity: 1; } }
