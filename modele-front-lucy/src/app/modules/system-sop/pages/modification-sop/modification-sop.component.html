@@ -133,11 +133,34 @@
                                                             <small class="text-muted">Fichier actuel : {{ flowchart.nomFichier }}</small>
                                                         </div>
                                                         <label class="text-info">Étapes</label>
-                                                        <div *ngFor="let etape of flowchart.etapes" class="step-row">
+                                                        <div *ngFor="let etape of flowchart.etapes; let i = index" class="step-row align-items-center">
                                                             <span class="step-number">{{ etape.numero }}</span>
                                                             <textarea class="form-control" rows="2" [(ngModel)]="etape.information"></textarea>
+                                                            <button type="button" class="btn-fa-close"
+                                                                (click)="preparerInsertion(flowchart, i)"
+                                                                title="Insérer une étape après celle-ci"
+                                                                aria-label="Insérer une étape après celle-ci">
+                                                                <i class="fa fa-plus"></i>
+                                                            </button>
                                                         </div>
                                                         <p *ngIf="!flowchart.etapes.length" class="empty-row">Aucune étape.</p>
+                                                        <div *ngIf="insertionFlowchartId === flowchart.idFlowchart"
+                                                            class="border rounded p-2 mt-2 mb-3">
+                                                            <label class="text-info">Nouvelle étape après {{ insertionApresIndex! + 1 }}</label>
+                                                            <textarea class="form-control mb-2" rows="2"
+                                                                [(ngModel)]="insertionInformation"
+                                                                placeholder="Informations de la nouvelle étape"></textarea>
+                                                            <select class="form-control mb-2" [(ngModel)]="insertionNiveau">
+                                                                <option [ngValue]="1">Niveau 1 (Ex: 1.1)</option>
+                                                                <option [ngValue]="2">Niveau 2 (Ex: 1.1.1)</option>
+                                                                <option [ngValue]="3">Niveau 3 (Ex: 1.1.1.1)</option>
+                                                                <option [ngValue]="4">Niveau 4 (Ex: 1.1.1.1.1)</option>
+                                                            </select>
+                                                            <button type="button" class="btn btn-primary btn-sm mr-2"
+                                                                (click)="insererEtape(flowchart)">Insérer</button>
+                                                            <button type="button" class="btn btn-secondary btn-sm"
+                                                                (click)="annulerInsertion()">Annuler</button>
+                                                        </div>
                                                     </div>
                                                 </details>
                                             </div>

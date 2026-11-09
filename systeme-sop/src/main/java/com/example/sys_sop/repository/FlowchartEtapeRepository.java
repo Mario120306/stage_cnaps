@@ -57,4 +57,8 @@ public class FlowchartEtapeRepository {
     public int deleteById(String id) { 
         return jdbc.update("DELETE FROM SOP_FLOWCHART_ETAPE WHERE id_etape=?", id); 
     }
+    public int deleteBySop(String idSop) {
+        return jdbc.update("DELETE FROM SOP_FLOWCHART_ETAPE WHERE id_flowchart IN "
+                + "(SELECT id_flowchart FROM SOP_FLOWCHART WHERE id_sop=?)", idSop);
+    }
 }

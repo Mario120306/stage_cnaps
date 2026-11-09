@@ -343,19 +343,25 @@ public class SopService {
         }
         Map<String, FlowchartEtape> etapesParId = flowchartEtapeRepository.findBySop(idSop).stream()
                 .collect(Collectors.toMap(FlowchartEtape::getIdEtape, etape -> etape, (first, second) -> first));
-        for (FlowchartEtapeDto etape : values(request.getFlowchartEtapes())) {
-            if (etape.getIdEtape() == null || etape.getIdEtape().isBlank()) {
+        List<FlowchartEtapeDto> etapesRequest = values(request.getFlowchartEtapes());
+        List<FlowchartEtape> etapes = etapesRequest.stream().map(etape -> {
+            Flowchart flowchart = flowchartsParId.get(etape.getIdFlowchart());
+            if (flowchart == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Une étape existante du flowchart doit conserver son identifiant.");
+                        "Flowchart introuvable pour l'étape : " + etape.getIdFlowchart());
             }
-            FlowchartEtape existing = etapesParId.get(etape.getIdEtape());
-            if (existing == null) {
+            String idEtape = etape.getIdEtape();
+            if (idEtape == null || idEtape.isBlank()) {
+                idEtape = newId();
+            } else if (!etapesParId.containsKey(idEtape)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Étape de flowchart introuvable : " + etape.getIdEtape());
+                        "Étape de flowchart introuvable : " + idEtape);
             }
-            flowchartEtapeRepository.update(new FlowchartEtape(existing.getIdEtape(), existing.getIdFlowchart(),
-                    etape.getInformation(), existing.getNiveau(), existing.getModeNumerotation(), existing.getOrdre()));
-        }
+            return new FlowchartEtape(idEtape, etape.getIdFlowchart(), etape.getInformation(),
+                    etape.getNiveau(), etape.getModeNumerotation(), etape.getOrdre());
+        }).collect(Collectors.toList());
+        flowchartEtapeRepository.deleteBySop(idSop);
+        flowchartEtapeRepository.batchCreate(etapes);
 
         String idVersion = newId();
         versionRepository.create(new Version(idVersion, idSop, String.valueOf(nextVersion), null,
