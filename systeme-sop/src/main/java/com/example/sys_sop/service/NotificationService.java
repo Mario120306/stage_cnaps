@@ -21,7 +21,7 @@ import com.example.sys_sop.repository.NotificationRepository;
 public class NotificationService {
 
     private static final String COMPLEMENT_NOUVEAU_SOP =
-            " Merci d'en prendre connaissance et de me signaler toute difficulté éventuelle avant sa mise en application.";
+            " Merci d'en prendre connaissance et de signaler toute difficulté éventuelle avant sa mise en application.";
     private static final String COMPLEMENT_AJOUT =
             " Merci de vérifier que cette procédure est compatible avec les pratiques actuelles de votre équipe et de signaler toute difficulté d'interprétation.";
     private static final String COMPLEMENT_RETRAIT =
